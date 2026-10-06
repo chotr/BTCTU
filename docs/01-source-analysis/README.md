@@ -25,6 +25,6 @@ Thư mục này lưu kết quả phân tích từng văn bản nghiệp vụ. Ng
 ## Việc cần làm tiếp
 
 - Đưa file PDF gốc vào repo (đề xuất thư mục `docs/sources/`, kèm xác nhận quyền chia sẻ) `[TBD]`
+- Xem hướng dẫn và quy ước đặt tên tại [docs/sources/README.md](../sources/README.md)
 - Đối chiếu số điều khoản trích dẫn với toàn văn PDF trước khi coi là chính thức `[TBD]`
 - Bổ sung phân tích SRC-02, SRC-03 ngay khi có tài liệu
-
