@@ -1,34 +1,44 @@
-# BTCTU — Hệ thống quản lý nhiệm vụ và đánh giá (KPI)
+# BTCTU — Task & KPI Evaluation System
 
-Repository cho dự án phần mềm phục vụ **Ban Tổ chức Tỉnh ủy (BTCTU)**: quản lý tổ chức, nhiệm vụ của các phòng, và tiến tới đánh giá mức độ hoàn thành nhiệm vụ (KPI) của từng phòng, từng cá nhân.
+Competency-test project for analyzing and prototyping an internal **task → KPI → evaluation → classification** workflow for Ban Tổ chức Tỉnh ủy.
 
-## Trạng thái hiện tại
+## Current status
 
-| Hạng mục | Trạng thái |
+| Area | Status |
 |---|---|
-| Phân tích nguồn văn bản | QĐ01 đã phân tích; 05-HD/TU, 39-QĐ/TU: chờ tài liệu |
-| Thiết kế hệ thống | Khung sơ bộ, tách rõ fact / inference / TBD |
-| Code ứng dụng | Chưa bắt đầu |
-| Hình thức sản phẩm (web app / desktop app) | Chưa chốt — xem ADR-0004 |
+| Core source analysis | Reviewed: QĐ01, 05-HD, QĐ39, QĐ342, QĐ348, QĐ308, QĐ607, HD07, NĐ85/63/165/278, NQ11 and two Excel files |
+| Business/domain design | Ready for MVP implementation, with explicit TBD gates |
+| System architecture | Web modular monolith candidate; C4/ERD/permissions/audit/security/integration documented |
+| App code | Next phase |
+| Production approval | Not claimed; security/data/integration gates remain |
 
-## Tài liệu
+## Start here
 
-Toàn bộ tài liệu phân tích nghiệp vụ và thiết kế kiến trúc nằm trong [docs/](docs/README.md), hiện được phát triển trên nhánh `docs/architecture`:
+Read [docs/README.md](docs/README.md).
 
-- [docs/README.md](docs/README.md) — bản đồ điều hướng, đọc trước tiên
-- [docs/00-overview.md](docs/00-overview.md) — tổng quan dự án
-- [docs/01-source-analysis/](docs/01-source-analysis/README.md) — phân tích văn bản nguồn (QĐ01…)
-- [docs/02-business-domain/](docs/02-business-domain/organization-model.md) — miền nghiệp vụ
-- [docs/03-architecture/](docs/03-architecture/architecture-overview.md) — kiến trúc hệ thống
-- [docs/04-adr/](docs/04-adr/README.md) — hồ sơ quyết định kiến trúc (ADR)
-- [docs/05-assumptions-and-unknowns.md](docs/05-assumptions-and-unknowns.md) — giả định & câu hỏi mở
-- [docs/06-implementation-plan.md](docs/06-implementation-plan.md) — kế hoạch triển khai
-- [docs/07-demo-and-presentation.md](docs/07-demo-and-presentation.md) — kế hoạch demo/bảo vệ
+Key documents:
 
-## Nhánh
+- [Source register](docs/02-source-analysis/README.md)
+- [Traceability matrix](docs/03-business/traceability-matrix.md)
+- [Known/unknown register](docs/03-business/known-unknowns.md)
+- [System context](docs/04-system-design/context.md)
+- [ERD](docs/04-system-design/erd.md)
+- [Security architecture](docs/04-system-design/security-architecture.md)
+- [Implementation plan](docs/06-plan/implementation-plan.md)
+- [Demo plan](docs/07-demo/demo-plan.md)
+- [Defense story](docs/08-presentation/defense-story.md)
 
-| Nhánh | Mục đích |
-|---|---|
-| `main` | Trang chủ repo; sẽ nhận code ứng dụng về sau |
-| `docs/architecture` | Phát triển tài liệu phân tích nghiệp vụ & kiến trúc |
+## Engineering rule
 
+Every important statement is treated as one of:
+
+- **FACT** — directly sourced;
+- **INFERENCE** — candidate design;
+- **TBD** — unresolved;
+- **SOURCE INCONSISTENCY** — source conflict/defect.
+
+The project intentionally refuses to convert an analyst guess into an “official” personnel-evaluation rule.
+
+## Branch
+
+Documentation/design work is on `docs/architecture`.
