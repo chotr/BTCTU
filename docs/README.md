@@ -43,7 +43,7 @@ Quy tắc cứng:
 | [03-business](03-business/domain-map.md) | Domain, traceability, task/product/KPI, workflow và known unknowns |
 | [04-system-design](04-system-design/context.md) | C4, domain model, ERD, permissions, audit, integration và security |
 | [05-adr](05-adr/README.md) | Các quyết định kiến trúc mới |
-| [06-plan](06-plan/implementation-plan.md) | Kế hoạch vertical slice có dependency và source trace |
+| [06-plan](06-plan/implementation-plan.md) | Kế hoạch vertical slice, tech stack và thứ tự code |
 | [07-demo](07-demo/demo-plan.md) | Kịch bản demo end-to-end |
 | [08-presentation](08-presentation/defense-story.md) | Câu chuyện bảo vệ dự án |
 

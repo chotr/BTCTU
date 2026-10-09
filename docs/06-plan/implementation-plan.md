@@ -1,5 +1,10 @@
 # Implementation plan — vertical slice trước, rule sau
 
+Xem thêm:
+
+- [Technical stack](technical-stack.md)
+- [Code plan](code-plan.md)
+
 ## MVP đề xuất
 
 Demo bằng dữ liệu giả: organization → membership/position placeholder → catalog item → assignment → result/product/evidence metadata → configurable KPI → self evaluation → review → classification → approval → lock → audit → dashboard.
@@ -54,4 +59,3 @@ flowchart LR
 - Không tích hợp thật hay dữ liệu thật.
 - Không full document-management system; chỉ evidence metadata + secure object reference.
 - Một happy path + return-for-correction + permission-denied + audit trail là đủ mạnh để bảo vệ.
-
