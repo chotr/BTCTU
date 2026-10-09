@@ -34,15 +34,20 @@ Quy tắc cứng:
 - Khi văn bản "nhắc tới" nhưng không "định nghĩa" một khái niệm, ghi rõ điều đó (ví dụ: *vị trí việc làm*).
 - Mọi dòng dữ liệu rút từ văn bản phải chỉ về nguồn (số hiệu văn bản; số điều khoản khi đã đối chiếu).
 
-## Trạng thái nguồn tài liệu
+## Bộ hồ sơ hiện hành
 
-| Nguồn | Trạng thái phân tích | Ghi chú |
-|---|---|---|
-| 01-QĐ/BTCTU — Chức năng, nhiệm vụ và cơ cấu tổ chức | ✅ Đã phân tích | Nền tảng tổ chức + responsibility domain |
-| 05-HD/TU | ⏳ Chưa có tài liệu | Dự kiến chốt Task, KPI, cách chấm điểm |
-| 39-QĐ/TU | ⏳ Chưa có tài liệu | Dự kiến chốt quy trình đánh giá, xếp loại, phê duyệt |
-| Văn bản an ninh / BVCTNB | ⏳ Chưa xác định | Cần cho thiết kế phân quyền, bảo mật |
-| Văn bản CNTT / chuyển đổi số | ⏳ Chưa xác định | Cần cho kiến trúc triển khai |
+| Nhóm | Nội dung |
+|---|---|
+| [01-requirements](01-requirements/assignment.md) | Đề bài, phạm vi và tiêu chí hoàn thành |
+| [02-source-analysis](02-source-analysis/README.md) | Ma trận nguồn, phân tích từng văn bản theo FACT / INFERENCE / TBD |
+| [03-business](03-business/domain-map.md) | Domain, traceability, task/product/KPI, workflow và known unknowns |
+| [04-system-design](04-system-design/context.md) | C4, domain model, ERD, permissions, audit, integration và security |
+| [05-adr](05-adr/README.md) | Các quyết định kiến trúc mới |
+| [06-plan](06-plan/implementation-plan.md) | Kế hoạch vertical slice có dependency và source trace |
+| [07-demo](07-demo/demo-plan.md) | Kịch bản demo end-to-end |
+| [08-presentation](08-presentation/defense-story.md) | Câu chuyện bảo vệ dự án |
+
+Các file cũ trong `01-source-analysis` đến `07-demo-and-presentation.md` được giữ làm lịch sử phân tích QĐ01; bộ đánh số ở trên là cấu trúc chính từ lần cập nhật này.
 
 ## Ranh giới quan trọng nhất của bộ tài liệu
 
@@ -50,4 +55,3 @@ Quy tắc cứng:
 > QĐ01 **chưa** cung cấp Task model, danh mục vị trí việc làm, công thức KPI, hay workflow đánh giá.
 
 Mọi thiết kế trong repo tôn trọng ranh giới này: phần nào chưa có căn cứ thì để placeholder, không bịa nghiệp vụ.
-
