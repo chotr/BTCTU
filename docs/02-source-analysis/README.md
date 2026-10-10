@@ -8,6 +8,8 @@ Every source analysis separates:
 - **INFERENCE** — software/domain interpretation;
 - **TBD** — unresolved or requiring authority;
 - **SOURCE INCONSISTENCY** — source text itself conflicts/contains an error.
+- **SOURCE DIVERGENCE** — sources describe different contract layers,
+  versions or scopes that must not be treated as interchangeable.
 
 ## Source register
 
