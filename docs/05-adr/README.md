@@ -7,5 +7,6 @@
 | [ADR-007](ADR-007-permission-scope.md) | Accepted | Permission = action/resource + organizational/data scope + context |
 | [ADR-008](ADR-008-integration-gate.md) | Accepted for MVP | Fake connector first; real integration behind approval/security gate |
 | [ADR-009](ADR-009-source-inconsistency-gate.md) | Accepted | Unresolved source inconsistency blocks official rule publication |
+| [ADR-010](ADR-010-hono-rest-openapi.md) | Accepted for prototype | Hono REST/OpenAPI on Cloudflare Workers |
 
 These ADRs are **candidate engineering decisions for the competency-test project**, not statements that a production deployment has been approved.

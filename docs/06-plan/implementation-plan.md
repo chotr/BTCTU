@@ -1,5 +1,10 @@
 # Implementation plan — build the defensible vertical slice first
 
+Related implementation decisions:
+
+- [Technical stack](technical-stack.md)
+- [Code plan](code-plan.md)
+
 ## Goal
 
 Deliver a demo that proves:
