@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+/* Design tokens — ngôn ngữ phẳng kiểu quản trị:
+   - nền canvas xám lạnh, bề mặt trắng;
+   - tách lớp bằng bóng "line mỏng" thay border;
+   - một accent duy nhất + 3 màu ngữ nghĩa;
+   - bo góc rất nhẹ (card 6, control 4, badge pill). */
+@theme {
+  --font-sans: var(--font-bevietnam), "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --color-canvas: #f2f4f7;
+  --color-surface: #ffffff;
+  --color-fill: #f6f8fa;
+  --color-fill-2: #edf1f6;
+
+  --color-ink: #182230;
+  --color-ink-2: #4c5a6b;
+  --color-ink-3: #7a8798;
+
+  --color-accent-50: #edf4fc;
+  --color-accent-100: #dce9f9;
+  --color-accent-600: #1d5fc2;
+  --color-accent-700: #174e9f;
+
+  --color-ok-50: #e9f5f0;
+  --color-ok-600: #257a5a;
+  --color-warn-50: #fbf2e2;
+  --color-warn-600: #a46a13;
+  --color-danger-50: #fbeceb;
+  --color-danger-600: #b5483d;
+
+  --shadow-card: 0 1px 2px rgb(23 43 77 / 0.05), 0 1px 0 rgb(23 43 77 / 0.03);
+  --shadow-raise: 0 1px 3px rgb(23 43 77 / 0.08), 0 2px 6px rgb(23 43 77 / 0.06);
+  --shadow-pop: 0 4px 16px rgb(23 43 77 / 0.14), 0 1px 2px rgb(23 43 77 / 0.07);
+
+  --radius-ctl: 4px;
+  --radius-card: 6px;
+  --radius-pill: 999px;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--color-accent-100);
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-accent-600) 55%, transparent);
+    outline-offset: 1px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .control {
+    @apply h-8 rounded-ctl bg-fill px-2.5 text-[13px] text-ink transition-colors;
+  }
+
+  .control::placeholder {
+    color: var(--color-ink-3);
+  }
+
+  .control:focus {
+    @apply bg-surface outline-2 outline-offset-0;
+    outline-color: color-mix(in srgb, var(--color-accent-600) 45%, transparent);
+  }
+}
+
