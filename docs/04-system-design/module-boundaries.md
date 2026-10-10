@@ -1,15 +1,39 @@
-# Module boundaries
+# Module boundaries — modular monolith
 
-| Module | Owns | Dependency |
+| Module | Owns | Main source |
 |---|---|---|
-| Organization | organization, department, person, membership, position ref | QĐ01 |
-| Responsibility | responsibility, work catalog/version | QĐ01 + Excel |
-| Task | task, assignment, result, product/evidence metadata | 05 + Excel |
-| Evaluation | period, criteria, score, workflow, classification | 05 + 39 |
-| IAM/Scope | identity link, role, grant, data scope | QĐ342 + local decision |
-| Audit | audit event, access/export/override history | QĐ342/security |
-| Reporting | read models/dashboard/export | Approved data only |
-| Integration | connector, mapping, sync run/error | 348/308/607/07 |
+| Organization | organization, department, person projection, membership, position ref | QĐ01 + QĐ342 authoritative-data principle |
+| Responsibility & Catalog | responsibility, catalog version/item | QĐ01 + 05-HD PL1 + Excel |
+| Task | task, assignment, result, product/evidence reference, metric snapshot | QĐ01 + 05-HD |
+| Evaluation | period, 30/70 snapshots, calculation run, assessment actions | 05-HD + QĐ39 |
+| Classification | versioned threshold/condition rules, eligibility checks, final class candidate | QĐ39 |
+| IAM / Policy | identity link, role, grant, data scope, policy decision | QĐ342 |
+| Audit | access/action events, security/business trace | QĐ342 + data/security sources |
+| Reporting | dashboard/report/export read models | test assignment + approved data only |
+| Integration | connector, canonical mapping, sync/reconciliation | QĐ308/607 + QĐ348 + HD07 |
+| Configuration | source refs, rule versions, feature gates | design choice for traceability |
 
-Không cho module sửa bảng của module khác; trao đổi qua application service/domain event trong cùng modular monolith.
+## Dependency direction
 
+```mermaid
+flowchart LR
+  ORG["Organization"] --> CAT["Catalog"]
+  CAT --> TASK["Task"]
+  TASK --> EVAL["Evaluation"]
+  EVAL --> CLS["Classification"]
+  IAM["IAM/Policy"] --> TASK
+  IAM --> EVAL
+  IAM --> CLS
+  TASK --> AUD["Audit"]
+  EVAL --> AUD
+  CLS --> AUD
+  INT["Integration"] --> ORG
+  REP["Reporting"] --> TASK
+  REP --> EVAL
+```
+
+## Rule
+
+Modules do not directly mutate another module’s tables. Coordination happens through application services and domain/application events inside one deployable unit.
+
+No microservices are required for the test. Boundaries are maintained to make later extraction possible only if scale/integration demands it.

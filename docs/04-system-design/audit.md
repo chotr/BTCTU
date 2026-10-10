@@ -1,10 +1,59 @@
 # Audit design
 
-Ghi sự kiện: login/MFA failure, read sensitive record, create/update/delete, assign/reassign, submit/review/approve/return, score calculation/override, lock/reopen, export/print, permission change, integration request/response status.
+## FACT constraints
 
-Trường tối thiểu: `eventId`, UTC timestamp, actor/subject, action, resource/type/id, organization/data scope, purpose, before/after hash or safe diff, correlation/request ID, source IP/device where permitted, outcome, reason, policy/rule version.
+QĐ342 requires trace/logging for access, exploitation, update, approval, sharing and data processing, with ability to inspect, monitor and trace origins. Important-data changes must have protected logging.
 
-`[INFERENCE]` append-only store/WORM export, restricted audit viewers, clock sync, alerting. Không log secret/token/file body hoặc trường dữ liệu nhạy cảm không cần thiết.
+QĐ308/QĐ348/HD07 also make source/scope/transaction trace important for integration.
 
-`[TBD]` retention, legal hold, cơ quan được đọc audit và cơ chế ký/niêm phong log.
+## Candidate event coverage [INFERENCE]
 
+Log at minimum:
+
+- authentication/MFA/failed privileged access;
+- sensitive record read;
+- create/update/delete/archive;
+- assign/reassign;
+- task result submit/accept/rework;
+- evaluation submit/review/return/final decision;
+- score calculation and manual override;
+- lock/reopen;
+- export/print;
+- permission/grant change;
+- connector request/status;
+- AI-assisted draft generation, if enabled.
+
+## Event schema candidate
+
+```text
+AuditEvent
+- eventId
+- occurredAtUtc
+- actorId / actorRoles
+- action
+- resourceType / resourceId
+- subjectId
+- organization/data scope
+- purpose
+- classification
+- workflowState
+- outcome
+- reason
+- request/correlationId
+- rule/catalog/version references
+- safe before/after diff or hashes
+- source IP/device info where permitted
+```
+
+## Security rules
+
+- do not log secrets/tokens/file bodies;
+- minimize sensitive payload in logs;
+- append-only/tamper-evident storage;
+- restricted audit-reader permission;
+- centralized time/correlation IDs;
+- security monitoring can consume audit stream/read model.
+
+## TBD
+
+Retention duration, legal hold, exact authorized audit readers and any digital-signature/WORM requirement for production.

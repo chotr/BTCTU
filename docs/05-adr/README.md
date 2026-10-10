@@ -1,11 +1,12 @@
-# Architecture decisions
+# Architecture Decision Records
 
 | ADR | Status | Decision |
 |---|---|---|
-| ADR-005 | Accepted for prototype | Modular monolith, web UI |
-| ADR-006 | Accepted | Rules/master data are versioned and source-traceable |
-| ADR-007 | Accepted | RBAC + data scope + contextual policy |
-| ADR-008 | Accepted for MVP | Fake connector first; real integration behind approval gate |
-| ADR-009 | Accepted for prototype | Hono REST/OpenAPI trên Cloudflare Workers |
+| [ADR-005](ADR-005-modular-monolith-web.md) | Accepted for prototype | Internal web UI + modular monolith |
+| [ADR-006](ADR-006-versioned-rules.md) | Accepted | Rules/master data versioned and source-traceable |
+| [ADR-007](ADR-007-permission-scope.md) | Accepted | Permission = action/resource + organizational/data scope + context |
+| [ADR-008](ADR-008-integration-gate.md) | Accepted for MVP | Fake connector first; real integration behind approval/security gate |
+| [ADR-009](ADR-009-source-inconsistency-gate.md) | Accepted | Unresolved source inconsistency blocks official rule publication |
+| [ADR-010](ADR-010-hono-rest-openapi.md) | Accepted for prototype | Hono REST/OpenAPI on Cloudflare Workers |
 
-Các ADR cũ ở `../04-adr/` vẫn là lịch sử. Quyết định này không tuyên bố đáp ứng production; các legal/security TBD là gate.
+These ADRs are **candidate engineering decisions for the competency-test project**, not statements that a production deployment has been approved.

@@ -1,28 +1,39 @@
-# SRC-09..12 — ATTT, bí mật nhà nước và dữ liệu
+# SRC-09..12 — Tổng hợp quy định ATTT, bí mật nhà nước và dữ liệu
 
-## FACT đã kiểm chứng
+> File này là **cross-source summary**. Chi tiết từng nguồn nằm ở `nd85.md`, `nd63.md`, `nd165.md`, `nd278.md`.
 
-| Nguồn | FACT | Tác động trực tiếp |
-|---|---|---|
-| NĐ 85/2016/NĐ-CP | Hệ thống phải được xác định cấp độ và có hồ sơ/phương án ATTT theo cấp độ; các cấp 1–5 dựa trên loại thông tin và mức ảnh hưởng | Không tự tuyên bố cấp độ; lập hồ sơ xác định cấp độ trước production |
-| NĐ 63/2026/NĐ-CP | Ban hành 28/02/2026, hiệu lực 01/03/2026, quy định chi tiết Luật Bảo vệ bí mật nhà nước | Cần quy trình phân loại, xử lý, truyền, lưu, tiêu hủy theo bản PDF/phụ lục |
-| NĐ 165/2025/NĐ-CP | Ban hành 30/06/2025, hiệu lực 01/07/2025, quy định chi tiết và thi hành Luật Dữ liệu | Data governance/quality/sharing phải rà điều khoản áp dụng trước production |
-| NĐ 278/2025/NĐ-CP | Ban hành và hiệu lực 22/10/2025; kết nối/chia sẻ dữ liệu bắt buộc giữa cơ quan hệ thống chính trị | Integration không chỉ là kỹ thuật; cần căn cứ, danh mục, đầu mối và trách nhiệm |
+## FACT tổng hợp
 
-## INFERENCE / SECURITY BASELINE
+| Nguồn | FACT liên quan trực tiếp tới thiết kế |
+|---|---|
+| NĐ 85/2016/NĐ-CP | HTTT phải xác định cấp độ theo loại thông tin/chức năng/mức ảnh hưởng; cấp 2 và cấp 3 có tiêu chí khác nhau, trong đó hệ thống xử lý bí mật nhà nước thuộc tiêu chí cấp 3 |
+| NĐ 63/2026/NĐ-CP + Phụ lục | Quy định xử lý văn bản/tài liệu điện tử bí mật nhà nước: xác định độ mật, sao/chụp, giao nhận, thu hồi, mang ra ngoài, hội họp và các mẫu/sổ liên quan |
+| NĐ 165/2025/NĐ-CP | Quản trị dữ liệu gồm phân loại, truy cập/truy xuất, ghi nhận lịch sử, xác thực dữ liệu, mã hóa và vòng đời xóa/hủy |
+| NĐ 278/2025/NĐ-CP | Kết nối/chia sẻ dữ liệu bắt buộc giữa cơ quan trong hệ thống chính trị phải đúng mục đích/phạm vi, có metadata/catalog, kiểm soát truy cập, giám sát và quản trị chất lượng |
 
-- Deny-by-default RBAC + data scope; MFA cho privileged/sensitive access.
-- TLS in transit, encryption at rest, managed secrets, backups/restore test.
-- Append-only audit; correlation ID; log access, export, approval, lock/unlock và integration.
-- Tách vùng dữ liệu BVCTNB/sức khỏe; không dùng dữ liệu thật trong demo; che/mã hóa trường nhạy cảm.
-- Threat modeling, SAST/dependency scan, patching, incident runbook và least privilege.
+## Kết luận cho prototype
 
-Đây là baseline của ứng viên, không phải câu chữ của các nghị định.
+### FACT + constraint
 
-## TBD / LEGAL GATES
+- Nếu hệ thống thực tế **xử lý bí mật nhà nước**, tiêu chí NĐ85 dẫn tới phạm vi cấp 3 và quy trình bảo vệ tài liệu thay đổi đáng kể.
+- Nếu hệ thống kết nối LGSP theo QĐ348/HD07, các nguồn chuyên ngành còn yêu cầu hệ thống kết nối bảo đảm ATTT **tối thiểu cấp độ 3**.
 
-- Cấp độ HTTT được phê duyệt; loại dữ liệu nào là bí mật nhà nước và độ mật; retention; hạ tầng/mạng được phép; chủ quản/đơn vị vận hành/chuyên trách ATTT.
-- Cần rà toàn văn và phụ lục NĐ63, NĐ165, NĐ278 bằng legal/security review trước khi chuyển từ prototype sang production.
+### INFERENCE / candidate baseline
 
-Nguồn: [NĐ85](https://vbpl.moj.gov.vn/bothongtin/Pages/vbpq-van-ban-goc.aspx?ItemID=112057), [NĐ63](https://vanban.chinhphu.vn/?docid=217093&pageid=27160), [NĐ165](https://vanban.chinhphu.vn/?docid=214331&pageid=27160), [NĐ278](https://vanban.chinhphu.vn/?docid=215682&pageid=27160).
+Prototype nên:
 
+- dùng dữ liệu synthetic;
+- không chứa nội dung tài liệu bí mật nhà nước;
+- deny-by-default; RBAC + data scope + purpose;
+- MFA cho privileged/sensitive access;
+- mã hóa in transit / at rest;
+- append-only/tamper-evident audit;
+- backup/restore test;
+- secure upload/reference thay vì biến app thành full DMS;
+- threat model, SAST/dependency scan, vulnerability management và incident runbook.
+
+### TBD / legal gate
+
+**Không tuyên bố “hệ thống đã được xác định cấp độ 3”.** Cấp độ chính thức cần hồ sơ, phạm vi dữ liệu, chức năng, hạ tầng và phê duyệt của cấp có thẩm quyền.
+
+Design target cho production-connected scenario có thể chuẩn bị control baseline cấp 3, nhưng đó là **engineering target**, không phải kết luận phê duyệt pháp lý.

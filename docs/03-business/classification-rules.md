@@ -1,15 +1,66 @@
 # Classification rules
 
-Không có rule xếp loại nào được xác nhận vì thiếu bản gốc 39-QĐ/TU.
+## FACT — QĐ39
 
-| Rule slot | Status |
-|---|---|
-| Classification levels | `[TBD]` |
-| Score thresholds | `[TBD]` |
-| Mandatory caps/blockers | `[TBD]` |
-| Ineligible cases | `[TBD]` |
-| Authority to decide/change | `[TBD]` |
-| Appeal/reopen | `[TBD]` |
+### Basic score bands
 
-`[INFERENCE]` Rule engine nên cấu hình hóa theo phiên bản nhưng MVP chỉ cần deterministic evaluator sau khi source được duyệt; không cần general-purpose rules engine.
+| Classification | Basic score |
+|---|---:|
+| Hoàn thành xuất sắc nhiệm vụ | >= 90 |
+| Hoàn thành tốt nhiệm vụ | >= 70 and < 90 |
+| Hoàn thành nhiệm vụ | >= 50 and < 70 |
+| Không hoàn thành nhiệm vụ | < 50 or a blocking case applies |
 
+Source: QĐ39, Điều 11.
+
+## Score is not enough
+
+Each class contains additional mandatory conditions. Examples include:
+
+- completion ratio of assigned tasks;
+- quality/timeliness;
+- outstanding-result requirements for excellent rating;
+- conditions tied to the performance of a unit/area/subordinates for leaders;
+- violation/discipline cases;
+- group-level quota/cap on the number of excellent ratings.
+
+Therefore this is invalid:
+
+```ts
+if (score >= 90) return "EXCELLENT";
+```
+
+## Proposed decision pipeline [INFERENCE]
+
+```mermaid
+flowchart LR
+  S["Calculated score"] --> B["Basic band"]
+  B --> G["Mandatory condition checks"]
+  G --> Q["Quota/group constraint"]
+  Q --> P["Proposed classification"]
+  P --> A["Competent authority decision"]
+```
+
+## Candidate rule representation
+
+```text
+ClassificationRuleVersion
+- version/effective period
+- sourceRef
+- subjectType
+- scoreBands[]
+- mandatoryConditions[]
+- blockers[]
+- groupQuotaRule?
+- roundingPolicy
+- status
+```
+
+A small deterministic evaluator is enough for MVP. Do not build a generic DSL/rules engine unless the rule set proves it necessary.
+
+## TBD
+
+- exact comparison group for the excellent-rating cap inside BTCTU;
+- precise mapping of each QĐ39 subject category to demo users;
+- local procedure for appeal/reopen/correction after publication;
+- official monthly-to-quarter/year aggregation rule for the test system.

@@ -1,61 +1,258 @@
-# Implementation plan — vertical slice trước, rule sau
+# Implementation plan — build the defensible vertical slice first
 
-Xem thêm:
+Related implementation decisions:
 
 - [Technical stack](technical-stack.md)
 - [Code plan](code-plan.md)
 
-## MVP đề xuất
+## Goal
 
-Demo bằng dữ liệu giả: organization → membership/position placeholder → catalog item → assignment → result/product/evidence metadata → configurable KPI → self evaluation → review → classification → approval → lock → audit → dashboard.
+Deliver a demo that proves:
 
-KPI/classification demo phải có banner `candidate rule — not official` cho đến khi 05/39 được duyệt.
+```text
+source regulation
+→ business rule
+→ domain model
+→ implementation
+→ visible audit/decision
+```
 
-| Phase | Deliverable | Dependency/source | Gate |
-|---|---|---|---|
-| 0. Evidence baseline | Source register, trace IDs, unknown register | Tất cả nguồn | File 05/39/Excel hoặc xác nhận mock-only |
-| 1. Foundation | project skeleton, CI, auth stub, audit envelope | Design choice + QĐ342 | Threat model reviewed |
-| 2. Organization | org/department/person/membership/position ref/responsibility | QĐ01 | Source acceptance tests |
-| 3. Assignment slice | work catalog v1, task, assignment, inbox | QĐ01 + Excel TBD | Không claim task taxonomy official |
-| 4. Result/evidence | result/product/evidence metadata, secure upload stub | 05 TBD + design | Upload controls/test data |
-| 5. KPI | criterion/formula versions, reproducible calculation | 05 required | Approved rule table |
-| 6. Evaluation | self/review/classification/approve/return/lock | 39 required | Approved state/rule matrix |
-| 7. Audit/report | timeline, overrides, export, department/dashboard read models | QĐ342 + approved workflow | Permission tests |
-| 8. Integration | connector contracts, fake service, mapping registry | 308/607/07/348 | Real connector remains off |
-| 9. Hardening | ATTT dossier inputs, security/perf/backup/DR tests | 85/63/165/278 | Production authority |
+The project is a competency test, not a production replacement for the whole HTTT TCXDĐ. Scope is therefore intentionally narrow and traceable.
 
-## Dependency order
+## MVP vertical slice
+
+```text
+Organization / Position / Person
+        ↓
+Versioned Work Catalog
+        ↓
+Task Assignment
+        ↓
+Task Result / Product / EvidenceRef
+        ↓
+KPI Calculation
+        ↓
+Self Evaluation
+        ↓
+Review / Appraisal
+        ↓
+Classification Eligibility
+        ↓
+Final Decision
+        ↓
+Lock + Audit
+        ↓
+Dashboard / Report
+```
+
+## Phase plan
+
+### P0 — Evidence baseline — DONE for design branch
+
+Deliverables:
+
+- source register;
+- source analysis for QĐ01, 05-HD, QĐ39, QĐ342, QĐ348, QĐ308, QĐ607, HD07, NĐ85/63/165/278, NQ11;
+- Excel operational analysis;
+- FACT / INFERENCE / TBD convention;
+- source inconsistency register.
+
+Exit gate:
+
+- every core business rule has a source reference or an explicit TBD/design label.
+
+### P1 — Application foundation
+
+**Candidate tech:** internal web app, Next.js + TypeScript + relational DB; modular monolith.
+
+Deliver:
+
+- project skeleton;
+- DB migrations;
+- seed/synthetic demo data;
+- auth/session stub;
+- centralized policy interface;
+- audit-event API;
+- CI: lint/typecheck/unit tests.
+
+Do not build real SSO/LGSP yet.
+
+### P2 — Organization + catalog
+
+Implement:
+
+- Organization / Department;
+- Person projection / Membership / PositionReference;
+- Responsibility catalog;
+- WorkCatalogVersion / WorkCatalogItem;
+- admin screen/import staging for the supplied work-catalog Excel.
+
+Rules:
+
+- imported workbook starts as DRAFT;
+- publish version explicitly;
+- historical task keeps catalog version;
+- do not claim Excel scores are official until approved.
+
+Demo checkpoint:
+
+> recruiter can trace a catalog item back to source/workbook and see version/effective status.
+
+### P3 — Task execution
+
+Implement:
+
+- create task from catalog;
+- assign/reassign within allowed scope;
+- staff inbox;
+- progress/result;
+- actual quantity/completion time;
+- product + EvidenceRef metadata;
+- acceptance/rework comment;
+- full assignment/result audit.
+
+Source basis: QĐ01 + 05-HD + QĐ308.
+
+Keep task state names clearly labeled as product design.
+
+### P4 — KPI engine
+
+Implement versioned deterministic calculation:
+
+- General criteria block (max 30);
+- Work performance block (max 70);
+- A/B/C/D metric snapshot **for leader scenario**;
+- CalculationRun with rule/input snapshot;
+- score explanation UI.
+
+Required tests:
+
+- boundary values;
+- missing metric;
+- rounding policy;
+- historical rule version;
+- source worked example.
+
+**Blocking issue:** INC-01 arithmetic inconsistency in 05-HD. Until confirmed, show a visible “source discrepancy / candidate rule” flag in demo config.
+
+For non-manager staff, use a separate candidate/configured rule; never label it official unless business confirms it.
+
+### P5 — Evaluation + classification
+
+Implement:
+
+- self evaluation;
+- reviewer appraisal/proposal;
+- final competent decision;
+- QĐ39 score bands;
+- mandatory-condition / blocker checks;
+- classification explanation: “why this class”;
+- person and department subject types.
+
+Do **not** automate excellent-quota finalization until the exact comparison group is configured.
+
+### P6 — Lock / reopen / audit
+
+Implement:
+
+- finalize/lock period;
+- edits denied after lock;
+- authorized reopen request with reason;
+- keep old run/decision;
+- append audit timeline;
+- permission denied demo path.
+
+Exact reopen authority is a local design/TBD, so prototype can use a controlled demo role with clear label.
+
+### P7 — Dashboard + report/template draft
+
+Implement:
+
+- personal summary;
+- department summary;
+- period status;
+- score/classification distribution;
+- pending review/decision;
+- trace links to source/rule versions;
+- export report using synthetic data;
+- draft report/decision template.
+
+If AI drafting is shown:
+
+- synthetic data only;
+- output marked DRAFT;
+- human approval mandatory;
+- no public AI with protected production data.
+
+### P8 — Integration facade
+
+Implement only:
+
+- canonical mapping registry;
+- fake `PersonnelDirectoryPort`;
+- fake QĐ607-style adapter;
+- OAuth/error handling contract tests with mocks;
+- X-Request-ID/correlation ID.
+
+No real connection in test scope.
+
+### P9 — Security hardening / production-readiness pack
+
+Prepare, do not claim completion without authority:
+
+- data inventory/classification;
+- formal HTTT-level dossier inputs;
+- threat model;
+- privileged MFA integration;
+- network/deployment review;
+- backup/restore test;
+- vulnerability/dependency scans;
+- incident runbook;
+- secret-document boundary decision;
+- real integration approval.
+
+## Dependency graph
 
 ```mermaid
 flowchart LR
-  E["Source acceptance"] --> O["Organization"]
-  O --> A["Assignment"]
-  A --> R["Result/Evidence"]
-  H05["05-HD/TU"] --> K["KPI"]
-  R --> K
-  Q39["39-QĐ/TU"] --> V["Evaluation/Classification"]
-  K --> V
-  V --> L["Approval/Lock/Audit"]
-  L --> D["Dashboard"]
-  D --> I["Future integration"]
+  P1["P1 Foundation"] --> P2["P2 Org + Catalog"]
+  P2 --> P3["P3 Task"]
+  P3 --> P4["P4 KPI"]
+  P4 --> P5["P5 Evaluation"]
+  P5 --> P6["P6 Lock/Audit"]
+  P6 --> P7["P7 Dashboard/Report"]
+  P7 --> P8["P8 Integration facade"]
+  P8 --> P9["P9 Production readiness"]
+
+  I1["Resolve 05-HD INC-01"] -. gate .-> P4
+  I2["Confirm non-manager formula"] -. gate .-> P4
+  I3["Configure QĐ39 comparison groups"] -. gate .-> P5
 ```
 
-## Source-derived vs candidate
+## MVP cut line for interview
 
-| Feature | Classification |
-|---|---|
-| Four departments/functions/responsibilities | Source-derived: QĐ01 |
-| Head/Chief Office assigns member linked to position | Source-derived responsibility: QĐ01 Điều 7.2; software exclusivity TBD |
-| Modular monolith, web UI, outbox, evidence store | Candidate design |
-| Task/result/product schema | Candidate pending 05/Excel |
-| KPI formula | Must be source-derived from 05; blocked |
-| State machine/classification | Must be source-derived from 39; blocked |
-| MFA/audit/architecture layers | Source constraint QĐ342; implementation design local |
-| API mapping/connector | Source constraints 348/308/07; exact contract 607 TBD |
+If time is short, finish **P1–P7** with one happy path and one exception path. P8 can be a diagram + fake port. P9 remains a readiness plan.
 
-## Không over-engineer
+### Must-show scenarios
 
-- Không microservices/event sourcing/general rules engine.
-- Không tích hợp thật hay dữ liệu thật.
-- Không full document-management system; chỉ evidence metadata + secure object reference.
-- Một happy path + return-for-correction + permission-denied + audit trail là đủ mạnh để bảo vệ.
+1. head assigns work;
+2. staff submits result/product;
+3. system calculates explainable score;
+4. reviewer returns once, then reviews;
+5. final authority decides;
+6. period locks;
+7. attempted edit is denied and audited;
+8. dashboard updates;
+9. source/rule version is visible.
+
+## Explicit non-goals
+
+- microservices;
+- generic rule DSL;
+- event sourcing;
+- full DMS;
+- real state-secret data;
+- real LGSP integration;
+- complex ML/AI decision-making.
+
+These do not improve the competency-test signal enough to justify risk/complexity.

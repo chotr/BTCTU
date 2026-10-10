@@ -1,29 +1,52 @@
-# Đề bài và ranh giới triển khai
+# Assignment and delivery boundary
 
-## Mục tiêu
+## Original problem
 
-Xây dựng hồ sơ phân tích và thiết kế cho bài test quản lý nhiệm vụ/KPI của Ban Tổ chức Tỉnh ủy, đủ rõ để:
+The competency test asks the candidate to:
 
-- truy vết từ nguồn → business rule → domain → feature;
-- demo một vertical slice end-to-end;
-- giải thích được quyết định và giới hạn trước nhà tuyển dụng.
+1. build quantitative KPI/OKR criteria for individuals and departments by month/quarter/year;
+2. build software for staff/department/position, tasks/KPI, result tracking, automatic scoring/classification, aggregation, permissions/approval, history, search/report/export, dashboard and draft reports/decisions;
+3. determine the information-system security level with legal/practical basis and propose security/cybersecurity/data/state-secret controls.
 
-## In scope
+The candidate may add appropriate useful/creative functions.
 
-`organization → position/employee → assignment → result/product/evidence → KPI → self evaluation → review → classification → approval → lock → audit → dashboard`
+## Project goal
 
-## Nguyên tắc bằng chứng
+Build a **defensible prototype** and engineering dossier that can trace:
 
-- `[FACT]`: nguồn nói trực tiếp; phải ghi văn bản và điều/phụ lục/trang khi xác định được.
-- `[INFERENCE]`: cách hiểu hoặc lựa chọn thiết kế phần mềm.
-- `[TBD]`: chưa đủ căn cứ; không được biến thành rule.
-- Excel là operational/master-data draft, không phải văn bản quy phạm nếu không có tài liệu xác lập giá trị pháp lý.
-- Không code feature trong phase tài liệu này.
+```text
+source
+→ business fact/rule
+→ domain model
+→ architecture decision
+→ feature/test/demo
+```
 
-## Definition of done
+## MVP vertical slice
 
-1. Mỗi nguồn có trang phân tích và trạng thái kiểm chứng.
-2. Các diagram chính render được bằng Mermaid trên GitHub.
-3. Mỗi feature MVP có `source basis` hoặc được ghi rõ `candidate design choice`.
-4. Mọi rule KPI/classification chưa có bản gốc 05-HD/TU và 39-QĐ/TU đều bị khóa ở trạng thái TBD.
+`organization → person/position → work catalog → assignment → result/product/evidenceRef → KPI → self evaluation → review → classification → final decision → lock → audit → dashboard/report`
 
+## Evidence convention
+
+- `[FACT]`: source says it directly.
+- `[INFERENCE]`: candidate interpretation/design.
+- `[TBD]`: insufficient basis/needs authority.
+- `[SOURCE-INCONSISTENCY]`: source itself conflicts or appears arithmetically inconsistent.
+
+## Delivery rules
+
+- Excel is operational/master-data draft unless approval/effect is proven.
+- A legal/security requirement is not “implemented” merely because a diagram mentions it.
+- Prototype uses synthetic data.
+- Real protected data/LGSP integration is out of MVP until approved.
+- Department/tập thể and person/cá nhân are separate evaluation subjects.
+- Source discrepancy and non-manager KPI formula must remain visible limitations until resolved.
+
+## Definition of done for design phase
+
+1. Core source files reviewed and registered.
+2. Source→rule→design traceability matrix exists.
+3. Business/domain/C4/ERD/security/integration diagrams exist.
+4. Known/unknown/source inconsistency register is current.
+5. Implementation plan has dependency gates.
+6. Demo story clearly distinguishes implemented, designed, and TBD capabilities.

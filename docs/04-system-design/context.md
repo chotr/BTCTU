@@ -1,37 +1,50 @@
-# C4 context và container
+# System context and containers
+
+## Context [INFERENCE based on source roles]
 
 ```mermaid
-C4Context
-  title BTCTU Task & Evaluation — Context
-  Person(staff, "Công chức/người lao động")
-  Person(head, "Trưởng phòng/Chánh Văn phòng")
-  Person(leader, "Lãnh đạo/cấp có thẩm quyền")
-  System(app, "Task & Evaluation System", "Prototype phân công, kết quả, KPI, đánh giá")
-  System_Ext(identity, "Identity Provider", "TBD")
-  System_Ext(tcxdd, "HTTT TCXDĐ / Integration Platform", "Future-state")
-  Rel(staff, app, "Cập nhật kết quả, tự đánh giá")
-  Rel(head, app, "Phân công, review")
-  Rel(leader, app, "Phê duyệt, báo cáo")
-  Rel(app, identity, "Xác thực/MFA")
-  Rel(app, tcxdd, "API/đồng bộ được phê duyệt")
+flowchart LR
+  STAFF["Staff / member"]
+  HEAD["Department head / Chánh VP"]
+  AUTH["Competent authority"]
+  APP["BTCTU Task & Evaluation System"]
+  IDP["Identity Provider\nProduction TBD"]
+  TCXDD["HTTT TCXDĐ / LGSP\nFuture approved integration"]
+  DMS["Approved evidence/DMS\nFuture/TBD"]
+
+  STAFF -->|"task result / self evaluation"| APP
+  HEAD -->|"assignment / review in authorized scope"| APP
+  AUTH -->|"final decision / reports"| APP
+  APP -. "authentication / MFA" .-> IDP
+  APP -. "scoped canonical data" .-> TCXDD
+  APP -. "authorized evidence reference" .-> DMS
 ```
+
+## Application containers [candidate]
 
 ```mermaid
-C4Container
-  Person(user, "Authorized user")
-  System_Boundary(s, "BTCTU app") {
-    Container(web, "Web UI", "Responsive web")
-    Container(api, "Application API", "Modular monolith")
-    Container(worker, "Worker", "Jobs/outbox/report")
-    ContainerDb(db, "Relational DB", "Transactional + audit metadata")
-    Container(files, "Secure evidence store", "Encrypted objects")
-  }
-  Rel(user, web, "HTTPS")
-  Rel(web, api, "HTTPS/JSON")
-  Rel(api, db, "SQL")
-  Rel(api, files, "Signed/authorized access")
-  Rel(api, worker, "Outbox/jobs")
+flowchart LR
+  U["Authorized internal user"]
+  WEB["Web UI\nNext.js"]
+  API["Application\nModular monolith"]
+  WORKER["Worker\nreports/jobs/outbox"]
+  DB[("Relational DB\ntransactional data + snapshots")]
+  AUD[("Audit store/read model")]
+  EVID["Evidence boundary\nsynthetic in demo; approved DMS/store later"]
+  CONN["Integration adapter\nfake in MVP"]
+
+  U -->|"HTTPS"| WEB
+  WEB --> API
+  API --> DB
+  API --> AUD
+  API --> EVID
+  API --> CONN
+  API --> WORKER
 ```
 
-Modular monolith là `[INFERENCE]`: đủ rõ boundary, ít vận hành hơn microservices cho bài test.
+## Boundary notes
 
+- “Head” does not automatically equal final approver; authority is resolved by source rules.
+- Real state-secret documents are outside prototype scope.
+- Real external integration is disabled until production gates are met.
+- The container split is an engineering design; QĐ342 supplies architectural/security constraints, not these exact deployable components.

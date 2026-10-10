@@ -1,57 +1,52 @@
-# Tài liệu dự án — Bản đồ điều hướng
+# BTCTU project documentation
 
-Trang này là cổng vào toàn bộ hồ sơ phân tích và thiết kế của dự án. Mục tiêu kép:
+This is the canonical documentation tree for the competency-test project.
 
-1. **Làm việc nhóm**: mọi người tìm đúng tài liệu, hiểu trạng thái fact / inference / TBD của từng mục.
-2. **Bảo vệ trước nhà tuyển dụng**: thể hiện chuỗi suy luận `văn bản → phân tích → business rule → domain → architecture → dữ liệu → code → demo` chứ không phải "đọc requirement rồi code CRUD".
+## Recommended reading order
 
-## Thứ tự đọc
+| # | Area | Start here | Answers |
+|---|---|---|---|
+| 00 | Overview | [00-overview.md](00-overview.md) | What is the project and what is still unresolved? |
+| 01 | Requirements | [01-requirements/assignment.md](01-requirements/assignment.md) | What must the test deliver? |
+| 02 | Source analysis | [02-source-analysis/README.md](02-source-analysis/README.md) | What does each source actually say? |
+| 03 | Business | [03-business/domain-map.md](03-business/domain-map.md) | How do organization, task, KPI and evaluation fit together? |
+| 03 | Traceability | [03-business/traceability-matrix.md](03-business/traceability-matrix.md) | Which source justifies each design capability? |
+| 04 | System design | [04-system-design/context.md](04-system-design/context.md) | C4/domain/ERD/permissions/audit/integration/security |
+| 05 | ADR | [05-adr/README.md](05-adr/README.md) | Why were key architecture choices made? |
+| 06 | Plan | [06-plan/implementation-plan.md](06-plan/implementation-plan.md) | What should be implemented, with which stack, and in what order? |
+| 07 | Demo | [07-demo/demo-plan.md](07-demo/demo-plan.md) | How to demonstrate the vertical slice? |
+| 08 | Defense | [08-presentation/defense-story.md](08-presentation/defense-story.md) | How to explain the project to interviewers? |
 
-| # | Tài liệu | Câu hỏi nó trả lời |
-|---|---|---|
-| 00 | [00-overview.md](00-overview.md) | Dự án này là gì, đang ở đâu, giới hạn ở đâu? |
-| 01 | [01-source-analysis/](01-source-analysis/README.md) | Văn bản nào đã phân tích, rút ra được gì? |
-| 02 | [02-business-domain/](02-business-domain/organization-model.md) | Miền nghiệp vụ: tổ chức, năng lực, thuật ngữ? |
-| 03 | [03-architecture/](03-architecture/architecture-overview.md) | Hệ thống được đề xuất kiến trúc thế nào? |
-| 04 | [04-adr/](04-adr/README.md) | Những quyết định kiến trúc nào, vì sao? |
-| 05 | [05-assumptions-and-unknowns.md](05-assumptions-and-unknowns.md) | Đang giả định gì, còn hỏi gì, chờ tài liệu nào? |
-| 06 | [06-implementation-plan.md](06-implementation-plan.md) | Làm gì trước, làm gì sau, phụ thuộc gì? |
-| 07 | [07-demo-and-presentation.md](07-demo-and-presentation.md) | Trình bày và demo dự án thế nào khi bảo vệ? |
+## Evidence labels
 
-## Quy ước đánh dấu (áp dụng toàn bộ repo)
+- **FACT** — source explicitly supports the statement.
+- **INFERENCE** — candidate software/domain interpretation.
+- **TBD** — needs clarification/authority.
+- **SOURCE INCONSISTENCY** — source itself conflicts or contains a suspected defect.
 
-Mọi phát biểu phân tích đều mang đúng một trong ba nhãn:
+Never promote INFERENCE/TBD to FACT.
 
-| Nhãn | Ý nghĩa | Ví dụ |
-|---|---|---|
-| `[FACT]` | Được văn bản nguồn (QĐ01…) xác nhận | "Ban có 4 phòng" |
-| `[INFERENCE]` | Suy luận/thiết kế của nhóm từ fact, chưa có trong văn bản | "Cần module Assignment" |
-| `[TBD]` | Chưa thể xác định, cần tài liệu hoặc quyết định sau | "Công thức KPI?" |
+## Core source findings
 
-Quy tắc cứng:
+- **QĐ01:** organization, department responsibilities and assignment responsibility.
+- **05-HD/TU:** 30/70 evaluation, work/product catalog, A/B/C/D KPI for leaders and quarterly stages.
+- **39-QĐ/TU:** score bands + mandatory conditions + evaluation authority.
+- **QĐ342:** contextual authorization, audit, security, canonical architecture and AI restrictions.
+- **QĐ308/607 + QĐ348/HD07:** canonical data + real-integration contract/gates.
+- **NĐ85/63/165/278:** information-system level, state-secret boundary and data governance.
+- **Excel files:** useful operational seed/draft data, not automatically official rules.
 
-- Không bao giờ ghi một suy luận dưới nhãn `[FACT]`.
-- Khi văn bản "nhắc tới" nhưng không "định nghĩa" một khái niệm, ghi rõ điều đó (ví dụ: *vị trí việc làm*).
-- Mọi dòng dữ liệu rút từ văn bản phải chỉ về nguồn (số hiệu văn bản; số điều khoản khi đã đối chiếu).
+## Most important source issue
 
-## Bộ hồ sơ hiện hành
+05-HD/TU contains an arithmetic mismatch in its worked KPI example. The repo treats this as a formal source issue and **does not silently hard-code a correction**.
 
-| Nhóm | Nội dung |
-|---|---|
-| [01-requirements](01-requirements/assignment.md) | Đề bài, phạm vi và tiêu chí hoàn thành |
-| [02-source-analysis](02-source-analysis/README.md) | Ma trận nguồn, phân tích từng văn bản theo FACT / INFERENCE / TBD |
-| [03-business](03-business/domain-map.md) | Domain, traceability, task/product/KPI, workflow và known unknowns |
-| [04-system-design](04-system-design/context.md) | C4, domain model, ERD, permissions, audit, integration và security |
-| [05-adr](05-adr/README.md) | Các quyết định kiến trúc mới |
-| [06-plan](06-plan/implementation-plan.md) | Kế hoạch vertical slice, tech stack và thứ tự code |
-| [07-demo](07-demo/demo-plan.md) | Kịch bản demo end-to-end |
-| [08-presentation](08-presentation/defense-story.md) | Câu chuyện bảo vệ dự án |
+See [02-source-analysis/hd05.md](02-source-analysis/hd05.md) and [03-business/known-unknowns.md](03-business/known-unknowns.md).
 
-Các file cũ trong `01-source-analysis` đến `07-demo-and-presentation.md` được giữ làm lịch sử phân tích QĐ01; bộ đánh số ở trên là cấu trúc chính từ lần cập nhật này.
+Code planning details:
 
-## Ranh giới quan trọng nhất của bộ tài liệu
+- [Technical stack](06-plan/technical-stack.md)
+- [Milestone and ticket plan](06-plan/code-plan.md)
 
-> QĐ01 cung cấp **Organization + Functions + Responsibilities + cơ cấu thành phần + 1 quy tắc phân công**.
-> QĐ01 **chưa** cung cấp Task model, danh mục vị trí việc làm, công thức KPI, hay workflow đánh giá.
+## Source-file handling
 
-Mọi thiết kế trong repo tôn trọng ranh giới này: phần nào chưa có căn cứ thì để placeholder, không bịa nghiệp vụ.
+Original PDFs/XLSX are not committed by default because publication permission may be unclear. See [sources/README.md](sources/README.md).

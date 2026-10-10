@@ -1,32 +1,54 @@
-# docs/sources — File văn bản gốc
+# Original source files
 
-Nơi đặt file PDF/bản scan của các văn bản nghiệp vụ dùng cho phân tích.
+The analysis was produced from source files supplied in the working conversation/workspace.
 
-## Cảnh báo trước khi commit
+## Public-repository policy
 
-- Chỉ đưa file vào repo khi **được phép chia sẻ công khai**. Văn bản nội bộ của cơ quan cần xác nhận quyền công bố trước.
-- Nếu không thể công khai: giữ file ngoài repo, ghi đường dẫn nội bộ vào bảng đăng ký dưới đây, và không commit nội dung.
+Original PDFs/XLSX are **not automatically committed** here.
 
-## Quy ước đặt tên
+Reasons:
 
-```text
-<số-hiệu>-<mô-tả-ngắn>.pdf
-Ví dụ: 01-QD-BTCTU-chuc-nang-nhiem-vu-co-cau-to-chuc.pdf
-```
+- redistribution/publication permission may be unclear;
+- some workbooks contain names/operational assignments;
+- future documents may contain protected or sensitive data.
 
-## Bảng đăng ký file
+The public repo therefore stores:
 
-| ID nguồn | Văn bản | File | Trạng thái |
-|---|---|---|---|
-| SRC-01 | 01-QĐ/BTCTU — Chức năng, nhiệm vụ và cơ cấu tổ chức | (chưa có) | ⏳ Chờ file |
-| SRC-02 | 05-HD/TU | (chưa có) | ⏳ Chờ tài liệu |
-| SRC-03 | 39-QĐ/TU | (chưa có) | ⏳ Chờ tài liệu |
-| SRC-04 | Văn bản an ninh / BVCTNB | (chưa xác định) | ⏳ Chờ tài liệu |
-| SRC-05 | Văn bản CNTT / chuyển đổi số | (chưa xác định) | ⏳ Chờ tài liệu |
+- source identity;
+- page/section references;
+- derived FACT/INFERENCE/TBD analysis;
+- no unnecessary source-file content.
 
-## Sau khi đưa file vào repo
+If permission to publish is explicitly confirmed, source files can be added with checksum/version metadata.
 
-1. Đối chiếu các trích dẫn trong [QD01-chuc-nang-nhiem-vu-co-cau-to-chuc.md](../01-source-analysis/QD01-chuc-nang-nhiem-vu-co-cau-to-chuc.md) với toàn văn.
-2. Điền số điều khoản vào các dòng `[TBD: đối chiếu]` và vào [responsibility-catalog.md](../02-business-domain/responsibility-catalog.md).
-3. Chuyển nhãn các mục đã đối chiếu thành `[FACT]` và cập nhật [05-assumptions-and-unknowns.md](../05-assumptions-and-unknowns.md) (TBD-01, TBD-02).
+## Reviewed source inventory
 
+See [../02-source-analysis/README.md](../02-source-analysis/README.md).
+
+Core files reviewed include:
+
+- 01-QĐ/BTCTU;
+- 05-HD/TU;
+- 39-QĐ/TU;
+- 342-QĐ/BTCTW;
+- 348-QĐ/BTCTW + local 1638-CV/TU rollout bundle;
+- 607-QĐ/BTCTW;
+- 308-QĐ/VPTW;
+- 07-HD/VPTW;
+- NĐ85/2016;
+- NĐ63/2026 + appendix;
+- NĐ165/2025;
+- NĐ278/2025;
+- NQ11/TU;
+- two operational Excel workbooks;
+- original competency-test assignment and recruitment-context documents.
+
+## Source integrity rule
+
+Before production use, a source registry should additionally store:
+
+- document checksum;
+- version/effective date;
+- superseded-by relationship;
+- approval/review timestamp;
+- analyst/reviewer.

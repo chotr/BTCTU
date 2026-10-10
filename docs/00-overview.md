@@ -1,52 +1,67 @@
-# 00 — Tổng quan dự án
+# 00 — Project overview
 
-## 1. Bài toán
+## Problem
 
-Ban Tổ chức Tỉnh ủy (BTCTU) gồm 4 đơn vị với các chức năng, nhiệm vụ được quy định tại văn bản 01-QĐ/BTCTU `[FACT]`. Mỗi phòng có Trưởng phòng / Chánh Văn phòng chịu trách nhiệm phân công nhiệm vụ cụ thể cho thành viên, gắn với vị trí việc làm `[FACT]`. Cơ quan cần một hệ thống hỗ trợ:
+Build an internal BTCTU system for task execution and KPI/evaluation, while respecting fragmented source rules about organization, quarterly assessment, classification, data governance, integration and security.
 
-- lưu trữ cơ cấu tổ chức và phạm vi nhiệm vụ của từng phòng;
-- phân công công việc giữa lãnh đạo phòng và thành viên;
-- theo dõi tiến độ, báo cáo, và về sau là đánh giá mức độ hoàn thành (KPI).
+## What is now understood
 
-## 2. Mục tiêu
-
-- Chuyển các quy định nghiệp vụ thành mô hình dữ liệu và hệ thống khớp thực tế cơ quan.
-- Giữ vết nguồn gốc: mọi quy tắc trong hệ thống truy được về văn bản ban hành (traceability).
-- Không phát minh nghiệp vụ: chưa có căn cứ thì đánh dấu `[TBD]`, không điền bừa.
-
-## 3. Phạm vi hiện tại
-
-Chỉ có **một nguồn đã được phân tích**: `01-QĐ/BTCTU — Chức năng, nhiệm vụ và cơ cấu tổ chức các phòng thuộc BTCTU` `[FACT]`.
-
-Do đó phạm vi thiết kế hiện dừng ở tầng **tổ chức + trách nhiệm + phân công sơ khai**. Các phần KPI, chấm điểm, xếp loại, phê duyệt đang ở dạng placeholder, chờ 05-HD/TU và 39-QĐ/TU.
-
-## 4. Ngoài phạm vi (hiện tại)
-
-- Công thức / trọng số / thang điểm KPI — chưa có nguồn `[TBD]`
-- Workflow submit → review → approve — chưa có nguồn `[TBD]`
-- Danh mục vị trí việc làm — QĐ01 nhắc nhưng không liệt kê `[TBD]`
-- Code ứng dụng — chưa bắt đầu; nhánh này chỉ chứa tài liệu
-
-## 5. Cách sử dụng bộ tài liệu
-
-1. Bắt đầu từ [docs/README.md](README.md) để nắm bản đồ.
-2. Đọc [01-source-analysis](01-source-analysis/README.md) để thấy bằng chứng trích từ văn bản.
-3. Đọc [02-business-domain](02-business-domain/organization-model.md) để thấy mô hình tổ chức/nghiệp vụ.
-4. Đọc [03-architecture](03-architecture/architecture-overview.md) để thấy thiết kế hệ thống sơ bộ.
-5. Đối chiếu [05-assumptions-and-unknowns.md](05-assumptions-and-unknowns.md) trước khi đặt câu hỏi.
-
-## 6. Giá trị với nhà tuyển dụng
-
-Bộ tài liệu chứng minh quy trình làm việc thực sự của ứng viên:
-
-```text
-Văn bản nghiệp vụ
-   → Trích xuất fact
-   → Tách fact / inference / TBD
-   → Business rule
-   → Domain model
-   → Architecture
-   → Data model
-   → (sau này) Code & Demo
+```mermaid
+flowchart LR
+  Q1["QĐ01"] --> ORG["Organization / responsibility"]
+  H5["05-HD"] --> KPI["Work / product / KPI"]
+  Q39["39-QĐ"] --> EV["Classification / authority"]
+  Q342["QĐ342"] --> GOV["Access / audit / security"]
+  DICT["QĐ308 + QĐ607"] --> DATA["Canonical data / API"]
+  CONN["QĐ348 + HD07"] --> INT["Integration gates"]
+  SEC["NĐ85/63/165/278"] --> SG["Security/data governance"]
 ```
 
+The project is no longer blocked by “missing documents”; the core sources have been reviewed.
+
+## What remains unresolved
+
+- official JobPosition master;
+- approved work-catalog effective version;
+- 05-HD arithmetic inconsistency;
+- non-manager KPI formula;
+- month→quarter→year aggregation;
+- QĐ39 excellent-rating comparison group;
+- production data classification / formal HTTT level;
+- exact real integration scope.
+
+## Product direction [INFERENCE]
+
+Prototype:
+
+- internal web app;
+- modular monolith;
+- relational DB;
+- synthetic data;
+- versioned work/scoring/classification rules;
+- contextual permission + audit;
+- fake connector.
+
+Production architecture remains subject to formal security/data/integration approvals.
+
+## Main delivery path
+
+```text
+Source analysis
+→ Traceability
+→ Business/domain model
+→ System design
+→ Vertical-slice implementation
+→ Demo
+→ Production-readiness plan
+```
+
+## Interview value
+
+The project demonstrates:
+
+- requirements/business analysis from regulations;
+- ability to detect ambiguity/source defects;
+- domain and data modeling;
+- architecture/security tradeoffs;
+- explicit separation of “known”, “designed” and “not yet authorized”.
