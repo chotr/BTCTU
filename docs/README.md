@@ -9,6 +9,7 @@ This is the canonical documentation tree for the competency-test project.
 | 00 | Overview | [00-overview.md](00-overview.md) | What is the project and what is still unresolved? |
 | 01 | Requirements | [01-requirements/assignment.md](01-requirements/assignment.md) | What must the test deliver? |
 | 02 | Source analysis | [02-source-analysis/README.md](02-source-analysis/README.md) | What does each source actually say? |
+| 02 | Audit reconciliation | [02-source-analysis/audit-reconciliation.md](02-source-analysis/audit-reconciliation.md) | Which stale claims were corrected, and which TBDs remain? |
 | 03 | Business | [03-business/domain-map.md](03-business/domain-map.md) | How do organization, task, KPI and evaluation fit together? |
 | 03 | Traceability | [03-business/traceability-matrix.md](03-business/traceability-matrix.md) | Which source justifies each design capability? |
 | 04 | System design | [04-system-design/context.md](04-system-design/context.md) | C4/domain/ERD/permissions/audit/integration/security |
