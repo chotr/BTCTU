@@ -1,27 +1,9 @@
-# SRC-13..15 — NQ11 và dữ liệu vận hành dạng Excel
+# SRC-14 — Dữ liệu vận hành dạng Excel
 
-## A. NQ 11-NQ/TU — chiến lược, không phải scoring spec
+Hai workbook dưới đây đã được cung cấp và đã được đọc để hiểu dữ liệu vận hành.
+Chúng không mặc nhiên là quy định pháp lý hoặc bộ quy tắc đã được phê duyệt.
 
-### Source identity
-
-- **File:** `11-NQ-TU_dadongdau.pdf`
-- **Số hiệu:** 11-NQ/TU
-- **Ngày:** 10/9/2026
-- **Cơ quan:** Ban Chấp hành Đảng bộ tỉnh Đắk Lắk
-- Chủ đề: nâng cao năng lực lãnh đạo, sức chiến đấu của tổ chức đảng và chất lượng đội ngũ đảng viên trong giai đoạn mới.
-
-### FACT
-
-Nghị quyết đưa mục tiêu/chỉ tiêu giai đoạn 2026–2030 và yêu cầu chuyển đổi số như số hóa/cập nhật hồ sơ, kết nối cơ sở dữ liệu, sử dụng ứng dụng số và số hóa quy trình nghiệp vụ.
-
-### Design impact
-
-- Có thể dùng làm **strategic objective / OKR context**.
-- Không dùng NQ11 để tự sinh công thức chấm KPI cá nhân nếu tài liệu không quy định.
-
----
-
-## B. Excel cây phân công nhiệm vụ
+## A. Excel cây phân công nhiệm vụ
 
 ### Source
 
@@ -49,7 +31,7 @@ Dữ liệu thể hiện cây tổ chức/phân công từ lãnh đạo Ban xu�
 
 ---
 
-## C. Excel danh mục công việc
+## B. Excel danh mục công việc
 
 ### Source
 
