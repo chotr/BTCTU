@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "@phosphor-icons/react";
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
 import {
   CLASS_LABELS,
   EVAL_STATUS_LABELS,
@@ -177,6 +177,14 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
   );
 }
 
+export function Input({ className = "", ...rest }: InputHTMLAttributes<HTMLInputElement>) {
+  return <input className={`h-8 rounded-ctl bg-fill-2 px-2.5 text-[13px] text-ink outline-none placeholder:text-ink-3 focus:ring-2 focus:ring-accent-100 ${className}`} {...rest} />;
+}
+
+export function Select({ className = "", children, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) {
+  return <select className={`h-8 rounded-ctl bg-fill-2 px-2.5 text-[13px] text-ink outline-none focus:ring-2 focus:ring-accent-100 ${className}`} {...rest}>{children}</select>;
+}
+
 export function Avatar({ name, size = "sm" }: { name: string; size?: "sm" | "md" | "lg" }) {
   const sizes = { sm: "h-6 w-6 text-[10px]", md: "h-9 w-9 text-[12px]", lg: "h-12 w-12 text-[15px]" } as const;
   return (
@@ -208,12 +216,13 @@ export function Callout({
   title,
   children,
 }: {
-  tone?: "accent" | "warn" | "danger" | "ok";
+  tone?: "neutral" | "accent" | "warn" | "danger" | "ok";
   icon?: ReactNode;
   title: string;
   children?: ReactNode;
 }) {
   const tones = {
+    neutral: "bg-fill-2 text-ink-2",
     accent: "bg-accent-50 text-accent-600",
     warn: "bg-warn-50 text-warn-600",
     danger: "bg-danger-50 text-danger-600",

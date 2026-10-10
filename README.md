@@ -9,12 +9,22 @@ Competency-test project for analyzing and prototyping an internal **task → KPI
 | Core source analysis | Reviewed: QĐ01, 05-HD, QĐ39, QĐ342, QĐ348, QĐ308, QĐ607, HD07, NĐ85/63/165/278, NQ11 and two Excel files |
 | Business/domain design | Ready for MVP implementation, with explicit TBD gates |
 | System architecture | Web modular monolith candidate; C4/ERD/permissions/audit/security/integration documented |
-| App code | Next phase |
+| App code | Next.js UI + Hono/Cloudflare Worker mock-first API |
 | Production approval | Not claimed; security/data/integration gates remain |
 
 ## Start here
 
 Read [docs/README.md](docs/README.md).
+
+## Run the local prototype
+
+```bash
+pnpm install
+pnpm --filter @btctu/api dev      # http://localhost:8787
+pnpm --filter @btctu/web dev      # http://localhost:3000
+```
+
+The API source is in [apps/api](apps/api/README.md). It currently uses synthetic, request-scoped fixtures so the UI can be connected before D1/Drizzle, R2, Cloudflare Access and Queues are provisioned.
 
 Key documents:
 

@@ -34,6 +34,8 @@ export default function TaskDetailPage() {
     );
   }
 
+  const taskId = task.id;
+
   const assignee = people.find((p) => p.id === task.assigneeId);
   const assigner = people.find((p) => p.id === task.assignerId);
   const dept = departments.find((d) => d.id === task.departmentId);
@@ -44,7 +46,7 @@ export default function TaskDetailPage() {
   const locked = task.status === "LOCKED";
 
   async function saveResult(submit: boolean) {
-    await api.saveResult(task.id, {
+    await api.saveResult(taskId, {
       quantity: Number(quantity) || 1,
       product,
       qualityLevel: quality,

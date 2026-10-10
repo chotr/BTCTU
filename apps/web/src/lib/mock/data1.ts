@@ -22,6 +22,7 @@ export const DEPARTMENTS: Department[] = [
     id: "d1",
     code: "TCĐ-ĐV",
     name: "Phòng Tổ chức đảng, đảng viên",
+    shortName: "Tổ chức Đảng",
     functionText:
       "Tham mưu, giúp việc lãnh đạo Ban về công tác tổ chức đảng, công tác đảng viên và nghiệp vụ công tác đảng viên.",
     headId: "p1head",
@@ -31,6 +32,7 @@ export const DEPARTMENTS: Department[] = [
     id: "d2",
     code: "TCCB",
     name: "Phòng Tổ chức cán bộ",
+    shortName: "Tổ chức cán bộ",
     functionText:
       "Tham mưu, giúp việc lãnh đạo Ban về công tác tổ chức, cán bộ; công tác chính sách cán bộ (trừ các nhiệm vụ đã giao cho Văn phòng).",
     headId: "u-head",
@@ -40,6 +42,7 @@ export const DEPARTMENTS: Department[] = [
     id: "d3",
     code: "BVCTNB",
     name: "Phòng Bảo vệ chính trị nội bộ",
+    shortName: "Bảo vệ CTNB",
     functionText: "Tham mưu, giúp việc lãnh đạo Ban về công tác bảo vệ chính trị nội bộ.",
     headId: "p3head",
     responsibilityIds: ["r3a", "r3b", "r3c"],
@@ -48,6 +51,7 @@ export const DEPARTMENTS: Department[] = [
     id: "d4",
     code: "VP",
     name: "Văn phòng",
+    shortName: "Văn phòng",
     functionText:
       "Tham mưu, giúp việc lãnh đạo Ban trong công tác tổ chức, điều hành công việc nội bộ; đầu mối tổng hợp, văn thư lưu trữ và xử lý công việc hằng ngày.",
     headId: "p4chief",

@@ -13,6 +13,7 @@ export interface Department {
   id: string;
   code: string;
   name: string;
+  shortName: string;
   functionText: string;
   headId: string;
   responsibilityIds: string[];

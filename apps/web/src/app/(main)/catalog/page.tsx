@@ -1,6 +1,6 @@
 "use client";
 
-import { FileXlsx, Info, Upload } from "@phosphor-icons/react";
+import { FileXls, Info, Upload } from "@phosphor-icons/react";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { fmtNum } from "@/lib/format";
@@ -89,7 +89,7 @@ export default function CatalogPage() {
       </Card>
 
       <p className="mt-3 flex items-center gap-1.5 text-[11px] text-ink-3">
-        <FileXlsx size={13} /> Nguồn nhập: Excel cây phân công nhiệm vụ + danh mục công việc — operational draft, chưa phê duyệt.
+        <FileXls size={13} /> Nguồn nhập: Excel cây phân công nhiệm vụ + danh mục công việc — operational draft, chưa phê duyệt.
       </p>
     </div>
   );
