@@ -18,7 +18,7 @@ a new source of business rules.
 | Domain map and implementation plan were blocked on “missing 05/39” | Both sources are now present in the dependency model. Remaining gates are narrowed to explicit business clarifications. | [domain map](../03-business/domain-map.md), [implementation plan](../06-plan/implementation-plan.md) |
 | Legacy and canonical documentation trees coexisted | The canonical tree is `00` through `08`; duplicate legacy trees/files were removed. | [documentation index](../README.md) |
 
-## SOURCE INCONSISTENCY retained
+## SOURCE INCONSISTENCY retained — worked-example arithmetic inconsistency
 
 The worked example in 05-HD/TU prints:
 
@@ -26,14 +26,15 @@ The worked example in 05-HD/TU prints:
 30 + (82.3% × 70) = 80.3
 ```
 
-The arithmetic result is `87.61`. The project does not silently choose either
-number as an official rule. It records the discrepancy, keeps scoring rules
-versioned and requires business confirmation before claiming an official
-implementation.
+The arithmetic result is `87.61`. This is specifically an inconsistency in the
+worked example, not evidence that the official formula or the source as a whole
+is wrong. The project does not silently choose either number as an official
+rule. It records the discrepancy, keeps scoring rules versioned and requires
+business confirmation before claiming an official implementation.
 
 ## Remaining TBDs after reconciliation
 
-- approved treatment of the 05-HD/TU arithmetic inconsistency;
+- approved treatment of the 05-HD/TU worked-example arithmetic inconsistency;
 - official scoring formula for staff who are not leaders/managers;
 - exact BTCTU comparison group for the QĐ39 excellent-rating cap;
 - authority/effective version of the two operational workbooks;

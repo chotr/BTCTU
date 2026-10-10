@@ -87,4 +87,5 @@ Giữ lịch sử version; Task cũ trỏ đúng catalog version đã dùng.
 
 - Chủ thể/cấp có thẩm quyền phê duyệt hai workbook.
 - Ngày hiệu lực và version chính thức.
-- Công thức hệ số/điểm nào được giữ nguyên sau khi xử lý mâu thuẫn nguồn 05-HD.
+- Công thức hệ số/điểm nào được giữ nguyên sau khi xử lý
+  `worked-example arithmetic inconsistency` trong 05-HD.
