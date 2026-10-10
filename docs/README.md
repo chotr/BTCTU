@@ -13,7 +13,7 @@ This is the canonical documentation tree for the competency-test project.
 | 03 | Traceability | [03-business/traceability-matrix.md](03-business/traceability-matrix.md) | Which source justifies each design capability? |
 | 04 | System design | [04-system-design/context.md](04-system-design/context.md) | C4/domain/ERD/permissions/audit/integration/security |
 | 05 | ADR | [05-adr/README.md](05-adr/README.md) | Why were key architecture choices made? |
-| 06 | Plan | [06-plan/implementation-plan.md](06-plan/implementation-plan.md) | What should be implemented, and in what order? |
+| 06 | Plan | [06-plan/implementation-plan.md](06-plan/implementation-plan.md) | What should be implemented, with which stack, and in what order? |
 | 07 | Demo | [07-demo/demo-plan.md](07-demo/demo-plan.md) | How to demonstrate the vertical slice? |
 | 08 | Defense | [08-presentation/defense-story.md](08-presentation/defense-story.md) | How to explain the project to interviewers? |
 
@@ -41,6 +41,11 @@ Never promote INFERENCE/TBD to FACT.
 05-HD/TU contains an arithmetic mismatch in its worked KPI example. The repo treats this as a formal source issue and **does not silently hard-code a correction**.
 
 See [02-source-analysis/hd05.md](02-source-analysis/hd05.md) and [03-business/known-unknowns.md](03-business/known-unknowns.md).
+
+Code planning details:
+
+- [Technical stack](06-plan/technical-stack.md)
+- [Milestone and ticket plan](06-plan/code-plan.md)
 
 ## Source-file handling
 
