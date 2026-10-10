@@ -18,7 +18,7 @@ production rollout has been approved.
 | ID | Source/file | Role in project | Evidence status |
 |---|---|---|---|
 | SRC-01 | [01-QĐ/BTCTU](qd01.md) | organization, functions, responsibilities, assignment responsibility | Reviewed from supplied PDF |
-| SRC-02 | [05-HD/TU](hd05.md) | work/product catalog, KPI, quarterly evaluation | Reviewed from supplied PDF; one arithmetic SOURCE INCONSISTENCY recorded |
+| SRC-02 | [05-HD/TU](hd05.md) | work/product catalog, KPI, quarterly evaluation | Reviewed from supplied PDF; one worked-example arithmetic inconsistency recorded |
 | SRC-03 | [39-QĐ/TU](qd39.md) | classification, conditions, authority, workflow | Reviewed from supplied PDF |
 | SRC-04 | [342-QĐ/BTCTW](qd342.md) | architecture, identity, access, audit, data/security, AI | Reviewed from supplied PDF |
 | SRC-05 | [348-QĐ/BTCTW + 1638-CV/TU](qd348.md) | connection/sharing, local rollout context | Reviewed from supplied PDFs |
@@ -55,6 +55,8 @@ The stale-claim-to-current-result audit trail is maintained in
 30 + 82.3% × 70
 ```
 
-is printed as `80.3`, while arithmetic yields `87.61`.
+is printed as `80.3`, while arithmetic yields `87.61`. This is recorded narrowly
+as a **worked-example arithmetic inconsistency**; it does not establish that the
+official formula is wrong.
 
 See [hd05.md](hd05.md). This remains a business clarification gate before claiming an official scoring implementation.
