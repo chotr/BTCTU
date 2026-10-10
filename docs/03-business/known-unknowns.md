@@ -16,7 +16,8 @@
 | Multi-dimensional permission + least privilege | Known | QĐ342 Điều 16 |
 | Audit every access/update/approval/share | Known | QĐ342 |
 | Canonical dictionary / SOR | Known | QĐ308 |
-| OAuth2/JWT integration contract | Known | QĐ607 |
+| OAuth 2.0 `client_credentials`/JWT contract for QĐ607 APIs | Known | QĐ607 |
+| OAuth 2.1/OIDC 2.0/SAML2/JWT Federation/mTLS supported at LGSP layer | Known | HD07 |
 | Connection requires purpose/scope/security approval | Known | QĐ348 + HD07 |
 | Connected systems target ATTT >= level 3 | Known in integration context | QĐ348/HD07 |
 | Operational work catalog / org assignment Excel exists | Known | two supplied XLSX files |
@@ -25,9 +26,15 @@
 
 | ID | Issue | Impact |
 |---|---|---|
-| INC-01 | 05-HD worked example prints `30 + 82.3%×70 = 80.3`, while arithmetic gives 87.61 | scoring rule must be confirmed before official implementation |
+| INC-01 | 05-HD worked example prints `30 + 82.3%×70 = 80.3`, while arithmetic gives 87.61 | blocks `OFFICIAL/ACTIVE` rule activation, not candidate KPI-engine implementation |
 | INC-02 | 05-HD explicit A/B/C/D formula targets leaders/managers; test covers all staff | non-manager formula/config needs approved design |
 | INC-03 | Excel catalog has scores/formulas but supplied material does not by itself prove approval/effective version | import as draft/staging, not official rule |
+
+## Source divergences
+
+| ID | Sources | Divergence | Treatment |
+|---|---|---|---|
+| DIV-01 | QĐ607 vs HD07 | QĐ607 specifies OAuth 2.0 `client_credentials`; HD07 lists OAuth 2.1/OIDC 2.0/SAML2/JWT Federation/mTLS at the LGSP layer | Do not merge them into one generic auth rule; production follows the exact approved endpoint/platform contract |
 
 ## Still unknown / needs authority
 
@@ -35,7 +42,7 @@
 |---|---|---|
 | Q-01 | Official JobPosition master and effective assignments? | authoritative org/person master |
 | Q-02 | Approved version of work catalog / coefficient values? | official KPI |
-| Q-03 | How is INC-01 resolved? | official 70-point calculation |
+| Q-03 | How is INC-01 resolved? | activation of the affected 70-point rule as `OFFICIAL/ACTIVE` |
 | Q-04 | Formula for non-manager staff? | staff KPI |
 | Q-05 | Exact monthly → quarterly → annual aggregation? | period automation |
 | Q-06 | Comparison group for excellent-rating quota? | final classification automation |

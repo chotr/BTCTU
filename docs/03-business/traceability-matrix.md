@@ -14,7 +14,8 @@ This table is the quickest evidence for an interviewer that the system is not ba
 | QĐ342 Điều 16 | role/task/scope/classification/time; least privilege; audit | contextual authorization | PolicyDecision + AuditEvent |
 | QĐ342 Điều 23 | AI support only, human decision, no unapproved public AI for protected data | report drafting boundary | AI feature optional, human approval |
 | QĐ308 | canonical data dictionary + MaNhiemVu/TenNhiemVu + SOR | canonical mapping | DataDictionaryMapping |
-| QĐ607 | OAuth2/JWT scoped APIs | connector contract | Integration adapter |
+| QĐ607 | OAuth 2.0 `client_credentials`/JWT scoped APIs | concrete connector contract | Integration adapter |
+| HD07 + QĐ607 | Different authentication version/profile wording at LGSP vs concrete API layer | do not treat mechanisms as interchangeable | Approved-endpoint auth profile + SourceDivergence DIV-01 |
 | QĐ348/HD07 | approved purpose/scope, test→prod, >= level 3 for connected systems | integration/security gate | connector disabled in MVP |
 | NĐ85 | formal HTTT level criteria | cannot self-certify level | production compliance gate |
 | NĐ63 | strict state-secret e-document handling | keep secret content out of MVP | evidence reference boundary |
