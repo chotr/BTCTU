@@ -7,17 +7,21 @@ import Shell from "@/components/shell";
 import { useApp } from "@/lib/store";
 
 export default function MainLayout({ children }: { children: ReactNode }) {
-  const { user } = useApp();
+  const { user, hydrated } = useApp();
   const router = useRouter();
 
   useEffect(() => {
-    if (!user) {
+    if (hydrated && !user) {
       router.replace("/login");
     }
-  }, [user, router]);
+  }, [user, hydrated, router]);
 
-  if (!user) return null;
+  if (!hydrated || !user)
+    return (
+      <main className="p-8 text-sm text-ink-2" role="status">
+        Đang mở không gian làm việc…
+      </main>
+    );
 
   return <Shell>{children}</Shell>;
 }
-

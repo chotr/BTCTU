@@ -1,95 +1,284 @@
 "use client";
-
-import { LockSimple, LockSimpleOpen } from "@phosphor-icons/react";
 import Link from "next/link";
-import { api, perm } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Plus } from "@phosphor-icons/react";
 import { useApp } from "@/lib/store";
-import { Avatar, Badge, Button, Card, ClassificationBadge, EvalStatusBadge, SectionHeader } from "@/components/ui";
-
+import { scopedData } from "@/lib/exports";
+import { useBusy } from "@/components/use-busy";
+import {
+  evaluationActions,
+  evaluationLabel,
+  evaluationTotal,
+} from "@/lib/evaluation";
+import { EVAL_STATUS_LABELS } from "@/lib/types";
+import {
+  Badge,
+  Button,
+  Card,
+  ClassificationBadge,
+  EmptyState,
+  EvalStatusBadge,
+  Field,
+  Input,
+  Modal,
+  SectionHeader,
+  Select,
+} from "@/components/ui";
 export default function EvaluationPage() {
-  const { periods, evaluations, people, departments, user } = useApp();
-  const active = periods.find((p) => p.status === "ACTIVE");
-  const activeEvals = evaluations.filter((e) => e.periodId === active?.id);
-
+  const state = useApp();
+  const scoped = scopedData(state);
+  const router = useRouter();
+  const [q, setQ] = useState("");
+  const [period, setPeriod] = useState("ALL");
+  const [status, setStatus] = useState("ALL");
+  const [type, setType] = useState("ALL");
+  const [open, setOpen] = useState(false);
+  const [subjectType, setSubjectType] = useState<"PERSON" | "DEPARTMENT">(
+    "PERSON",
+  );
+  const [subject, setSubject] = useState("");
+  const [newPeriod, setNewPeriod] = useState("");
+  const [leader, setLeader] = useState(false);
+  const { busy, run } = useBusy();
+  const rows = scoped.evaluations.filter(
+    (e) =>
+      (period === "ALL" || e.periodId === period) &&
+      (status === "ALL" || e.status === status) &&
+      (type === "ALL" || e.subjectType === type) &&
+      (evaluationLabel(e, state) + e.id)
+        .toLocaleLowerCase("vi")
+        .includes(q.toLocaleLowerCase("vi")),
+  );
+  async function create(e: React.FormEvent) {
+    e.preventDefault();
+    await run(async () => {
+      const id = await evaluationActions.createEvaluation({
+        periodId: newPeriod,
+        subjectType,
+        subjectId: subject,
+        isLeader: leader,
+      });
+      if (id) {
+        setOpen(false);
+        router.push(`/evaluation/${id}`);
+      }
+    });
+  }
   return (
-    <div>
+    <div className="space-y-4">
       <SectionHeader
-        title="Kỳ đánh giá"
-        hint="Tự đánh giá → thẩm định, đề xuất → cấp có thẩm quyền quyết định (05-HD/TU + 39-QĐ/TU)"
+        title="Hồ sơ đánh giá"
+        hint="Điểm tính là đầu vào; xếp loại còn phụ thuộc điều kiện và quyết định có thẩm quyền."
         actions={
-          active && perm.canLock(user) ? (
-            <Button variant="danger" icon={<LockSimple size={14} weight="bold" />} onClick={() => api.lockPeriod(active.id)}>
-              Khóa kỳ {active.name}
-            </Button>
-          ) : undefined
+          <Button
+            variant="primary"
+            icon={<Plus size={16} />}
+            onClick={() => setOpen(true)}
+          >
+            Tạo hồ sơ
+          </Button>
         }
       />
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {periods.map((p) => (
-          <Card key={p.id} className="p-4">
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-[14px] font-semibold">{p.name}</h2>
-                  {p.status === "LOCKED" ? <Badge tone="neutral">Đã khóa</Badge> : <Badge tone="accent">Đang mở</Badge>}
-                </div>
-                <p className="mt-1 text-[12px] text-ink-3">{p.range}</p>
-              </div>
-              {p.status === "LOCKED" ? <LockSimple size={18} className="text-ink-3" /> : <LockSimpleOpen size={18} className="text-accent-600" />}
-            </div>
-            <p className="mt-3 text-[11px] text-ink-3">
-              {evaluations.filter((e) => e.periodId === p.id).length} đối tượng trong kỳ
-            </p>
-          </Card>
-        ))}
-      </div>
-
-      <h2 className="mb-2 mt-6 text-[14px] font-semibold">Đối tượng kỳ {active?.name}</h2>
+      <Card className="flex flex-wrap items-center gap-2 p-3">
+        <Input
+          aria-label="Tìm hồ sơ đánh giá"
+          placeholder="Tên đối tượng hoặc mã hồ sơ…"
+          className="w-full sm:w-72"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+        <Select
+          aria-label="Kỳ đánh giá"
+          value={period}
+          onChange={(e) => setPeriod(e.target.value)}
+        >
+          <option value="ALL">Mọi kỳ</option>
+          {state.periods.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </Select>
+        <Select
+          aria-label="Loại đối tượng"
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+        >
+          <option value="ALL">Cá nhân & tập thể</option>
+          <option value="PERSON">Cá nhân</option>
+          <option value="DEPARTMENT">Tập thể phòng</option>
+        </Select>
+        <Select
+          aria-label="Trạng thái hồ sơ"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        >
+          <option value="ALL">Mọi trạng thái</option>
+          {Object.entries(EVAL_STATUS_LABELS).map(([k, v]) => (
+            <option key={k} value={k}>
+              {v}
+            </option>
+          ))}
+        </Select>
+        <Badge>{rows.length} hồ sơ</Badge>
+      </Card>
       <Card className="overflow-x-auto">
-        <table className="w-full min-w-[780px] text-[13px]">
-          <thead>
-            <tr className="text-left text-[11px] font-semibold uppercase tracking-wide text-ink-3">
-              <th className="px-3 py-2.5">Người đánh giá</th>
-              <th className="px-3 py-2.5">Phòng</th>
-              <th className="px-3 py-2.5">Nhóm công thức</th>
-              <th className="px-3 py-2.5">Tổng điểm</th>
-              <th className="px-3 py-2.5">Xếp loại</th>
-              <th className="px-3 py-2.5">Trạng thái</th>
-              <th className="px-3 py-2.5"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {activeEvals.map((e) => {
-              const subject = people.find((p) => p.id === e.subjectId);
-              const dept = departments.find((d) => d.id === e.departmentId);
-              const cls = e.decision?.classification ?? e.review?.proposed ?? e.self?.proposed;
-              return (
-                <tr key={e.id} className="transition-colors hover:bg-fill">
-                  <td className="px-3 py-2.5">
-                    <span className="flex items-center gap-2">
-                      <Avatar name={subject?.name ?? "?"} size="sm" />
-                      <span className="font-medium">{subject?.name}</span>
-                      {subject?.id === user?.id ? <Badge tone="accent">Bạn</Badge> : null}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2.5 text-ink-2">{dept?.shortName}</td>
-                  <td className="px-3 py-2.5 text-ink-2">{e.isLeader ? "A/B/C/D (lãnh đạo)" : "A/B/C (ứng viên)"}</td>
-                  <td className="px-3 py-2.5 font-semibold">{e.calc.textTotal}</td>
-                  <td className="px-3 py-2.5">{cls ? <ClassificationBadge value={cls} /> : <span className="text-ink-3">—</span>}</td>
-                  <td className="px-3 py-2.5"><EvalStatusBadge status={e.status} /></td>
-                  <td className="px-3 py-2.5 text-right">
-                    <Link href={"/evaluation/" + e.id} className="text-[12px] font-medium text-accent-600 hover:underline">
-                      Mở
+        {rows.length ? (
+          <table className="w-full min-w-[850px] text-[13px]">
+            <thead className="bg-fill text-left text-xs text-ink-3">
+              <tr>
+                {[
+                  "Đối tượng",
+                  "Kỳ",
+                  "Điểm ứng viên",
+                  "Trạng thái",
+                  "Quyết định",
+                ].map((h) => (
+                  <th key={h} className="p-3">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((e) => (
+                <tr
+                  key={e.id}
+                  className="shadow-[0_1px_0_#edf1f6] hover:bg-fill"
+                >
+                  <td className="p-3">
+                    <Link
+                      className="font-semibold text-accent-700 hover:underline"
+                      href={`/evaluation/${e.id}`}
+                    >
+                      {evaluationLabel(e, state)}
                     </Link>
+                    <p className="mt-1 text-xs text-ink-3">
+                      {e.subjectType === "PERSON" ? "Cá nhân" : "Tập thể phòng"}{" "}
+                      ·{" "}
+                      {
+                        state.departments.find((d) => d.id === e.departmentId)
+                          ?.shortName
+                      }
+                    </p>
+                  </td>
+                  <td className="p-3">
+                    {state.periods.find((p) => p.id === e.periodId)?.name}
+                  </td>
+                  <td className="p-3 tabular-nums">
+                    {e.calculationRuns?.length
+                      ? evaluationTotal(e).toFixed(2)
+                      : e.status === "DRAFT"
+                        ? "Chưa tính lại"
+                        : `${evaluationTotal(e).toFixed(2)} · mẫu`}
+                    <p className="mt-1 text-xs text-ink-3">
+                      {e.isLeader ? "ABCD" : "ABC · thiết kế ứng viên"}
+                    </p>
+                  </td>
+                  <td className="p-3">
+                    <EvalStatusBadge status={e.status} />
+                  </td>
+                  <td className="p-3">
+                    {e.decision ? (
+                      <ClassificationBadge value={e.decision.classification} />
+                    ) : (
+                      <span className="text-ink-3">Chưa quyết định</span>
+                    )}
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <EmptyState
+            title="Chưa có hồ sơ phù hợp"
+            hint="Tạo hồ sơ trong kỳ đang mở hoặc thay đổi bộ lọc."
+          />
+        )}
       </Card>
+      <p className="text-xs text-ink-3">
+        Các trạng thái, vai trò demo và công thức chuyển nhiệm vụ thành chỉ số
+        là thiết kế ứng viên. Không đại diện kết quả đánh giá chính thức.
+      </p>
+      <Modal
+        open={open}
+        title="Tạo hồ sơ đánh giá"
+        onClose={() => setOpen(false)}
+      >
+        <form onSubmit={create} className="space-y-3">
+          <Field label="Kỳ đang mở">
+            <Select
+              required
+              className="w-full"
+              value={newPeriod}
+              onChange={(e) => setNewPeriod(e.target.value)}
+            >
+              <option value="">Chọn kỳ</option>
+              {state.periods
+                .filter((p) => p.status === "ACTIVE")
+                .map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+            </Select>
+          </Field>
+          <Field label="Loại đối tượng">
+            <Select
+              className="w-full"
+              value={subjectType}
+              onChange={(e) => {
+                setSubjectType(e.target.value as typeof subjectType);
+                setSubject("");
+              }}
+            >
+              <option value="PERSON">Cá nhân</option>
+              {state.user?.role !== "cong_chuc" && (
+                <option value="DEPARTMENT">Tập thể phòng</option>
+              )}
+            </Select>
+          </Field>
+          <Field label="Đối tượng được đánh giá">
+            <Select
+              required
+              className="w-full"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+            >
+              <option value="">Chọn đối tượng</option>
+              {(subjectType === "PERSON"
+                ? scoped.people
+                : scoped.departments
+              ).map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          {subjectType === "PERSON" && (
+            <label className="flex items-center gap-2 text-xs">
+              <input
+                type="checkbox"
+                checked={leader}
+                onChange={(e) => setLeader(e.target.checked)}
+              />
+              Sử dụng mô hình lãnh đạo, quản lý (ABCD)
+            </label>
+          )}
+          <p className="text-xs text-ink-3">
+            Tập thể có hồ sơ riêng và đầu vào nhiệm vụ của phòng; không lấy
+            trung bình điểm cá nhân để xếp loại tập thể.
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button onClick={() => setOpen(false)}>Hủy</Button>
+            <Button type="submit" variant="primary" disabled={busy}>
+              Tạo hồ sơ
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
-

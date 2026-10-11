@@ -1,325 +1,690 @@
 "use client";
-
-import { ArrowLeft, ArrowUUpLeft, Check, Gavel, LockSimple, WarningCircle } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { api, perm } from "@/lib/api";
-import { fmtDateTime, fmtNum } from "@/lib/format";
+import { ArrowLeft, Calculator, CheckCircle } from "@phosphor-icons/react";
 import { useApp } from "@/lib/store";
 import {
-  Avatar,
+  canDecide,
+  canReviewEvaluation,
+  canViewEvaluation,
+} from "@/lib/policy";
+import { personName } from "@/lib/shared/names";
+import { useBusy } from "@/components/use-busy";
+import {
+  EVAL_EDITABLE,
+  EVAL_FINAL,
+  EVAL_IN_REVIEW,
+  inGroup,
+} from "@/lib/domain/workflow";
+import {
+  canCalculateEvaluation,
+  canSelfEvaluate,
+  evaluationActions,
+  evaluationLabel,
+  evaluationTotal,
+} from "@/lib/evaluation";
+import {
+  classificationEligibility,
+  evaluationTasks,
+} from "@/lib/evaluation-engine";
+import {
+  CLASS_LABELS,
+  EVAL_STATUS_LABELS,
+  type Classification,
+  type Evaluation,
+} from "@/lib/types";
+import { fmtDateTime } from "@/lib/format";
+import {
   Badge,
   Button,
   Callout,
   Card,
   ClassificationBadge,
+  EmptyState,
   EvalStatusBadge,
   Field,
+  Input,
   Progress,
   SectionHeader,
+  Select,
+  TaskStatusBadge,
 } from "@/components/ui";
-import type { Classification, EvalStatus } from "@/lib/types";
-
-const steps: EvalStatus[] = ["DRAFT", "SUBMITTED", "REVIEWED", "APPROVED", "LOCKED"];
-
-export default function EvaluationDetailPage() {
-  const params = useParams();
-  const id = Array.isArray(params.id) ? String(params.id[0]) : String(params.id);
-  const { evaluations, people, departments, periods, user } = useApp();
-  const ev = evaluations.find((e) => e.id === id);
-
-  const [selfComment, setSelfComment] = useState("");
-  const [selfProposed, setSelfProposed] = useState<Classification>("TOT");
-  const [reviewComment, setReviewComment] = useState("");
-  const [reviewProposed, setReviewProposed] = useState<Classification>("TOT");
-  const [decisionCls, setDecisionCls] = useState<Classification>("TOT");
-  const [decisionNote, setDecisionNote] = useState("");
-
-  if (!ev || !user) {
+export default function EvaluationDetail() {
+  const { id } = useParams<{ id: string }>();
+  const state = useApp();
+  const ev = state.evaluations.find((e) => e.id === id);
+  if (!ev || !canViewEvaluation(state.user, ev))
     return (
-      <div>
-        <SectionHeader title="Không tìm thấy bản đánh giá" />
-        <Link href="/evaluation" className="text-[13px] font-medium text-accent-600 hover:underline">
-          ← Quay lại kỳ đánh giá
-        </Link>
-      </div>
+      <Card>
+        <EmptyState
+          title="Không thể mở hồ sơ"
+          hint="Hồ sơ không tồn tại hoặc ngoài phạm vi của bạn."
+          action={<Link href="/evaluation">Về danh sách</Link>}
+        />
+      </Card>
     );
-  }
-
-  const subject = people.find((p) => p.id === ev.subjectId);
-  const dept = departments.find((d) => d.id === ev.departmentId);
-  const period = periods.find((p) => p.id === ev.periodId);
-  const stepIndex = steps.indexOf(ev.status);
-  const isSubject = ev.subjectId === user.id;
-  const canReview = perm.canReviewEvaluation(user, ev.departmentId) && ev.status === "SUBMITTED";
-  const canDecide = perm.canDecide(user) && ev.status === "REVIEWED";
-  const cls = ev.decision?.classification ?? ev.review?.proposed ?? ev.self?.proposed ?? null;
-
+  return <Workspace key={ev.id} ev={ev} />;
+}
+function Workspace({ ev }: { ev: Evaluation }) {
+  const state = useApp();
+  const { user } = state;
+  const period = state.periods.find((p) => p.id === ev.periodId);
+  const locked =
+    period?.status !== "ACTIVE" || inGroup(EVAL_FINAL, ev.status);
+  const self = canSelfEvaluate(user, ev);
+  const canCalc =
+    !locked &&
+    inGroup(EVAL_EDITABLE, ev.status) &&
+    canCalculateEvaluation(user, ev) &&
+    (ev.status === "DRAFT" ||
+      (!self && canReviewEvaluation(user, ev.departmentId)));
+  const reviewer = canReviewEvaluation(user, ev.departmentId) && !self;
+  const [general, setGeneral] = useState(String(ev.generalScore));
+  const [leadership, setLeadership] = useState(
+    String(ev.axes.find((a) => a.code === "D")?.value ?? ""),
+  );
+  const [override, setOverride] = useState("");
+  const [calcReason, setCalcReason] = useState("");
+  const [checks, setChecks] = useState(ev.conditions);
+  const [conditionReason, setConditionReason] = useState(
+    ev.conditionReason ?? "",
+  );
+  const [quota, setQuota] = useState<
+    NonNullable<Evaluation["quotaApplicability"]>
+  >(ev.quotaApplicability ?? "UNKNOWN");
+  const [quotaConfirmed, setQuotaConfirmed] = useState(
+    ev.quotaConfirmed ?? false,
+  );
+  const [comment, setComment] = useState("");
+  const [proposed, setProposed] = useState<Classification>(
+    ev.review?.proposed ?? ev.self?.proposed ?? "TOT",
+  );
+  const { busy, run: execute } = useBusy();
+  const [tab, setTab] = useState("overview");
+  const run = ev.calculationRuns?.at(-1);
+  const tasks = period ? evaluationTasks(state.tasks, ev, period) : [];
+  const eligibility = classificationEligibility(
+    evaluationTotal(ev),
+    ev.conditions,
+    proposed,
+    ev.quotaApplicability,
+    ev.quotaConfirmed,
+  );
+  const tabs = [
+    ["overview", "Tính điểm & điều kiện"],
+    ["workflow", "Tự đánh giá / xử lý"],
+    ["snapshots", "Lần tính & lịch sử"],
+  ];
   return (
-    <div>
-      <div className="mb-3">
-        <Link href="/evaluation" className="inline-flex items-center gap-1.5 text-[12px] font-medium text-ink-3 transition-colors hover:text-accent-600">
-          <ArrowLeft size={14} weight="bold" /> Kỳ đánh giá
-        </Link>
-      </div>
-
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Avatar name={subject?.name ?? "?"} size="lg" />
-          <div>
-            <h1 className="text-[17px] font-semibold">{subject?.name}</h1>
-            <p className="text-[12px] text-ink-3">
-              {dept?.name} · {period?.name} · {period?.range}
-            </p>
-            <div className="mt-1 flex items-center gap-1.5">
-              <EvalStatusBadge status={ev.status} />
-              {cls ? <ClassificationBadge value={cls} /> : null}
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
-          {steps.map((s, i) => (
-            <div key={s} className="flex items-center gap-1">
+    <div className="space-y-4">
+      <Link
+        href="/evaluation"
+        className="inline-flex items-center gap-1 text-xs text-accent-700"
+      >
+        <ArrowLeft size={14} />
+        Hồ sơ đánh giá
+      </Link>
+      <SectionHeader
+        title={evaluationLabel(ev, state)}
+        hint={`${ev.subjectType === "DEPARTMENT" ? "Tập thể phòng" : "Cá nhân"} · ${period?.name} · ${ev.id}`}
+        actions={
+          <>
+            <Badge tone="warn">CANDIDATE</Badge>
+            <EvalStatusBadge status={ev.status} />
+          </>
+        }
+      />
+      <Card className="p-4">
+        <ol className="flex flex-wrap gap-x-5 gap-y-3 text-xs">
+          {Object.entries(EVAL_STATUS_LABELS).map(([status, label], index) => (
+            <li
+              key={status}
+              className={`flex items-center gap-2 ${status === ev.status ? "font-semibold text-accent-700" : "text-ink-3"}`}
+            >
               <span
-                className={
-                  i < stepIndex
-                    ? "flex h-6 items-center rounded-pill bg-ok-600 px-2 text-[10px] font-semibold text-white"
-                    : i === stepIndex
-                      ? "flex h-6 items-center rounded-pill bg-accent-600 px-2 text-[10px] font-semibold text-white"
-                      : "flex h-6 items-center rounded-pill bg-fill-2 px-2 text-[10px] font-medium text-ink-3"
-                }
+                className={`flex h-6 w-6 items-center justify-center rounded-ctl ${status === ev.status ? "bg-accent-100" : "bg-fill-2"}`}
               >
-                {i + 1}. {s === "DRAFT" ? "Nháp" : s === "SUBMITTED" ? "Tự đánh giá" : s === "REVIEWED" ? "Thẩm định" : s === "APPROVED" ? "Quyết định" : "Khóa kỳ"}
+                {index + 1}
               </span>
-              {i < steps.length - 1 ? <span className="h-px w-2 bg-fill-2" /> : null}
-            </div>
+              {label}
+            </li>
           ))}
-        </div>
+        </ol>
+      </Card>
+      <Callout
+        title={
+          locked
+            ? "Hồ sơ chỉ đọc — bảo toàn kết quả"
+            : "Công thức demo có giải thích nguồn"
+        }
+        tone={locked ? "neutral" : "accent"}
+      >
+        05-HD/TU là nguồn khung 30+70 và ABCD lãnh đạo; cách tính các trục từ
+        nhiệm vụ là thiết kế ứng viên. INC-01: ví dụ nguồn ghi 80,3 nhưng phép
+        tính 30 + 82,3% × 70 = 87,61. Không tự sửa nguồn hoặc kích hoạt quy tắc
+        chính thức.{" "}
+        {period?.kind === "MONTH" || period?.kind === "YEAR"
+          ? "Không tự cộng/trung bình tháng, quý thành xếp loại năm khi chưa có quy tắc xác nhận."
+          : ""}
+      </Callout>
+      <div
+        role="tablist"
+        aria-label="Nội dung hồ sơ"
+        className="flex flex-wrap gap-1"
+      >
+        {tabs.map(([id, label]) => (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={tab === id}
+            onClick={() => setTab(id)}
+            className={`rounded-ctl px-4 py-2 text-[13px] font-medium ${tab === id ? "bg-surface text-accent-700 shadow-card" : "text-ink-2 hover:bg-fill"}`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
-
-      {ev.calc.note ? (
-        <div className="mt-4">
-          <Callout tone="warn" icon={<WarningCircle size={16} />} title="Mâu thuẫn nguồn được ghi nhận công khai">
-            {ev.calc.note} — hệ thống không tự ý sửa nguồn; đây là điểm cần nói khi bảo vệ dự án.
-          </Callout>
-        </div>
-      ) : null}
-
-      <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <div className="flex flex-col gap-4 xl:col-span-2">
-          <Card className="p-4">
-            <h2 className="mb-3 text-[14px] font-semibold">Cấu trúc điểm · 30 + 70 (05-HD/TU)</h2>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <ScoreBox label="Nhóm tiêu chí chung" value={fmtNum(ev.generalScore) + "/" + ev.generalMax} />
-              <ScoreBox
-                label="Kết quả thực hiện nhiệm vụ"
-                value={fmtNum((ev.calc.arithmeticTotal ?? ev.calc.textTotal) - ev.generalScore, 1) + "/70"}
+      {tab === "overview" && (
+        <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(300px,2fr)]">
+          <div className="space-y-4">
+            <Card className="p-5">
+              <SectionHeader
+                title="Đầu vào KPI"
+                hint={`${tasks.length} nhiệm vụ trong phạm vi và kỳ đánh giá; nhiệm vụ hủy được loại trừ.`}
               />
-              <ScoreBox
-                label="Tổng điểm"
-                value={ev.calc.arithmeticTotal !== null ? fmtNum(ev.calc.arithmeticTotal, 1) : fmtNum(ev.calc.textTotal, 1)}
-                sub={ev.calc.arithmeticTotal !== null ? "Theo văn bản: " + fmtNum(ev.calc.textTotal, 1) : undefined}
-              />
-            </div>
-
-            <div className="mt-4 rounded-card bg-fill p-3">
-              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <p className="text-[12px] font-semibold">{ev.calc.formulaText}</p>
-                <Badge tone="accent">{ev.calc.ruleVersion}</Badge>
-              </div>
-              <div className="flex flex-col gap-2.5">
-                {ev.axes.map((axis) => (
-                  <div key={axis.code} className="flex items-center gap-3">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-ctl bg-accent-600 text-[11px] font-bold text-white">
-                      {axis.code}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-0.5 flex justify-between text-[11px]">
-                        <span className="truncate text-ink-2">{axis.label}</span>
-                        <span className="font-semibold">{fmtNum(axis.value, 1)}%</span>
+              {tasks.length ? (
+                <ul className="space-y-2">
+                  {tasks.map((t) => (
+                    <li
+                      key={t.id}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-ctl bg-fill p-3 text-xs"
+                    >
+                      <div>
+                        <Link
+                          href={`/tasks/${t.id}`}
+                          className="font-medium text-accent-700 hover:underline"
+                        >
+                          {t.title}
+                        </Link>
+                        <p className="mt-1 text-ink-3">
+                          {t.result?.quantity ?? 0}/{t.plannedQuantity ?? 1} sản
+                          phẩm · {t.result?.qualityLevel ?? "Chưa có kết quả"}
+                        </p>
                       </div>
-                      <Progress value={axis.value} />
-                    </div>
-                  </div>
-                ))}
+                      <TaskStatusBadge status={t.status} />
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <EmptyState
+                  title="Chưa có nhiệm vụ trong kỳ"
+                  hint="Cần nhiệm vụ đã nghiệm thu để có dữ liệu tính điểm."
+                />
+              )}
+            </Card>
+            <Card className="p-5">
+              <h2 className="mb-4 text-sm font-semibold">Tính điểm ứng viên</h2>
+              <div className="mb-4 grid grid-cols-2 gap-3">
+                <div className="rounded-ctl bg-accent-50 p-4">
+                  <p className="text-xs text-ink-2">Tổng điểm / 100</p>
+                  <p className="mt-2 text-3xl font-semibold tabular-nums text-accent-700">
+                    {run ? evaluationTotal(ev).toFixed(2) : "—"}
+                  </p>
+                </div>
+                <div className="rounded-ctl bg-fill p-4">
+                  <p className="text-xs text-ink-2">Phiên bản tính</p>
+                  <p className="mt-2 break-words text-xs font-semibold">
+                    {run?.ruleVersion ?? "Chưa có lần tính mới"}
+                  </p>
+                </div>
               </div>
-              <p className="mt-2 text-[11px] text-ink-3">
-                KPI theo văn bản: {ev.calc.kpiText} · Trung bình các trục: {fmtNum(ev.calc.averageAxes, 1)}%
-              </p>
-            </div>
-          </Card>
-
-          <Card className="p-4">
-            <h2 className="mb-3 text-[14px] font-semibold">Xếp loại — điểm chỉ là một điều kiện (39-QĐ/TU)</h2>
-            <div className="flex flex-col gap-2">
-              {ev.conditions.map((c) => (
-                <div key={c.id} className="flex items-start gap-2.5 rounded-card bg-fill px-3 py-2">
-                  <span className={"mt-0.5 h-2 w-2 shrink-0 rounded-pill " + (c.passed ? "bg-ok-600" : "bg-danger-600")} />
-                  <div className="min-w-0">
-                    <p className="text-[12px] font-medium">{c.label}</p>
-                    <p className="text-[11px] text-ink-3">{c.detail}</p>
+              {ev.axes.map((a) => (
+                <div key={a.code} className="mb-3">
+                  <div className="mb-1 flex justify-between gap-3 text-xs">
+                    <span>
+                      {a.code} · {a.label}
+                    </span>
+                    <span className="font-semibold tabular-nums">
+                      {a.value.toFixed(2)}%
+                    </span>
                   </div>
-                  <span className="ml-auto shrink-0">
-                    {c.passed ? <Badge tone="ok">Đạt</Badge> : c.blocking ? <Badge tone="danger">Chặn</Badge> : <Badge tone="warn">Không đạt</Badge>}
-                  </span>
+                  <Progress value={a.value} />
+                  <p className="mt-1 text-[11px] leading-relaxed text-ink-3">
+                    {a.detail}
+                  </p>
                 </div>
               ))}
-            </div>
-            <p className="mt-2 text-[11px] text-ink-3">
-              Dải điểm cơ bản: ≥90 Xuất sắc · 70–90 Tốt · 50–70 Hoàn thành · dưới 50 hoặc trường hợp chặn → Không hoàn thành.
-            </p>
-          </Card>
-
-          {isSubject && ev.status === "DRAFT" ? (
-            <Card className="p-4">
-              <h2 className="mb-2 text-[14px] font-semibold">Tự đánh giá, đề xuất mức xếp loại</h2>
-              <Field label="Nhận xét tự đánh giá">
-                <textarea
-                  className="control h-20 w-full resize-none py-2"
-                  value={selfComment}
-                  onChange={(e) => setSelfComment(e.target.value)}
-                  placeholder="Nêu kết quả nổi bật, hạn chế và nguyên nhân trong kỳ…"
-                />
-              </Field>
-              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Field label="Đề xuất mức xếp loại">
-                  <ClassificationSelect value={selfProposed} onChange={setSelfProposed} />
-                </Field>
-                <div className="flex items-end">
-                  <Button variant="primary" icon={<Check size={14} weight="bold" />} onClick={() => api.selfEvaluate(ev.id, { comment: selfComment, proposed: selfProposed })}>
-                    Nộp tự đánh giá
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ) : null}
-
-          {canReview ? (
-            <Card className="p-4">
-              <h2 className="mb-2 text-[14px] font-semibold">Thẩm định, đề xuất mức xếp loại</h2>
-              <Field label="Nhận xét của người thẩm định">
-                <textarea
-                  className="control h-20 w-full resize-none py-2"
-                  value={reviewComment}
-                  onChange={(e) => setReviewComment(e.target.value)}
-                  placeholder="Nhận xét khách quan về kết quả thực hiện nhiệm vụ…"
-                />
-              </Field>
-              <div className="mt-3 flex flex-wrap items-end gap-3">
-                <div className="w-64">
-                  <Field label="Đề xuất mức">
-                    <ClassificationSelect value={reviewProposed} onChange={setReviewProposed} />
-                  </Field>
-                </div>
-                <Button variant="primary" icon={<Check size={14} weight="bold" />} onClick={() => api.reviewEvaluation(ev.id, { comment: reviewComment, proposed: reviewProposed, action: "propose" })}>
-                  Đề xuất
-                </Button>
-                <Button variant="danger" icon={<ArrowUUpLeft size={14} weight="bold" />} onClick={() => api.reviewEvaluation(ev.id, { comment: reviewComment, proposed: reviewProposed, action: "return" })}>
-                  Trả lại để chỉnh sửa
-                </Button>
-              </div>
-            </Card>
-          ) : null}
-
-          {canDecide ? (
-            <Card className="p-4">
-              <h2 className="mb-2 text-[14px] font-semibold">Quyết định xếp loại chất lượng</h2>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Field label="Mức xếp loại quyết định">
-                  <ClassificationSelect value={decisionCls} onChange={setDecisionCls} />
-                </Field>
-                <Field label="Căn cứ quyết định">
-                  <input className="control w-full" value={decisionNote} onChange={(e) => setDecisionNote(e.target.value)} placeholder="Ghi căn cứ, điều kiện áp dụng" />
-                </Field>
-              </div>
-              <div className="mt-3">
-                <Button variant="primary" icon={<Gavel size={14} weight="bold" />} onClick={() => api.decideEvaluation(ev.id, { classification: decisionCls, note: decisionNote })}>
-                  Quyết định xếp loại
-                </Button>
-              </div>
-            </Card>
-          ) : null}
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <Card className="p-4">
-            <h2 className="mb-3 text-[13px] font-semibold">Các kết quả độc lập</h2>
-            <div className="flex flex-col gap-2 text-[12px]">
-              <ResultLine label="Tự đánh giá" value={ev.self?.proposed ?? "—"} at={ev.self?.at} />
-              <ResultLine label="Thẩm định, đề xuất" value={ev.review?.proposed ?? "—"} at={ev.review?.at} />
-              <ResultLine label="Quyết định cuối" value={ev.decision?.classification ?? "—"} at={ev.decision?.at} />
-            </div>
-            <p className="mt-2 text-[11px] leading-relaxed text-ink-3">
-              Ba lớp dữ liệu được lưu riêng, không ghi đè nhau — đúng thiết kế traceability của dự án.
-            </p>
-          </Card>
-
-          <Card className="p-4">
-            <h2 className="mb-3 text-[13px] font-semibold">Dòng thời gian</h2>
-            <div className="flex flex-col">
-              {[...ev.history].reverse().map((h, i) => {
-                const actor = people.find((p) => p.id === h.actorId);
-                return (
-                  <div key={h.id} className="flex gap-2.5">
-                    <div className="flex flex-col items-center">
-                      <span className={i === 0 ? "mt-0.5 h-2 w-2 rounded-pill bg-accent-600" : "mt-1 h-1.5 w-1.5 rounded-pill bg-ink-3"} />
-                      {i < ev.history.length - 1 ? <span className="w-px flex-1 bg-fill-2" /> : null}
-                    </div>
-                    <div className="pb-4">
-                      <p className="text-[12px] font-medium">{h.action}</p>
-                      <p className="text-[11px] text-ink-3">{actor?.name} · {fmtDateTime(h.at)}</p>
-                      {h.note ? <p className="mt-1 text-[12px] text-ink-2">{h.note}</p> : null}
-                    </div>
+              {run?.missingInputs.length ? (
+                <Callout tone="warn" title="Chưa đủ đầu vào">
+                  <ul className="list-inside list-disc">
+                    {run.missingInputs.map((m) => (
+                      <li key={m}>{m}</li>
+                    ))}
+                  </ul>
+                </Callout>
+              ) : null}
+              {canCalc && (
+                <form
+                  className="mt-5 space-y-3"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void execute(() =>
+                      evaluationActions.calculateEvaluation(ev.id, {
+                        generalScore: Number(general),
+                        leadershipScore: ev.isLeader
+                          ? Number(leadership)
+                          : undefined,
+                        reason: calcReason,
+                        overrideTotal:
+                          override !== "" ? Number(override) : undefined,
+                      }),
+                    );
+                  }}
+                >
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <Field label="Điểm chung (0–30)">
+                      <Input
+                        required
+                        type="number"
+                        min="0"
+                        max="30"
+                        step="0.01"
+                        className="w-full"
+                        value={general}
+                        onChange={(e) => setGeneral(e.target.value)}
+                      />
+                    </Field>
+                    {ev.isLeader && (
+                      <Field label="D · Điều hành (0–100)">
+                        <Input
+                          required
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          className="w-full"
+                          value={leadership}
+                          onChange={(e) => setLeadership(e.target.value)}
+                        />
+                      </Field>
+                    )}
                   </div>
-                );
-              })}
+                  {canDecide(user) && (
+                    <Field
+                      label="Điều chỉnh tổng điểm (tùy chọn)"
+                      hint="Quyền lãnh đạo demo; phải có lý do. Giữ nguyên cả điểm tính gốc và điểm điều chỉnh."
+                    >
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        className="w-full"
+                        value={override}
+                        onChange={(e) => setOverride(e.target.value)}
+                        placeholder="Để trống để dùng điểm tính"
+                      />
+                    </Field>
+                  )}
+                  <Field label="Giải trình / lý do">
+                    <Input
+                      required={override !== ""}
+                      className="w-full"
+                      value={calcReason}
+                      onChange={(e) => setCalcReason(e.target.value)}
+                    />
+                  </Field>
+                  <Button
+                    disabled={busy}
+                    variant="primary"
+                    type="submit"
+                    icon={<Calculator size={16} />}
+                  >
+                    Tính và lưu snapshot
+                  </Button>
+                </form>
+              )}
+            </Card>
+          </div>
+          <Card className="p-5">
+            <h2 className="text-sm font-semibold">Điều kiện xếp loại</h2>
+            <p className="mt-2 text-xs leading-relaxed text-ink-3">
+              QĐ39 Điều 11: dải 90 / 70 / 50 không đủ để tự xếp loại. Checklist
+              bên dưới là cấu hình demo, cần xác nhận nghiệp vụ cho từng nhóm
+              đối tượng.
+            </p>
+            <div className="mt-4 space-y-4">
+              {checks.map((c) => (
+                <label
+                  key={c.id}
+                  className="flex items-start gap-3 text-[13px]"
+                >
+                  <input
+                    className="mt-1"
+                    type="checkbox"
+                    disabled={!canCalc}
+                    checked={c.passed}
+                    onChange={(e) =>
+                      setChecks((rows) =>
+                        rows.map((r) =>
+                          r.id === c.id
+                            ? { ...r, passed: e.target.checked }
+                            : r,
+                        ),
+                      )
+                    }
+                  />
+                  <span>
+                    <span className="font-medium">{c.label}</span>
+                    {c.blocking && (
+                      <span className="ml-1 text-danger-600">*</span>
+                    )}
+                    <span className="mt-1 block text-xs leading-relaxed text-ink-3">
+                      {c.detail}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+            <div className="mt-5 space-y-3">
+              <Field label="Hạn mức / nhóm so sánh">
+                <Select
+                  disabled={!canCalc}
+                  className="w-full"
+                  value={quota}
+                  onChange={(e) => setQuota(e.target.value as typeof quota)}
+                >
+                  <option value="UNKNOWN">TBD — chưa xác định</option>
+                  <option value="NOT_APPLICABLE">
+                    Không áp dụng (giả lập đã xác nhận)
+                  </option>
+                  <option value="APPLIES">Có áp dụng (cấu hình giả lập)</option>
+                </Select>
+              </Field>
+              {quota === "APPLIES" && (
+                <label className="flex items-center gap-2 text-xs">
+                  <input
+                    type="checkbox"
+                    disabled={!canCalc}
+                    checked={quotaConfirmed}
+                    onChange={(e) => setQuotaConfirmed(e.target.checked)}
+                  />
+                  Đã đối chiếu hạn mức nhóm (minh họa)
+                </label>
+              )}
+              <Field label="Căn cứ xác nhận điều kiện">
+                <textarea
+                  disabled={!canCalc}
+                  className="control min-h-24 w-full py-2"
+                  value={conditionReason}
+                  onChange={(e) => setConditionReason(e.target.value)}
+                />
+              </Field>
+              {canCalc && (
+                <Button
+                  disabled={busy || !conditionReason.trim()}
+                  onClick={() =>
+                    execute(() =>
+                      evaluationActions.updateConditions(
+                        ev.id,
+                        checks,
+                        conditionReason,
+                        quota,
+                        quotaConfirmed,
+                      ),
+                    )
+                  }
+                >
+                  Lưu xác nhận
+                </Button>
+              )}
             </div>
           </Card>
-
-          {ev.status === "LOCKED" ? (
-            <Callout tone="neutral" icon={<LockSimple size={16} />} title="Kỳ đã khóa">
-              Kết quả đã quyết định được giữ nguyên; chỉ mở lại qua quy trình có lý do và có thẩm quyền (TBD nội bộ).
-            </Callout>
-          ) : null}
         </div>
-      </div>
+      )}
+      {tab === "workflow" && (
+        <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
+          <Card className="p-5">
+            <h2 className="mb-4 text-sm font-semibold">
+              Ý kiến theo từng bước
+            </h2>
+            {[
+              ["Tự đánh giá", ev.self?.comment, ev.self?.proposed],
+              ["Thẩm định / đề xuất", ev.review?.comment, ev.review?.proposed],
+              ["Quyết định", ev.decision?.note, ev.decision?.classification],
+            ].map(([label, note, cls]) => (
+              <div key={label} className="mb-4 rounded-ctl bg-fill p-4">
+                <p className="text-xs font-semibold">{label}</p>
+                <p className="my-2 whitespace-pre-wrap text-[13px] text-ink-2">
+                  {note || "Chưa có ý kiến"}
+                </p>
+                {cls && <ClassificationBadge value={cls as Classification} />}
+              </div>
+            ))}
+          </Card>
+          <Card className="p-5">
+            <h2 className="mb-3 text-sm font-semibold">Thao tác hồ sơ</h2>
+            {locked ? (
+              <EmptyState
+                title="Đã hoàn tất / khóa"
+                hint="Mở lại kỳ trong Quản lý kỳ nếu cần điều chỉnh có kiểm soát."
+              />
+            ) : (self && ev.status === "DRAFT") ||
+              (reviewer && inGroup(EVAL_IN_REVIEW, ev.status)) ? (
+              <div className="space-y-4">
+                <Field label="Mức đề xuất / quyết định">
+                  <Select
+                    className="w-full"
+                    value={proposed}
+                    onChange={(e) =>
+                      setProposed(e.target.value as Classification)
+                    }
+                  >
+                    {Object.entries(CLASS_LABELS).map(([k, v]) => (
+                      <option key={k} value={k}>
+                        {v}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+                <Field label="Nhận xét / căn cứ / lý do trả lại">
+                  <textarea
+                    className="control min-h-32 w-full py-2"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                  />
+                </Field>
+                {eligibility.length > 0 && (
+                  <Callout title="Cảnh báo trước khi quyết định" tone="warn">
+                    {eligibility.join(" ")}
+                  </Callout>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {self && ev.status === "DRAFT" && (
+                    <Button
+                      disabled={busy || !comment.trim()}
+                      variant="primary"
+                      onClick={() =>
+                        execute(() =>
+                          evaluationActions.selfEvaluate(ev.id, {
+                            comment,
+                            proposed,
+                          }),
+                        )
+                      }
+                    >
+                      Nộp tự đánh giá
+                    </Button>
+                  )}
+                  {reviewer && ev.status === "SUBMITTED" && (
+                    <Button
+                      disabled={busy || !comment.trim()}
+                      variant="primary"
+                      onClick={() =>
+                        execute(() =>
+                          evaluationActions.reviewEvaluation(ev.id, {
+                            comment,
+                            proposed,
+                            action: "propose",
+                          }),
+                        )
+                      }
+                    >
+                      Thẩm định và trình
+                    </Button>
+                  )}
+                  {reviewer &&
+                    (ev.status === "SUBMITTED" ||
+                      (ev.status === "REVIEWED" && canDecide(user))) && (
+                      <Button
+                        disabled={busy || !comment.trim()}
+                        onClick={() =>
+                          execute(() =>
+                            evaluationActions.reviewEvaluation(ev.id, {
+                              comment,
+                              proposed,
+                              action: "return",
+                            }),
+                          )
+                        }
+                      >
+                        Trả lại hồ sơ
+                      </Button>
+                    )}
+                  {canDecide(user) && ev.status === "REVIEWED" && (
+                    <Button
+                      variant="primary"
+                      icon={<CheckCircle size={16} />}
+                      disabled={
+                        busy || !comment.trim() || eligibility.length > 0
+                      }
+                      onClick={() =>
+                        execute(() =>
+                          evaluationActions.decideEvaluation(ev.id, {
+                            classification: proposed,
+                            note: comment,
+                          }),
+                        )
+                      }
+                    >
+                      Quyết định xếp loại
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-ink-3">
+                  Quyền ở đây là ma trận mô phỏng. Lãnh đạo demo không đại diện
+                  thẩm quyền chính thức theo từng nhóm QĐ39.
+                </p>
+              </div>
+            ) : (
+              <EmptyState
+                title="Đang chờ bước tiếp theo"
+                hint="Đổi sang đúng tài khoản demo để tự đánh giá, thẩm định hoặc quyết định. Không tự thẩm định hồ sơ của mình."
+              />
+            )}
+          </Card>
+        </div>
+      )}
+      {tab === "snapshots" && (
+        <div className="space-y-4">
+          <Card className="p-5">
+            <h2 className="mb-3 text-sm font-semibold">
+              Các lần tính bất biến
+            </h2>
+            {ev.calculationRuns?.length ? (
+              ev.calculationRuns.toReversed().map((r) => (
+                <details key={r.id} className="mb-3 rounded-ctl bg-fill p-4">
+                  <summary className="cursor-pointer text-[13px] font-semibold">
+                    {fmtDateTime(r.at)} · {r.finalTotal.toFixed(2)} điểm ·{" "}
+                    {r.ruleVersion}
+                  </summary>
+                  <div className="mt-3 space-y-2 text-xs text-ink-2">
+                    <p>
+                      {r.id} · {r.reason}
+                    </p>
+                    <p>
+                      Điểm gốc: {r.calculatedTotal}; điểm sau điều chỉnh:{" "}
+                      {r.finalTotal}
+                      {r.override ? ` · Lý do: ${r.override.reason}` : ""}
+                    </p>
+                    <p>
+                      Trục:{" "}
+                      {r.axes.map((a) => `${a.code}=${a.value}`).join("; ")}
+                    </p>
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[560px] text-left">
+                        <thead>
+                          <tr>
+                            <th className="py-2">Nhiệm vụ</th>
+                            <th>Khối lượng</th>
+                            <th>Chất lượng</th>
+                            <th>Danh mục</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {r.taskSnapshots.map((t) => (
+                            <tr key={t.id}>
+                              <td className="py-2">
+                                {t.id} · {t.status}
+                              </td>
+                              <td>
+                                {t.quantity}/{t.plannedQuantity}
+                              </td>
+                              <td>{t.quality || "—"}</td>
+                              <td>{t.catalogVersion}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {r.missingInputs.map((m) => (
+                      <p key={m} className="text-warn-600">
+                        {m}
+                      </p>
+                    ))}
+                  </div>
+                </details>
+              ))
+            ) : (
+              <p className="text-xs text-ink-3">
+                Chưa có lần tính mới; các điểm trong dữ liệu mẫu không được coi
+                là snapshot đã xác minh.
+              </p>
+            )}
+          </Card>
+          {!!ev.decisionHistory?.length && (
+            <Card className="p-5">
+              <h2 className="mb-3 text-sm font-semibold">
+                Quyết định trước khi mở lại
+              </h2>
+              {ev.decisionHistory.map((d, i) => (
+                <div className="mb-3 text-xs" key={i}>
+                  <ClassificationBadge value={d.classification} />
+                  <p className="mt-2">
+                    {fmtDateTime(d.at)} · {d.note ?? "Quyết định mẫu"}
+                  </p>
+                </div>
+              ))}
+            </Card>
+          )}
+          <Card className="p-5">
+            <h2 className="mb-4 text-sm font-semibold">Nhật ký hồ sơ</h2>
+            <ol className="space-y-4">
+              {ev.history.toReversed().map((h) => (
+                <li key={h.id} className="text-xs">
+                  <p className="font-semibold">{h.action}</p>
+                  <p className="mt-1 text-ink-2">{h.note}</p>
+                  <p className="mt-1 text-ink-3">
+                    {fmtDateTime(h.at)} ·{" "}
+                    {personName(state, h.actorId) ?? h.actorId}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
-
-function ScoreBox({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div className="rounded-card bg-fill p-3">
-      <p className="text-[11px] font-medium text-ink-3">{label}</p>
-      <p className="mt-1 text-[18px] font-semibold">{value}</p>
-      {sub ? <p className="mt-0.5 text-[10px] text-ink-3">{sub}</p> : null}
-    </div>
-  );
-}
-
-function ClassificationSelect({ value, onChange }: { value: Classification; onChange: (v: Classification) => void }) {
-  const options: Classification[] = ["XUAT_SAC", "TOT", "HOAN_THANH", "KHONG_HOAN_THANH"];
-  return (
-    <select className="control w-full" value={value} onChange={(e) => onChange(e.target.value as Classification)}>
-      {options.map((o) => (
-        <option key={o} value={o}>
-          {o === "XUAT_SAC" ? "Hoàn thành xuất sắc nhiệm vụ" : o === "TOT" ? "Hoàn thành tốt nhiệm vụ" : o === "HOAN_THANH" ? "Hoàn thành nhiệm vụ" : "Không hoàn thành nhiệm vụ"}
-        </option>
-      ))}
-    </select>
-  );
-}
-
-function ResultLine({ label, value, at }: { label: string; value: string; at?: string | null }) {
-  return (
-    <div className="flex items-start justify-between gap-3 rounded-card bg-fill px-3 py-2">
-      <span className="text-ink-3">{label}</span>
-      <span className="text-right">
-        <span className="block font-medium">{value}</span>
-        {at ? <span className="block text-[10px] text-ink-3">{fmtDateTime(at)}</span> : null}
-      </span>
-    </div>
-  );
-}
-

@@ -64,7 +64,8 @@ export type TaskStatus =
   | "RETURNED"
   | "REVIEWED"
   | "ACCEPTED"
-  | "LOCKED";
+  | "LOCKED"
+  | "CANCELLED";
 
 export interface EvidenceRef {
   id: string;
@@ -73,6 +74,10 @@ export interface EvidenceRef {
   size: string;
   classification: "Nội bộ" | "Hạn chế";
   uploadedAt: string;
+  sizeBytes?: number;
+  uploadedBy?: string;
+  synthetic?: boolean;
+  storageMode?: "METADATA_ONLY";
 }
 
 export interface HistoryEntry {
@@ -90,9 +95,11 @@ export interface TaskResult {
   qualityLevel: string;
   note: string;
   submittedAt: string;
+  completedAt?: string;
 }
 
 export interface Task {
+  plannedQuantity?: number;
   id: string;
   title: string;
   description: string;
@@ -102,6 +109,27 @@ export interface Task {
   assignerId: string;
   positionRefId: string;
   period: string;
+  periodId?: string;
+  catalogSnapshot?: Pick<
+    CatalogItem,
+    | "id"
+    | "version"
+    | "code"
+    | "name"
+    | "product"
+    | "unit"
+    | "standardScore"
+    | "coefficient"
+    | "durationDays"
+    | "sourceRef"
+  >;
+  assignmentSnapshot?: {
+    assigneeName: string;
+    positionTitle: string;
+    departmentName: string;
+    assignedAt: string;
+  };
+  revision?: number;
   dueAt: string;
   status: TaskStatus;
   progress: number;
@@ -110,7 +138,8 @@ export interface Task {
   history: HistoryEntry[];
 }
 
-export type Classification = "XUAT_SAC" | "TOT" | "HOAN_THANH" | "KHONG_HOAN_THANH";
+export type Classification =
+  "XUAT_SAC" | "TOT" | "HOAN_THANH" | "KHONG_HOAN_THANH";
 
 export const CLASS_LABELS: Record<Classification, string> = {
   XUAT_SAC: "Hoàn thành xuất sắc nhiệm vụ",
@@ -127,6 +156,7 @@ export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
   REVIEWED: "Đã thẩm định",
   ACCEPTED: "Đã nghiệm thu",
   LOCKED: "Đã khóa kỳ",
+  CANCELLED: "Đã hủy",
 };
 
 export interface AxisSnapshot {
@@ -152,9 +182,36 @@ export interface CalcSnapshot {
   textTotal: number;
   arithmeticTotal: number | null;
   note: string | null;
+  status?: "CANDIDATE";
 }
 
-export type EvalStatus = "DRAFT" | "SUBMITTED" | "REVIEWED" | "APPROVED" | "LOCKED";
+export interface CalculationRun {
+  id: string;
+  at: string;
+  actorId: string;
+  ruleVersion: string;
+  generalScore: number;
+  axes: AxisSnapshot[];
+  calculatedTotal: number;
+  finalTotal: number;
+  taskSnapshots: {
+    id: string;
+    title: string;
+    status: string;
+    quantity: number;
+    plannedQuantity: number;
+    quality: string;
+    submittedAt: string;
+    dueAt: string;
+    catalogVersion: string;
+  }[];
+  missingInputs: string[];
+  override?: { value: number; reason: string; actorId: string };
+  reason: string;
+}
+
+export type EvalStatus =
+  "DRAFT" | "SUBMITTED" | "REVIEWED" | "APPROVED" | "LOCKED";
 
 export const EVAL_STATUS_LABELS: Record<EvalStatus, string> = {
   DRAFT: "Bản nháp",
@@ -168,7 +225,7 @@ export interface Evaluation {
   id: string;
   periodId: string;
   subjectId: string;
-  subjectType: "PERSON";
+  subjectType: "PERSON" | "DEPARTMENT";
   departmentId: string;
   status: EvalStatus;
   isLeader: boolean;
@@ -177,10 +234,28 @@ export interface Evaluation {
   axes: AxisSnapshot[];
   calc: CalcSnapshot;
   self: { comment: string; proposed: Classification; at: string | null } | null;
-  review: { comment: string; proposed: Classification; reviewerId: string; at: string } | null;
-  decision: { classification: Classification; decidedById: string; at: string } | null;
+  review: {
+    comment: string;
+    proposed: Classification;
+    reviewerId: string;
+    at: string;
+  } | null;
+  decision: {
+    classification: Classification;
+    decidedById: string;
+    at: string;
+    note?: string;
+    calculationRunId?: string;
+  } | null;
   conditions: ConditionCheck[];
   history: HistoryEntry[];
+  calculationRuns?: CalculationRun[];
+  decisionHistory?: NonNullable<Evaluation["decision"]>[];
+  reviewHistory?: NonNullable<Evaluation["review"]>[];
+  quotaApplicability?: "UNKNOWN" | "NOT_APPLICABLE" | "APPLIES";
+  quotaConfirmed?: boolean;
+  conditionReason?: string;
+  revision?: number;
 }
 
 export interface EvaluationPeriod {
@@ -189,6 +264,11 @@ export interface EvaluationPeriod {
   range: string;
   status: "ACTIVE" | "LOCKED";
   lockedAt: string | null;
+  kind?: "MONTH" | "QUARTER" | "YEAR";
+  startDate?: string;
+  endDate?: string;
+  reopenedAt?: string;
+  reopenReason?: string;
 }
 
 export interface AuditEvent {
@@ -207,4 +287,3 @@ export interface ToastMsg {
   kind: "info" | "success" | "error";
   text: string;
 }
-

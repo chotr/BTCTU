@@ -1,7 +1,14 @@
 "use client";
 
 import { X } from "@phosphor-icons/react";
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
+import type {
+  ButtonHTMLAttributes,
+  InputHTMLAttributes,
+  ReactNode,
+  ReactElement,
+  SelectHTMLAttributes,
+} from "react";
+import { cloneElement, isValidElement, useEffect, useId, useRef } from "react";
 import {
   CLASS_LABELS,
   EVAL_STATUS_LABELS,
@@ -21,7 +28,11 @@ export function Card({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={`rounded-card bg-surface shadow-card ${className}`}>{children}</div>;
+  return (
+    <div className={`rounded-card bg-surface shadow-card ${className}`}>
+      {children}
+    </div>
+  );
 }
 
 export function SectionHeader({
@@ -34,12 +45,14 @@ export function SectionHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="mb-3 flex items-end justify-between gap-3">
+    <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
       <div>
         <h1 className="text-[17px] font-semibold leading-tight">{title}</h1>
         {hint ? <p className="mt-0.5 text-[12px] text-ink-3">{hint}</p> : null}
       </div>
-      {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+      {actions ? (
+        <div className="flex flex-wrap items-center gap-2">{actions}</div>
+      ) : null}
     </div>
   );
 }
@@ -73,9 +86,17 @@ export function StatCard({
     <Card className="p-4">
       <div className="flex items-start justify-between">
         <p className="text-[12px] font-medium text-ink-3">{label}</p>
-        {icon ? <span className={`flex h-7 w-7 items-center justify-center rounded-card ${toneBg} ${toneText}`}>{icon}</span> : null}
+        {icon ? (
+          <span
+            className={`flex h-7 w-7 items-center justify-center rounded-card ${toneBg} ${toneText}`}
+          >
+            {icon}
+          </span>
+        ) : null}
       </div>
-      <p className="mt-2 text-[22px] font-semibold leading-none tracking-tight">{value}</p>
+      <p className="mt-2 text-[22px] font-semibold leading-none tracking-tight">
+        {value}
+      </p>
       {sub ? <p className="mt-1.5 text-[11px] text-ink-3">{sub}</p> : null}
     </Card>
   );
@@ -96,14 +117,19 @@ export function Badge({
     danger: "bg-danger-50 text-danger-600",
   } as const;
   return (
-    <span className={`inline-flex items-center gap-1 rounded-pill px-2 py-0.5 text-[11px] font-semibold ${tones[tone]}`}>
+    <span
+      className={`inline-flex items-center gap-1 rounded-pill px-2 py-0.5 text-[11px] font-semibold ${tones[tone]}`}
+    >
       {children}
     </span>
   );
 }
 
 export function TaskStatusBadge({ status }: { status: TaskStatus }) {
-  const tone: Record<TaskStatus, "neutral" | "accent" | "ok" | "warn" | "danger"> = {
+  const tone: Record<
+    TaskStatus,
+    "neutral" | "accent" | "ok" | "warn" | "danger"
+  > = {
     ASSIGNED: "neutral",
     IN_PROGRESS: "accent",
     SUBMITTED: "warn",
@@ -111,6 +137,7 @@ export function TaskStatusBadge({ status }: { status: TaskStatus }) {
     REVIEWED: "accent",
     ACCEPTED: "ok",
     LOCKED: "neutral",
+    CANCELLED: "neutral",
   };
   return <Badge tone={tone[status]}>{TASK_STATUS_LABELS[status]}</Badge>;
 }
@@ -158,7 +185,7 @@ export function Button({
   return (
     <button
       type="button"
-      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-ctl px-3 text-[13px] font-medium transition-all duration-100 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 ${buttonVariants[variant]} ${className}`}
+      className={`inline-flex min-h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-ctl px-3 py-1.5 text-[13px] font-medium transition-colors duration-100 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 ${buttonVariants[variant]} ${className}`}
       {...rest}
     >
       {icon}
@@ -167,28 +194,74 @@ export function Button({
   );
 }
 
-export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+export function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: ReactNode;
+}) {
+  const fieldId = useId();
+  const control = children as ReactElement<{ id?: string; "aria-labelledby"?: string; "aria-describedby"?: string }>;
+  const controlId = isValidElement(control) ? control.props.id ?? fieldId : fieldId;
   return (
-    <label className="block">
-      <span className="mb-1 block text-[12px] font-medium text-ink-2">{label}</span>
-      {children}
-      {hint ? <span className="mt-1 block text-[11px] text-ink-3">{hint}</span> : null}
-    </label>
+    <div className="block">
+      <label id={`${fieldId}-label`} htmlFor={controlId} className="mb-1 block text-[12px] font-medium text-ink-2">
+        {label}
+      </label>
+      {isValidElement(control) ? cloneElement(control, { id: controlId, "aria-labelledby": `${fieldId}-label`, ...(hint ? { "aria-describedby": `${fieldId}-hint` } : {}) }) : children}
+      {hint ? (
+        <span id={`${fieldId}-hint`} className="mt-1 block text-[11px] text-ink-3">{hint}</span>
+      ) : null}
+    </div>
   );
 }
 
-export function Input({ className = "", ...rest }: InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={`h-8 rounded-ctl bg-fill-2 px-2.5 text-[13px] text-ink outline-none placeholder:text-ink-3 focus:ring-2 focus:ring-accent-100 ${className}`} {...rest} />;
-}
-
-export function Select({ className = "", children, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select className={`h-8 rounded-ctl bg-fill-2 px-2.5 text-[13px] text-ink outline-none focus:ring-2 focus:ring-accent-100 ${className}`} {...rest}>{children}</select>;
-}
-
-export function Avatar({ name, size = "sm" }: { name: string; size?: "sm" | "md" | "lg" }) {
-  const sizes = { sm: "h-6 w-6 text-[10px]", md: "h-9 w-9 text-[12px]", lg: "h-12 w-12 text-[15px]" } as const;
+export function Input({
+  className = "",
+  ...rest
+}: InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <span className={`inline-flex shrink-0 items-center justify-center rounded-pill bg-accent-100 font-semibold text-accent-700 ${sizes[size]}`}>
+    <input
+      className={`h-9 min-w-0 max-w-full rounded-ctl bg-fill-2 px-2.5 text-[13px] text-ink placeholder:text-ink-3 focus:ring-2 focus:ring-accent-600 ${className}`}
+      {...rest}
+    />
+  );
+}
+
+export function Select({
+  className = "",
+  children,
+  ...rest
+}: SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select
+      className={`h-9 min-w-0 max-w-full rounded-ctl bg-fill-2 px-2.5 text-[13px] text-ink focus:ring-2 focus:ring-accent-600 ${className}`}
+      {...rest}
+    >
+      {children}
+    </select>
+  );
+}
+
+export function Avatar({
+  name,
+  size = "sm",
+}: {
+  name: string;
+  size?: "sm" | "md" | "lg";
+}) {
+  const sizes = {
+    sm: "h-6 w-6 text-[10px]",
+    md: "h-9 w-9 text-[12px]",
+    lg: "h-12 w-12 text-[15px]",
+  } as const;
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center justify-center rounded-pill bg-accent-100 font-semibold text-accent-700 ${sizes[size]}`}
+    >
       {initials(name)}
     </span>
   );
@@ -201,11 +274,25 @@ export function Progress({
   value: number;
   tone?: "accent" | "ok" | "danger";
 }) {
-  const fill = { accent: "bg-accent-600", ok: "bg-ok-600", danger: "bg-danger-600" }[tone];
+  const fill = {
+    accent: "bg-accent-600",
+    ok: "bg-ok-600",
+    danger: "bg-danger-600",
+  }[tone];
   const pct = Math.max(0, Math.min(100, value));
   return (
-    <div className="h-1.5 w-full rounded-pill bg-fill-2">
-      <div className={`h-full rounded-pill ${fill}`} style={{ width: pct + "%" }} />
+    <div
+      role="progressbar"
+      aria-label="Tiến độ hoàn thành"
+      aria-valuenow={pct}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      className="h-1.5 w-full rounded-pill bg-fill-2"
+    >
+      <div
+        className={`h-full rounded-pill ${fill}`}
+        style={{ width: pct + "%" }}
+      />
     </div>
   );
 }
@@ -231,10 +318,22 @@ export function Callout({
   return (
     <div className={`rounded-card p-3 ${tones[tone].split(" ")[0]}`}>
       <div className="flex items-start gap-2.5">
-        {icon ? <span className={`mt-0.5 shrink-0 ${tones[tone].split(" ")[1]}`}>{icon}</span> : null}
+        {icon ? (
+          <span className={`mt-0.5 shrink-0 ${tones[tone].split(" ")[1]}`}>
+            {icon}
+          </span>
+        ) : null}
         <div className="min-w-0">
-          <p className={`text-[12px] font-semibold ${tones[tone].split(" ")[1]}`}>{title}</p>
-          {children ? <div className="mt-1 text-[12px] leading-relaxed text-ink-2">{children}</div> : null}
+          <p
+            className={`text-[12px] font-semibold ${tones[tone].split(" ")[1]}`}
+          >
+            {title}
+          </p>
+          {children ? (
+            <div className="mt-1 text-[12px] leading-relaxed text-ink-2">
+              {children}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
@@ -254,9 +353,17 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
-      {icon ? <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-card bg-fill-2 text-ink-3">{icon}</div> : null}
+      {icon ? (
+        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-card bg-fill-2 text-ink-3">
+          {icon}
+        </div>
+      ) : null}
       <p className="text-[13px] font-semibold">{title}</p>
-      {hint ? <p className="mt-1 max-w-[340px] text-[12px] leading-relaxed text-ink-3">{hint}</p> : null}
+      {hint ? (
+        <p className="mt-1 max-w-[340px] text-[12px] leading-relaxed text-ink-3">
+          {hint}
+        </p>
+      ) : null}
       {action ? <div className="mt-4">{action}</div> : null}
     </div>
   );
@@ -275,24 +382,64 @@ export function Modal({
   children: ReactNode;
   footer?: ReactNode;
 }) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  useEffect(() => {
+    const node = dialog.current;
+    if (open && node && !node.open) node.showModal();
+    if (!open && node?.open) node.close();
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      node?.close();
+    };
+  }, [open]);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-ink/30" onClick={onClose} />
-      <div className="relative w-full max-w-[520px] rounded-card bg-surface p-5 shadow-pop">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold">{title}</h2>
-          <button type="button" onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-ctl text-ink-3 transition-colors hover:bg-fill-2 hover:text-ink">
-            <X size={14} weight="bold" />
-          </button>
-        </div>
-        <div className="flex flex-col gap-3">{children}</div>
-        {footer ? <div className="mt-5 flex justify-end gap-2">{footer}</div> : null}
+    <dialog
+      ref={dialog}
+      aria-labelledby={titleId}
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+      className="fixed inset-0 m-auto max-h-[88dvh] w-[calc(100%-2rem)] max-w-[640px] overflow-y-auto rounded-card bg-surface p-5 text-ink shadow-pop backdrop:bg-ink/35"
+    >
+      <div className="mb-4 flex items-center justify-between">
+        <h2 id={titleId} className="text-[15px] font-semibold">
+          {title}
+        </h2>
+        <button
+          type="button"
+          aria-label="Đóng hộp thoại"
+          onClick={onClose}
+          className="flex h-9 w-9 items-center justify-center rounded-ctl text-ink-3 transition-colors hover:bg-fill-2 hover:text-ink"
+        >
+          <X size={14} weight="bold" />
+        </button>
       </div>
-    </div>
+      <div className="flex flex-col gap-3">{children}</div>
+      {footer ? (
+        <div className="mt-5 flex flex-wrap justify-end gap-2">{footer}</div>
+      ) : null}
+    </dialog>
   );
 }
 
-export function Chip({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <span className={`inline-flex items-center rounded-pill bg-fill-2 px-2 py-0.5 text-[11px] font-medium text-ink-2 ${className}`}>{children}</span>;
+export function Chip({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <span
+      className={`inline-flex items-center rounded-pill bg-fill-2 px-2 py-0.5 text-[11px] font-medium text-ink-2 ${className}`}
+    >
+      {children}
+    </span>
+  );
 }

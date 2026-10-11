@@ -6,7 +6,7 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import { USERS } from "@/lib/mock/data";
 import { useApp } from "@/lib/store";
-import { Avatar, Card } from "@/components/ui";
+import { Avatar, Button, Card, Field, Select } from "@/components/ui";
 
 const roleLabel: Record<string, string> = {
   lanh_dao: "Lãnh đạo Ban",
@@ -16,7 +16,8 @@ const roleLabel: Record<string, string> = {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user } = useApp();
+  const { user, people, departments, hydrated } = useApp();
+  const [personId, setPersonId] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
 
   async function choose(userId: string) {
@@ -33,15 +34,20 @@ export default function LoginPage() {
             BT
           </div>
           <div>
-            <p className="text-[15px] font-semibold leading-tight">Ban Tổ chức Tỉnh ủy</p>
-            <p className="text-[12px] text-ink-3">Quản lý nhiệm vụ & đánh giá</p>
+            <p className="text-[15px] font-semibold leading-tight">
+              Ban Tổ chức Tỉnh ủy
+            </p>
+            <p className="text-[12px] text-ink-3">
+              Quản lý nhiệm vụ & đánh giá
+            </p>
           </div>
         </div>
 
         <Card className="p-5">
           <h1 className="text-[16px] font-semibold">Đăng nhập bản demo</h1>
           <p className="mt-1 text-[13px] leading-relaxed text-ink-2">
-            Chọn một tài khoản mẫu để xem giao diện và quyền thay đổi theo vai trò.
+            Chọn một tài khoản mẫu để xem giao diện và quyền thay đổi theo vai
+            trò.
           </p>
 
           <div className="mt-4 flex flex-col gap-2">
@@ -51,13 +57,15 @@ export default function LoginPage() {
                 <button
                   key={u.id}
                   type="button"
-                  disabled={busy !== null}
+                  disabled={busy !== null || !hydrated}
                   onClick={() => choose(u.id)}
                   className="group flex items-center gap-3 rounded-card bg-fill p-3 text-left transition-colors hover:bg-accent-50 active:translate-y-px disabled:pointer-events-none"
                 >
                   <Avatar name={u.name} size="md" />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-semibold">{u.name}</span>
+                    <span className="block truncate text-[13px] font-semibold">
+                      {u.name}
+                    </span>
                     <span className="block truncate text-[12px] text-ink-3">
                       {roleLabel[u.role]}
                       {u.departmentName ? ` · ${u.departmentName}` : ""}
@@ -78,17 +86,42 @@ export default function LoginPage() {
               );
             })}
           </div>
+          <details className="mt-4 rounded-ctl bg-fill p-3">
+            <summary className="cursor-pointer text-xs font-medium text-ink-2">
+              Tài khoản nhân sự khác
+            </summary>
+            <div className="mt-3 space-y-3">
+              <Field label="Nhân sự mô phỏng">
+                <Select
+                  className="w-full"
+                  value={personId}
+                  onChange={(e) => setPersonId(e.target.value)}
+                >
+                  <option value="">Chọn nhân sự</option>
+                  {people
+                    .filter((p) => !USERS.some((u) => u.id === p.id))
+                    .map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} ·{" "}
+                        {
+                          departments.find((d) => d.id === p.departmentId)
+                            ?.shortName
+                        }
+                      </option>
+                    ))}
+                </Select>
+              </Field>
+              <Button
+                disabled={!personId || busy !== null || !hydrated}
+                onClick={() => choose(personId)}
+                className="w-full"
+              >
+                Vào tài khoản đã chọn
+              </Button>
+            </div>
+          </details>
         </Card>
-
-        <div className="mt-4 flex items-start gap-2 px-1 text-[12px] leading-relaxed text-ink-3">
-          <ShieldCheck size={16} className="mt-0.5 shrink-0" />
-          <span>
-            Dữ liệu minh họa, không kết nối hệ thống thật. Xác thực thật (Cloudflare Access + MFA)
-            nằm ngoài phạm vi bản UI mock.
-          </span>
-        </div>
       </div>
     </main>
   );
 }
-

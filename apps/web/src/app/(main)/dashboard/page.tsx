@@ -1,217 +1,277 @@
 "use client";
-
-import { ArrowRight, ChartLineUp, CheckCircle, ClipboardText, Clock, WarningCircle } from "@phosphor-icons/react";
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { fmtDate, fmtDateTime, fmtNum } from "@/lib/format";
-import { useApp } from "@/lib/store";
+import { useState } from "react";
 import {
-  Avatar,
+  ArrowRight,
+  ClipboardText,
+  CheckCircle,
+  Clock,
+  ChartBar,
+} from "@phosphor-icons/react";
+import { useApp } from "@/lib/store";
+import { scopedData } from "@/lib/exports";
+import { evaluationLabel } from "@/lib/evaluation";
+import { CLASS_LABELS } from "@/lib/types";
+import { personName } from "@/lib/shared/names";
+import {
+  TASK_DONE,
+  TASK_EDITABLE,
+  TASK_IN_REVIEW,
+  EVAL_IN_REVIEW,
+  inGroup,
+} from "@/lib/domain/workflow";
+import { fmtDate, fmtDateTime } from "@/lib/format";
+import {
   Badge,
-  Callout,
   Card,
+  EmptyState,
+  EvalStatusBadge,
   Progress,
   SectionHeader,
+  Select,
   StatCard,
   TaskStatusBadge,
 } from "@/components/ui";
-
 export default function DashboardPage() {
-  const { user, tasks, departments, evaluations, people, audit, periods } = useApp();
-  if (!user) return null;
-
-  const activePeriod = periods.find((p) => p.status === "ACTIVE");
-  const activeEvals = evaluations.filter((e) => e.periodId === activePeriod?.id);
-  const submitted = tasks.filter((t) => t.status === "SUBMITTED").length;
-  const inProgress = tasks.filter((t) => t.status === "IN_PROGRESS" || t.status === "ASSIGNED").length;
-  const decided = activeEvals.filter((e) => e.status === "APPROVED" || e.status === "LOCKED").length;
-  const pendingDecision = evaluations.filter((e) => e.status === "REVIEWED").length;
-  const pendingReview = evaluations.filter(
-    (e) => e.status === "SUBMITTED" && user.role === "truong_phong" && e.departmentId === user.departmentId,
+  const state = useApp();
+  const { user, periods } = state;
+  const scoped = scopedData(state);
+  const [periodId, setPeriod] = useState(
+    periods.find((p) => p.status === "ACTIVE")?.id ?? periods[0]?.id ?? "",
+  );
+  const period = periods.find((p) => p.id === periodId);
+  const tasks = scoped.tasks.filter(
+    (t) =>
+      (t.periodId === periodId || t.period === period?.name) &&
+      t.status !== "CANCELLED",
+  );
+  const evs = scoped.evaluations.filter((e) => e.periodId === periodId);
+  const done = tasks.filter((t) => inGroup(TASK_DONE, t.status));
+  const todoTasks = tasks.filter((t) =>
+    t.assigneeId === user?.id
+      ? inGroup(TASK_EDITABLE, t.status)
+      : user?.role !== "cong_chuc" &&
+        inGroup(TASK_IN_REVIEW, t.status),
+  );
+  const todoEvals = evs.filter((e) =>
+    e.subjectId === user?.id
+      ? e.status === "DRAFT"
+      : user?.role === "lanh_dao"
+        ? inGroup(EVAL_IN_REVIEW, e.status)
+        : user?.role === "truong_phong" &&
+          e.subjectType === "PERSON" &&
+          e.status === "SUBMITTED",
+  );
+  const decided = evs.filter((e) => e.decision);
+  const late = tasks.filter(
+    (t) =>
+      !inGroup(TASK_DONE, t.status) &&
+      new Date(t.dueAt).getTime() < Date.now(),
   ).length;
-
-  const myTasks = user.role === "cong_chuc" ? tasks.filter((t) => t.assigneeId === user.id && t.status !== "ACCEPTED" && t.status !== "LOCKED") : [];
-
   return (
-    <div>
+    <div className="space-y-4">
       <SectionHeader
-        title={`Xin chào, ${user.name}`}
-        hint={activePeriod ? `Kỳ đánh giá ${activePeriod.name} · ${activePeriod.range}` : undefined}
+        title={`Xin chào, ${user?.name}`}
+        hint={`${user?.departmentName ?? "Phạm vi toàn Ban"} · ${period?.range ?? "Chưa có kỳ"}`}
+        actions={
+          <Select
+            aria-label="Kỳ tổng quan"
+            value={periodId}
+            onChange={(e) => setPeriod(e.target.value)}
+          >
+            {periods.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </Select>
+        }
       />
-
-      <Callout tone="accent" icon={<WarningCircle size={16} />} title="Bản demo chạy hoàn toàn bằng dữ liệu minh họa">
-        UI đầy đủ luồng nghiệp vụ trong kế hoạch; API thật sẽ nối sau. Các con số KPI bám ví dụ 05-HD/TU, gồm cả mâu thuẫn số học
-        INC-01 được hiển thị công khai thay vì tự sửa nguồn.
-      </Callout>
-
-      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Nhiệm vụ đang thực hiện" value={fmtNum(inProgress)} sub={`Chờ nghiệm thu: ${fmtNum(submitted)}`} icon={<ClipboardText size={15} weight="bold" />} />
-        <StatCard label="Bản tự đánh giá đã nộp" value={fmtNum(activeEvals.filter((e) => e.status !== "DRAFT").length)} sub={`Tổng ${fmtNum(activeEvals.length)} đối tượng kỳ này`} icon={<ChartLineUp size={15} weight="bold" />} tone="ok" />
-        <StatCard label="Đã quyết định xếp loại" value={fmtNum(decided)} sub="Bao gồm các bản đã khóa kỳ" icon={<CheckCircle size={15} weight="bold" />} tone="accent" />
-        <StatCard label="Chờ xử lý của bạn" value={fmtNum(user.role === "lanh_dao" ? pendingDecision : user.role === "truong_phong" ? pendingReview : myTasks.length)} sub={user.role === "lanh_dao" ? "Hồ sơ chờ quyết định xếp loại" : user.role === "truong_phong" ? "Hồ sơ chờ thẩm định" : "Nhiệm vụ cần cập nhật"} icon={<Clock size={15} weight="bold" />} tone="warn" />
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-ctl bg-accent-50 px-4 py-3 text-xs">
+        <Link
+          href="/settings"
+          className="flex items-center gap-1 font-medium text-accent-700"
+        >
+          Hướng dẫn demo <ArrowRight size={13} />
+        </Link>
       </div>
-
-      <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <div className="flex flex-col gap-4 xl:col-span-2">
-          <Card className="p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-[14px] font-semibold">Tiến độ theo phòng</h2>
-              <Link href="/tasks" className="flex items-center gap-1 text-[12px] font-medium text-accent-600 hover:underline">
-                Xem công việc <ArrowRight size={12} weight="bold" />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          label="Nhiệm vụ trong kỳ"
+          value={String(tasks.length)}
+          sub={`${late} việc chưa hoàn thành đã quá hạn`}
+          icon={<ClipboardText size={18} />}
+        />
+        <StatCard
+          label="Đã nghiệm thu"
+          value={String(done.length)}
+          sub={`${tasks.length ? Math.round((done.length / tasks.length) * 100) : 0}% tổng nhiệm vụ (không gồm hủy)`}
+          tone="ok"
+          icon={<CheckCircle size={18} />}
+        />
+        <StatCard
+          label="Chờ bạn xử lý"
+          value={String(todoTasks.length + todoEvals.length)}
+          sub="Nhiệm vụ và hồ sơ thuộc vai trò của bạn"
+          tone="warn"
+          icon={<Clock size={18} />}
+        />
+        <StatCard
+          label="Đã quyết định xếp loại"
+          value={`${decided.length}/${evs.length}`}
+          sub="Cá nhân và tập thể có hồ sơ trong kỳ"
+          icon={<ChartBar size={18} />}
+        />
+      </div>
+      <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+        <div className="space-y-4">
+          <Card className="p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-semibold">Việc cần xử lý</h2>
+              <Link
+                href={user?.role === "cong_chuc" ? "/tasks" : "/approvals"}
+                className="text-xs font-medium text-accent-700"
+              >
+                Xem tất cả
               </Link>
             </div>
-            <div className="flex flex-col gap-4">
-              {departments.map((d) => {
-                const deptTasks = tasks.filter((t) => t.departmentId === d.id);
-                const done = deptTasks.filter((t) => t.status === "ACCEPTED" || t.status === "LOCKED").length;
-                const pct = deptTasks.length ? Math.round((done / deptTasks.length) * 100) : 0;
+            {!todoTasks.length && !todoEvals.length ? (
+              <EmptyState
+                title="Không còn việc chờ bạn trong kỳ"
+                hint="Bạn có thể chuyển kỳ hoặc xem lại hồ sơ đã hoàn tất."
+              />
+            ) : (
+              <div className="space-y-2">
+                {todoTasks.slice(0, 6).map((t) => (
+                  <Link
+                    key={t.id}
+                    href={`/tasks/${t.id}`}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-ctl bg-fill p-3 hover:bg-accent-50"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] font-medium">{t.title}</p>
+                      <p className="mt-1 text-xs text-ink-3">
+                        {personName(state, t.assigneeId)}{" "}
+                        · Hạn {fmtDate(t.dueAt)}
+                      </p>
+                    </div>
+                    <TaskStatusBadge status={t.status} />
+                  </Link>
+                ))}
+                {todoEvals.slice(0, 4).map((e) => (
+                  <Link
+                    key={e.id}
+                    href={`/evaluation/${e.id}`}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-ctl bg-fill p-3 hover:bg-accent-50"
+                  >
+                    <div>
+                      <p className="text-[13px] font-medium">
+                        Đánh giá · {evaluationLabel(e, state)}
+                      </p>
+                      <p className="mt-1 text-xs text-ink-3">
+                        {e.subjectType === "PERSON"
+                          ? "Cá nhân"
+                          : "Tập thể phòng"}
+                      </p>
+                    </div>
+                    <EvalStatusBadge status={e.status} />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </Card>
+          <Card className="p-5">
+            <h2 className="mb-4 text-sm font-semibold">
+              {user?.role === "cong_chuc"
+                ? "Tiến độ nhiệm vụ của tôi"
+                : "Tiến độ theo phòng"}
+            </h2>
+            <div className="space-y-5">
+              {scoped.departments.map((d) => {
+                const dt = tasks.filter((t) => t.departmentId === d.id);
+                const dd = dt.filter((t) =>
+                  inGroup(TASK_DONE, t.status),
+                ).length;
                 return (
                   <div key={d.id}>
-                    <div className="mb-1 flex items-center justify-between text-[12px]">
+                    <div className="mb-2 flex flex-wrap justify-between gap-2 text-xs">
                       <span className="font-medium">{d.name}</span>
                       <span className="text-ink-3">
-                        {done}/{deptTasks.length} nhiệm vụ nghiệm thu
+                        {dd}/{dt.length} nghiệm thu
                       </span>
                     </div>
-                    <Progress value={pct} />
+                    <Progress value={dt.length ? (dd / dt.length) * 100 : 0} />
                   </div>
                 );
               })}
             </div>
-          </Card>
-
-          <Card className="p-4">
-            <h2 className="mb-3 text-[14px] font-semibold">Việc cần xử lý</h2>
-            <TodoList />
           </Card>
         </div>
-
-        <div className="flex flex-col gap-4">
-          <Card className="p-4">
-            <h2 className="mb-3 text-[14px] font-semibold">Phân bố xếp loại quý</h2>
-            <DistributionBars />
-          </Card>
-
-          <Card className="p-4">
-            <h2 className="mb-3 text-[14px] font-semibold">Hoạt động gần đây</h2>
-            <div className="flex flex-col gap-3">
-              {audit.slice(0, 6).map((a) => {
-                const actor = people.find((p) => p.id === a.actorId);
+        <div className="space-y-4">
+          <Card className="p-5">
+            <h2 className="mb-4 text-sm font-semibold">
+              Xếp loại đã quyết định
+            </h2>
+            <div className="space-y-4">
+              {Object.entries(CLASS_LABELS).map(([id, label]) => {
+                const count = decided.filter(
+                  (e) => e.decision?.classification === id,
+                ).length;
                 return (
-                  <div key={a.id} className="flex items-start gap-2.5">
-                    <Avatar name={actor?.name ?? "?"} size="sm" />
-                    <div className="min-w-0">
-                      <p className="text-[12px] leading-snug">
-                        <span className="font-semibold">{actor?.name ?? "?"}</span>{" "}
-                        <span className="text-ink-2">{a.action}</span>{" "}
-                        <span className="font-medium">{a.resource}</span>
-                      </p>
-                      <p className="text-[11px] text-ink-3">{fmtDateTime(a.at)}</p>
+                  <div key={id}>
+                    <div className="mb-2 flex justify-between gap-2 text-xs">
+                      <span>{label}</span>
+                      <span className="font-semibold tabular-nums">
+                        {count}
+                      </span>
                     </div>
-                    {a.outcome === "DENIED" ? <Badge tone="danger">Từ chối</Badge> : null}
+                    <Progress
+                      value={
+                        decided.length ? (count / decided.length) * 100 : 0
+                      }
+                    />
                   </div>
                 );
               })}
             </div>
+            <p className="mt-4 text-[11px] leading-relaxed text-ink-3">
+              Chỉ tính quyết định trong phạm vi truy cập, không tính đề xuất
+              thành kết quả chính thức.
+            </p>
+          </Card>
+          <Card className="p-5">
+            <h2 className="mb-4 text-sm font-semibold">
+              {user?.role === "cong_chuc"
+                ? "Lộ trình demo"
+                : "Hoạt động gần đây"}
+            </h2>
+            {user?.role === "cong_chuc" ? (
+              <ol className="space-y-3 text-xs text-ink-2">
+                <li>1. Mở nhiệm vụ và nhập kết quả / minh chứng.</li>
+                <li>2. Nộp nghiệm thu, chờ trưởng phòng xử lý.</li>
+                <li>3. Tính KPI từ nhiệm vụ được nghiệm thu.</li>
+                <li>4. Gửi bản tự đánh giá kèm nhận xét.</li>
+              </ol>
+            ) : (
+              <div className="space-y-4">
+                {scoped.audit.slice(0, 5).map((a) => (
+                  <div key={a.id} className="text-xs">
+                    <div className="flex justify-between gap-2">
+                      <p className="font-medium">{a.action}</p>
+                      {a.outcome === "DENIED" && (
+                        <Badge tone="danger">Từ chối</Badge>
+                      )}
+                    </div>
+                    <p className="mt-1 break-words text-ink-3">
+                      {a.resource} · {fmtDateTime(a.at)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </Card>
         </div>
       </div>
-    </div>
-  );
-}
-
-function TodoList() {
-  const { user, tasks, evaluations, people, departments } = useApp();
-  if (!user) return null;
-
-  const rows: { href: string; title: string; meta: string; badge: ReactNode }[] = [];
-
-  if (user.role === "cong_chuc") {
-    for (const t of tasks.filter((x) => x.assigneeId === user.id && ["ASSIGNED", "IN_PROGRESS", "RETURNED"].includes(x.status))) {
-      rows.push({ href: "/tasks/" + t.id, title: t.title, meta: "Hạn " + fmtDate(t.dueAt), badge: <TaskStatusBadge status={t.status} /> });
-    }
-    const myEval = evaluations.find((e) => e.subjectId === user.id && e.status === "DRAFT");
-    if (myEval) {
-      rows.push({ href: "/evaluation/" + myEval.id, title: "Nộp bản tự đánh giá quý III", meta: "Bản nháp đang chờ hoàn thiện", badge: <Badge tone="warn">Cần nộp</Badge> });
-    }
-  }
-
-  if (user.role === "truong_phong") {
-    for (const t of tasks.filter((x) => x.status === "SUBMITTED" && x.departmentId === user.departmentId)) {
-      rows.push({ href: "/tasks/" + t.id, title: t.title, meta: "Chờ nghiệm thu", badge: <TaskStatusBadge status={t.status} /> });
-    }
-    for (const e of evaluations.filter((x) => x.status === "SUBMITTED" && x.departmentId === user.departmentId)) {
-      const subject = people.find((p) => p.id === e.subjectId);
-      rows.push({ href: "/evaluation/" + e.id, title: "Thẩm định đánh giá của " + (subject?.name ?? "?"), meta: "Chờ nhận xét, đề xuất mức", badge: <Badge tone="warn">Chờ thẩm định</Badge> });
-    }
-  }
-
-  if (user.role === "lanh_dao") {
-    for (const e of evaluations.filter((x) => x.status === "REVIEWED")) {
-      const subject = people.find((p) => p.id === e.subjectId);
-      const dept = departments.find((d) => d.id === e.departmentId);
-      rows.push({ href: "/evaluation/" + e.id, title: "Quyết định xếp loại cho " + (subject?.name ?? "?"), meta: dept?.name ?? "", badge: <Badge tone="accent">Chờ quyết định</Badge> });
-    }
-    for (const t of tasks.filter((x) => x.status === "SUBMITTED")) {
-      rows.push({ href: "/tasks/" + t.id, title: t.title, meta: "Chờ nghiệm thu cấp phòng", badge: <TaskStatusBadge status={t.status} /> });
-    }
-  }
-
-  if (rows.length === 0) {
-    return <p className="py-6 text-center text-[12px] text-ink-3">Không còn việc chờ xử lý. Mọi thứ đã theo đúng luồng.</p>;
-  }
-
-  return (
-    <div className="flex flex-col">
-      {rows.map((r, i) => (
-        <Link key={i} href={r.href} className="flex items-center justify-between gap-3 rounded-card px-2 py-2.5 transition-colors hover:bg-fill">
-          <div className="min-w-0">
-            <p className="truncate text-[13px] font-medium">{r.title}</p>
-            <p className="text-[11px] text-ink-3">{r.meta}</p>
-          </div>
-          {r.badge}
-        </Link>
-      ))}
-    </div>
-  );
-}
-
-function DistributionBars() {
-  const { evaluations, periods } = useApp();
-  const active = periods.find((p) => p.status === "ACTIVE");
-  const evals = evaluations.filter((e) => e.periodId === active?.id);
-  const order = ["XUAT_SAC", "TOT", "HOAN_THANH", "KHONG_HOAN_THANH"] as const;
-  const labels: Record<string, string> = {
-    XUAT_SAC: "Xuất sắc",
-    TOT: "Tốt",
-    HOAN_THANH: "Hoàn thành",
-    KHONG_HOAN_THANH: "Không hoàn thành",
-  };
-  const decided = evals.filter((e) => e.decision).map((e) => e.decision!.classification);
-  const decidedCount = decided.length;
-
-  return (
-    <div className="flex flex-col gap-3">
-      {order.map((cls) => {
-        const count = decided.filter((d) => d === cls).length;
-        const pct = decidedCount ? Math.round((count / decidedCount) * 100) : 0;
-        return (
-          <div key={cls} className="flex items-center gap-2">
-            <span className="w-24 shrink-0 text-[12px] text-ink-2">{labels[cls]}</span>
-            <div className="h-2 flex-1 rounded-pill bg-fill-2">
-              <div
-                className={
-                  "h-full rounded-pill " +
-                  (cls === "XUAT_SAC" ? "bg-ok-600" : cls === "TOT" ? "bg-accent-600" : cls === "HOAN_THANH" ? "bg-warn-600" : "bg-danger-600")
-                }
-                style={{ width: pct + "%" }}
-              />
-            </div>
-            <span className="w-8 text-right text-[12px] font-semibold">{count}</span>
-          </div>
-        );
-      })}
-      <p className="text-[11px] text-ink-3">Dựa trên các bản đã quyết định trong kỳ · dữ liệu minh họa</p>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Be_Vietnam_Pro } from "next/font/google";
 import type { ReactNode } from "react";
 import "./globals.css";
+import { StoreProvider } from "@/components/store-provider";
 
 const beVietnam = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
@@ -12,15 +13,15 @@ const beVietnam = Be_Vietnam_Pro({
 
 export const metadata: Metadata = {
   title: "BTCTU · Quản lý nhiệm vụ & đánh giá",
-  description:
-    "Bản demo web quản lý nhiệm vụ và đánh giá, xếp loại cho Ban Tổ chức Tỉnh ủy. Dữ liệu minh họa, không kết nối hệ thống thật.",
+  description: "",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="vi">
-      <body className={`${beVietnam.variable} font-sans`}>{children}</body>
+      <body className={`${beVietnam.variable} font-sans`}>
+        <StoreProvider>{children}</StoreProvider>
+      </body>
     </html>
   );
 }
-

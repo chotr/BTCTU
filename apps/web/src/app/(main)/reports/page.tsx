@@ -1,111 +1,303 @@
 "use client";
-
-import { Export } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
-import { api } from "@/lib/api";
-import { fmtNum } from "@/lib/format";
-import { useApp } from "@/lib/store";
-import { Badge, Button, Card, SectionHeader, Select, StatCard } from "@/components/ui";
-
+import Link from "next/link";
+import { useState } from "react";
+import { Export, Printer, FileText } from "@phosphor-icons/react";
+import { appendAudit, useApp } from "@/lib/store";
+import { exportReport, scopedData } from "@/lib/exports";
+import { evaluationLabel, evaluationTotal } from "@/lib/evaluation";
+import { CLASS_LABELS } from "@/lib/types";
+import {
+  TASK_DONE,
+  TASK_EDITABLE,
+  TASK_IN_REVIEW,
+  inGroup,
+} from "@/lib/domain/workflow";
+import {
+  Badge,
+  Button,
+  Card,
+  ClassificationBadge,
+  EmptyState,
+  Field,
+  SectionHeader,
+  Select,
+  StatCard,
+} from "@/components/ui";
 export default function ReportsPage() {
-  const { periods, tasks, departments, evaluations } = useApp();
-  const [periodId, setPeriodId] = useState(periods.find((p) => p.status === "ACTIVE")?.id ?? periods[0]?.id ?? "");
-
-  const periodTasks = useMemo(() => tasks.filter((t) => t.period === periods.find((p) => p.id === periodId)?.name), [tasks, periods, periodId]);
-  const total = periodTasks.length;
-  const done = periodTasks.filter((t) => t.status === "ACCEPTED" || t.status === "LOCKED").length;
-  const submitted = periodTasks.filter((t) => t.status === "SUBMITTED").length;
-  const onTime = Math.round(total ? (done / total) * 100 : 0);
-
-  const decided = evaluations.filter((e) => e.periodId === periodId && e.decision).map((e) => e.decision!.classification);
-  const count = (cls: string) => decided.filter((d) => d === cls).length;
-
+  const state = useApp();
+  const scoped = scopedData(state);
+  const [periodId, setPeriod] = useState(state.periods[0]?.id ?? "");
+  const [dept, setDept] = useState("ALL");
+  const [type, setType] = useState("ALL");
+  const [draft, setDraft] = useState<string | null>(null);
+  const period = state.periods.find((p) => p.id === periodId);
+  const tasks = scoped.tasks.filter(
+    (t) =>
+      (t.periodId === periodId || t.period === period?.name) &&
+      (dept === "ALL" || t.departmentId === dept) &&
+      t.status !== "CANCELLED",
+  );
+  const evs = scoped.evaluations.filter(
+    (e) =>
+      e.periodId === periodId &&
+      (dept === "ALL" || e.departmentId === dept) &&
+      (type === "ALL" || e.subjectType === type),
+  );
+  const done = tasks.filter((t) => inGroup(TASK_DONE, t.status));
+  const decided = evs.filter((e) => e.decision);
+  function makeDraft() {
+    setDraft(
+      `DỰ THẢO MINH HỌA — KHÔNG CÓ GIÁ TRỊ QUYẾT ĐỊNH\nBáo cáo kết quả ${period?.name}\nPhạm vi: ${dept === "ALL" ? "theo quyền tài khoản" : state.departments.find((d) => d.id === dept)?.name}\n\n1. Thực hiện nhiệm vụ\nCó ${tasks.length} nhiệm vụ (không tính nhiệm vụ hủy), ${done.length} nhiệm vụ được nghiệm thu.\n\n2. Đánh giá, xếp loại\n${decided.length}/${evs.length} hồ sơ có quyết định mô phỏng.\n${Object.entries(
+        CLASS_LABELS,
+      )
+        .map(
+          ([key, label]) =>
+            `${label}: ${decided.filter((e) => e.decision?.classification === key).length}`,
+        )
+        .join(
+          "\n",
+        )}\n\n3. Nội dung cần rà soát\nĐối chiếu thẩm quyền, điều kiện QĐ39; quy tắc ứng viên chưa được phê duyệt chính thức. Kiểm tra nguồn và căn cứ từng hồ sơ trước khi sử dụng.\n\nNgười rà soát: ................................`,
+    );
+    appendAudit({
+      actorId: state.user!.id,
+      action: "Tạo dự thảo báo cáo",
+      resource: periodId,
+      detail:
+        "Mẫu xác định từ dữ liệu tổng hợp; không AI, không tự ký/ban hành",
+      outcome: "OK",
+    });
+  }
+  function print() {
+    appendAudit({
+      actorId: state.user!.id,
+      action: "In / lưu PDF",
+      resource: periodId,
+      detail: `Phạm vi ${dept}; loại ${type}; dữ liệu synthetic`,
+      outcome: "OK",
+    });
+    window.print();
+  }
   return (
-    <div>
+    <div className="space-y-4">
       <SectionHeader
-        title="Báo cáo"
-        hint="Số liệu tổng hợp minh họa · dữ liệu chỉ hiển thị trong phạm vi quyền của tài khoản"
+        title="Báo cáo điều hành"
+        hint="Dữ liệu mô phỏng — chỉ tổng hợp trong phạm vi quyền của tài khoản."
         actions={
-          <Button variant="primary" icon={<Export size={14} weight="bold" />} onClick={() => api.exportReport("Báo cáo quý")}>
-            Xuất báo cáo
-          </Button>
+          <div className="flex flex-wrap gap-2 print:hidden">
+            <Button
+              icon={<Export size={15} />}
+              onClick={() => exportReport("tasks", periodId, dept)}
+            >
+              CSV nhiệm vụ
+            </Button>
+            <Button
+              icon={<Export size={15} />}
+              onClick={() => exportReport("evaluations", periodId, dept, type)}
+            >
+              CSV đánh giá
+            </Button>
+            <Button icon={<Printer size={15} />} onClick={print}>
+              In / lưu PDF
+            </Button>
+          </div>
         }
       />
-
-      <Card className="mb-4 flex items-center gap-3 p-3">
-        <span className="text-[12px] font-medium text-ink-2">Kỳ báo cáo</span>
-        <Select className="w-48" value={periodId} onChange={(e) => setPeriodId(e.target.value)}>
-          {periods.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </Select>
+      <Card className="flex flex-wrap items-end gap-3 p-3 print:hidden">
+        <Field label="Kỳ báo cáo">
+          <Select
+            value={periodId}
+            onChange={(e) => {
+              setPeriod(e.target.value);
+              setDraft(null);
+            }}
+          >
+            {state.periods.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Đơn vị">
+          <Select
+            value={dept}
+            onChange={(e) => {
+              setDept(e.target.value);
+              setDraft(null);
+            }}
+          >
+            <option value="ALL">Trong phạm vi của tôi</option>
+            {scoped.departments.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.shortName}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Nhóm đánh giá">
+          <Select
+            value={type}
+            onChange={(e) => {
+              setType(e.target.value);
+              setDraft(null);
+            }}
+          >
+            <option value="ALL">Cá nhân & tập thể</option>
+            <option value="PERSON">Cá nhân</option>
+            <option value="DEPARTMENT">Tập thể</option>
+          </Select>
+        </Field>
+        <Button icon={<FileText size={16} />} onClick={makeDraft}>
+          Soạn dự thảo
+        </Button>
       </Card>
-
+      <p className="hidden text-xs print:block">
+        DỮ LIỆU MÔ PHỎNG — {period?.name} — người xuất: {state.user?.name}
+      </p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Tổng nhiệm vụ" value={fmtNum(total)} sub="Trong kỳ báo cáo" />
-        <StatCard label="Đã nghiệm thu" value={fmtNum(done)} sub={fmtNum(submitted) + " đang chờ nghiệm thu"} tone="ok" />
-        <StatCard label="Tỷ lệ hoàn thành" value={onTime + "%"} sub="Trên tổng nhiệm vụ kỳ" tone="accent" />
-        <StatCard label="Đã quyết định xếp loại" value={fmtNum(decided.length)} sub="Cá nhân có quyết định cuối" tone="warn" />
+        <StatCard label="Nhiệm vụ" value={String(tasks.length)} />
+        <StatCard label="Đã nghiệm thu" value={String(done.length)} tone="ok" />
+        <StatCard
+          label="Tỷ lệ hoàn thành"
+          value={`${tasks.length ? Math.round((done.length / tasks.length) * 100) : 0}%`}
+        />
+        <StatCard
+          label="Đã quyết định"
+          value={`${decided.length}/${evs.length}`}
+          tone="warn"
+        />
       </div>
-
-      <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <Card className="p-4 xl:col-span-2">
-          <h2 className="mb-3 text-[14px] font-semibold">Tình hình theo phòng</h2>
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="text-left text-[11px] font-semibold uppercase tracking-wide text-ink-3">
-                <th className="px-3 py-2">Phòng</th>
-                <th className="px-3 py-2">Tổng</th>
-                <th className="px-3 py-2">Đang thực hiện</th>
-                <th className="px-3 py-2">Chờ nghiệm thu</th>
-                <th className="px-3 py-2">Nghiệm thu</th>
-                <th className="px-3 py-2">Hoàn thành</th>
-              </tr>
-            </thead>
-            <tbody>
-              {departments.map((d) => {
-                const dt = periodTasks.filter((t) => t.departmentId === d.id);
-                const dd = dt.filter((t) => t.status === "ACCEPTED" || t.status === "LOCKED").length;
+      <Card className="overflow-x-auto">
+        <table className="w-full min-w-[680px] text-[13px]">
+          <thead className="bg-fill text-left text-xs text-ink-3">
+            <tr>
+              {[
+                "Phòng",
+                "Tổng việc",
+                "Đang làm / trả lại",
+                "Chờ nghiệm thu",
+                "Đã nghiệm thu",
+              ].map((h) => (
+                <th key={h} className="p-3">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {scoped.departments
+              .filter((d) => dept === "ALL" || d.id === dept)
+              .map((d) => {
+                const ts = tasks.filter((t) => t.departmentId === d.id);
                 return (
-                  <tr key={d.id} className="transition-colors hover:bg-fill">
-                    <td className="px-3 py-2.5 font-medium">{d.shortName}</td>
-                    <td className="px-3 py-2.5">{dt.length}</td>
-                    <td className="px-3 py-2.5">{dt.filter((t) => t.status === "ASSIGNED" || t.status === "IN_PROGRESS" || t.status === "RETURNED").length}</td>
-                    <td className="px-3 py-2.5">{dt.filter((t) => t.status === "SUBMITTED").length}</td>
-                    <td className="px-3 py-2.5">{dt.filter((t) => t.status === "REVIEWED").length}</td>
-                    <td className="px-3 py-2.5 font-semibold">{Math.round(dt.length ? (dd / dt.length) * 100 : 0)}%</td>
+                  <tr key={d.id} className="shadow-[0_1px_0_#edf1f6]">
+                    <td className="p-3 font-medium">{d.shortName}</td>
+                    <td className="p-3">{ts.length}</td>
+                    <td className="p-3">
+                      {
+                        ts.filter((t) =>
+                          inGroup(TASK_EDITABLE,
+                            t.status,
+                          ),
+                        ).length
+                      }
+                    </td>
+                    <td className="p-3">
+                      {
+                        ts.filter((t) =>
+                          inGroup(TASK_IN_REVIEW, t.status),
+                        ).length
+                      }
+                    </td>
+                    <td className="p-3">
+                      {
+                        ts.filter((t) =>
+                          inGroup(TASK_DONE, t.status),
+                        ).length
+                      }
+                    </td>
                   </tr>
                 );
               })}
+          </tbody>
+        </table>
+      </Card>
+      <Card className="overflow-x-auto">
+        <h2 className="p-4 text-sm font-semibold">Truy vết kết quả đánh giá</h2>
+        {evs.length ? (
+          <table className="w-full min-w-[760px] text-[13px]">
+            <thead className="bg-fill text-left text-xs text-ink-3">
+              <tr>
+                {[
+                  "Đối tượng",
+                  "Điểm ứng viên",
+                  "Quyết định",
+                  "Nguồn / phiên bản",
+                ].map((h) => (
+                  <th key={h} className="p-3">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {evs.map((e) => (
+                <tr key={e.id} className="shadow-[0_1px_0_#edf1f6]">
+                  <td className="p-3">
+                    <Link
+                      href={`/evaluation/${e.id}`}
+                      className="font-medium text-accent-700 hover:underline"
+                    >
+                      {evaluationLabel(e, state)}
+                    </Link>
+                  </td>
+                  <td className="p-3 tabular-nums">
+                    {evaluationTotal(e).toFixed(2)}
+                    {!e.calculationRuns?.length && (
+                      <span className="ml-1 text-xs text-ink-3">(mẫu)</span>
+                    )}
+                  </td>
+                  <td className="p-3">
+                    {e.decision ? (
+                      <ClassificationBadge value={e.decision.classification} />
+                    ) : (
+                      <Badge>Chưa quyết định</Badge>
+                    )}
+                  </td>
+                  <td className="max-w-xs p-3 text-xs text-ink-3">
+                    {e.calc.ruleVersion}
+                    <p className="mt-1">
+                      05-HD/TU → KPI ứng viên → QĐ39 / điều kiện → quyết định
+                    </p>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
-        </Card>
-
-        <Card className="p-4">
-          <h2 className="mb-3 text-[14px] font-semibold">Xếp loại kỳ</h2>
-          <div className="flex flex-col gap-2 text-[13px]">
-            <DistRow label="Xuất sắc" value={count("XUAT_SAC")} tone="ok" />
-            <DistRow label="Tốt" value={count("TOT")} tone="accent" />
-            <DistRow label="Hoàn thành" value={count("HOAN_THANH")} tone="warn" />
-            <DistRow label="Không hoàn thành" value={count("KHONG_HOAN_THANH")} tone="danger" />
-          </div>
-          <p className="mt-3 text-[11px] leading-relaxed text-ink-3">
-            Phân bố chỉ gồm các bản đã có quyết định. Việc tự động hóa hạn mức Xuất sắc theo nhóm so sánh vẫn là TBD (QĐ39).
+        ) : (
+          <EmptyState title="Chưa có hồ sơ trong phạm vi đã chọn" />
+        )}
+      </Card>
+      {draft !== null && (
+        <Card className="p-5">
+          <h2 className="mb-3 text-sm font-semibold">
+            Dự thảo báo cáo · cần người rà soát
+          </h2>
+          <textarea
+            aria-label="Dự thảo báo cáo"
+            className="control min-h-96 w-full py-3 text-[13px] leading-relaxed print:hidden"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+          <pre className="hidden whitespace-pre-wrap font-sans text-sm leading-relaxed print:block">
+            {draft}
+          </pre>
+          <p className="mt-3 text-xs text-ink-3 print:hidden">
+            Chỉnh sửa trực tiếp, sau đó chọn In / lưu PDF. Không có thao tác ký
+            hoặc ban hành tự động.
           </p>
         </Card>
-      </div>
+      )}
     </div>
   );
 }
-
-function DistRow({ label, value, tone }: { label: string; value: number; tone: "ok" | "accent" | "warn" | "danger" }) {
-  return (
-    <div className="flex items-center justify-between rounded-card bg-fill px-3 py-2">
-      <span className="text-ink-2">{label}</span>
-      <Badge tone={tone}>{value}</Badge>
-    </div>
-  );
-}
-
