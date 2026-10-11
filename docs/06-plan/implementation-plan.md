@@ -133,7 +133,13 @@ Required tests:
 - historical rule version;
 - source worked example.
 
-**Blocking issue:** INC-01 arithmetic inconsistency in 05-HD. Until confirmed, show a visible “source discrepancy / candidate rule” flag in demo config.
+INC-01 **does not block implementation of P4**. Build the generic engine,
+`ScoringRuleVersion`, input/rule snapshots, explanation UI and tests using a
+rule with `status = CANDIDATE`.
+
+INC-01 blocks only activation/publication of the affected rule as
+`OFFICIAL/ACTIVE`. Until confirmed, show a visible “worked-example discrepancy /
+candidate rule” flag in demo config.
 
 For non-manager staff, use a separate candidate/configured rule; never label it official unless business confirms it.
 
@@ -191,7 +197,9 @@ Implement only:
 - canonical mapping registry;
 - fake `PersonnelDirectoryPort`;
 - fake QĐ607-style adapter;
-- OAuth/error handling contract tests with mocks;
+- contract-profile tests with mocks: QĐ607 OAuth 2.0
+  `client_credentials`/JWT behavior and a separate approved LGSP profile
+  boundary;
 - X-Request-ID/correlation ID.
 
 No real connection in test scope.
@@ -224,9 +232,12 @@ flowchart LR
   P7 --> P8["P8 Integration facade"]
   P8 --> P9["P9 Production readiness"]
 
-  I1["Resolve 05-HD INC-01"] -. gate .-> P4
-  I2["Confirm non-manager formula"] -. gate .-> P4
-  I3["Configure QĐ39 comparison groups"] -. gate .-> P5
+  P4 --> O1["Activate 05-HD rule as OFFICIAL"]
+  I1["Resolve 05-HD INC-01"] -. activation gate .-> O1
+  P4 --> O2["Activate non-manager rule as OFFICIAL"]
+  I2["Confirm non-manager formula"] -. activation gate .-> O2
+  P5 --> O3["Enable excellent-quota auto-finalization"]
+  I3["Configure QĐ39 comparison groups"] -. activation gate .-> O3
 ```
 
 ## MVP cut line for interview

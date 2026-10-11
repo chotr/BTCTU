@@ -24,6 +24,8 @@
 - **INFERENCE** — diễn giải/đề xuất thiết kế phần mềm hoặc domain.
 - **TBD** — cần làm rõ hoặc cần cấp có thẩm quyền quyết định.
 - **SOURCE INCONSISTENCY** — nguồn có điểm không nhất quán hoặc nghi có lỗi.
+- **SOURCE DIVERGENCE** — các nguồn mô tả khác tầng contract, version hoặc
+  phạm vi; không được mặc định là tương đương/thay thế lẫn nhau.
 
 Không nâng INFERENCE/TBD thành FACT.
 
