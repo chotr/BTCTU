@@ -1,6 +1,22 @@
 # Technical stack
 
-## Quyết định ngắn
+## Phạm vi quyết định
+
+Stack dưới đây là **candidate stack cho prototype/competency test**. Nó tối ưu cho
+tốc độ demo, traceability và vận hành ít thành phần.
+
+Nó **không phải quyết định production cuối cùng**. Production còn phụ thuộc vào:
+
+- cấp độ ATTT được phê duyệt;
+- phân loại dữ liệu và phạm vi bí mật nhà nước;
+- hạ tầng/mạng được phép triển khai;
+- yêu cầu backup/DR, data location và vận hành;
+- điều kiện kết nối LGSP/HTTT TCXDĐ.
+
+Nếu Cloudflare không được phê duyệt cho production, domain/application/API
+contract vẫn được giữ và triển khai trên hạ tầng phù hợp khác.
+
+## Quyết định cho prototype
 
 | Layer | Chọn | Lý do |
 |---|---|---|
@@ -9,21 +25,21 @@
 | API | Hono trên Cloudflare Workers | Nhẹ, Cloudflare-native, TypeScript-first |
 | API contract | REST `/api/v1` + OpenAPI + Zod | Dễ test, demo, tích hợp và sinh client |
 | Database MVP | Cloudflare D1 + Drizzle ORM | Relational, migration rõ, vận hành tối giản |
-| Database production option | PostgreSQL qua Hyperdrive | Chọn nếu pilot yêu cầu DB engine/HA/backup/governance ngoài khả năng D1 được phê duyệt |
-| Evidence files | Private R2 | Tách metadata khỏi file; download/upload có authorization |
+| Database production option | PostgreSQL qua Hyperdrive hoặc DB được phê duyệt trên hạ tầng khác | Chọn theo pilot/production gates |
+| Evidence files | Private R2 cho synthetic/demo; production storage TBD | Tách metadata khỏi file; authorization rõ |
 | Async jobs | Cloudflare Queues | Báo cáo, notification, import và hậu xử lý; consumer phải idempotent |
-| Authentication edge | Cloudflare Access + IdP | SSO/MFA/deny-by-default cho ứng dụng nội bộ |
-| Authorization app | RBAC + organization/data scope + context | Access chỉ xác thực cửa ngoài; API vẫn quyết quyền nghiệp vụ |
+| Authentication edge | Cloudflare Access + IdP cho prototype/pilot nếu được phép | SSO/MFA/deny-by-default ở edge |
+| Authorization app | RBAC + organization/data scope + context | Edge auth không thay thế quyền nghiệp vụ |
 | Scheduled jobs | Workers Cron Triggers | Đóng kỳ, reminder, reconciliation |
 | Observability | Workers Logs/Traces + structured logs | Correlation ID, lỗi và latency |
 | Tests | Vitest + Cloudflare Vitest plugin + Playwright | Chạy logic/bindings trong Workers runtime và E2E trình duyệt |
-| Deploy/config | Wrangler + GitHub Actions | Ít công cụ, preview/staging/production tách biệt |
+| Deploy/config | Wrangler + GitHub Actions | Ít công cụ, preview/staging rõ |
 
-## API: chọn Hono, không chọn Next.js Route Handlers
+## Application shape
 
 ```mermaid
 flowchart LR
-  WEB["Next.js web"] -->|"HTTPS / OpenAPI client"| API["Hono API Worker"]
+  WEB["Next.js Web"] -->|"HTTPS / OpenAPI client"| API["Hono API Worker\nmodular-monolith backend"]
   API --> D1["D1"]
   API --> R2["Private R2"]
   API --> Q["Queues"]
@@ -31,6 +47,14 @@ flowchart LR
   ACCESS["Cloudflare Access"] --> WEB
   ACCESS --> API
 ```
+
+Frontend và backend là **hai deployable units**.
+
+“Modular monolith” trong tài liệu này chỉ **backend application structure**:
+Organization, Task, Evaluation, Classification, IAM/Policy, Audit... là module
+logic trong cùng một backend deployable, không phải microservice riêng.
+
+## API: chọn Hono, không chọn Next.js Route Handlers
 
 Lý do:
 
@@ -57,13 +81,15 @@ Không chọn:
 - URL giữ filter/sort/page để link và back/forward hoạt động đúng.
 - Client API được sinh từ OpenAPI; không tự viết nhiều kiểu dữ liệu trùng API.
 
-Ứng dụng là dashboard nội bộ nên SSR không phải dependency cốt lõi. Bắt đầu bằng static/client-heavy deployment. Chỉ bật SSR/Server Actions sau compatibility spike trên Cloudflare và khi có use case rõ.
+Ứng dụng là dashboard nội bộ nên SSR không phải dependency cốt lõi. Bắt đầu bằng
+static/client-heavy deployment. Chỉ bật SSR/Server Actions sau compatibility spike
+trên Cloudflare và khi có use case rõ.
 
 ## Backend
 
 - Hono middleware chain: request ID → Access JWT verification → actor mapping → authorization → validation → handler → audit/metrics.
 - Application services điều phối use case; domain không phụ thuộc Hono, D1 hay Cloudflare bindings.
-- Drizzle schema/migrations; repository interface giúp đổi D1 sang PostgreSQL nếu production gate yêu cầu.
+- Drizzle schema/migrations; repository interface giúp đổi D1 sang PostgreSQL/approved DB nếu production gate yêu cầu.
 - RFC 7807-style problem response, idempotency key cho mutation nhạy cảm/import/integration.
 - Optimistic concurrency/version column cho approve, lock và update quan trọng.
 - Audit ghi cùng use case; side effect bất đồng bộ dùng transactional-outbox pattern phù hợp khả năng DB được chọn.
@@ -72,52 +98,70 @@ Không chọn:
 
 ### D1
 
-Dùng cho MVP vì dataset bài test nhỏ, quan hệ rõ và Cloudflare binding đơn giản. Không bật read replication trong MVP. Trước pilot phải đánh giá:
+Dùng cho MVP vì dataset bài test nhỏ, quan hệ rõ và Cloudflare binding đơn giản.
+Không bật read replication trong MVP.
+
+Trước pilot/production phải đánh giá:
 
 - transaction/concurrency của approval/locking;
 - backup/restore và RPO/RTO;
 - data location/jurisdiction;
 - reporting volume;
-- yêu cầu công cụ vận hành/DBA.
+- yêu cầu công cụ vận hành/DBA;
+- việc hạ tầng này có được cấp có thẩm quyền chấp nhận hay không.
 
-Nếu không đạt gate, chuyển sang PostgreSQL và kết nối từ Workers bằng Hyperdrive; domain/API không đổi.
+Nếu không đạt gate, chuyển sang PostgreSQL hoặc DB/hạ tầng được phê duyệt;
+domain/API không đổi.
 
 ### R2
 
-- bucket private; object key không chứa dữ liệu nhạy cảm;
+Cho prototype:
+
+- bucket private;
+- object key không chứa dữ liệu nhạy cảm;
 - D1 chỉ giữ metadata, checksum, media type, size, classification và object key;
 - API cấp quyền trước khi tạo URL ngắn hạn;
 - giới hạn size/type, checksum, quarantine/status scan;
-- MVP có thể chỉ upload file giả hoặc metadata cho đến khi có quy trình malware scanning được duyệt.
+- chỉ dùng synthetic/demo evidence.
+
+Production evidence storage vẫn TBD và có thể phải dùng DMS/kho lưu trữ được
+phê duyệt thay vì R2.
 
 ### KV
 
-Chỉ dùng nếu cần cache cấu hình không nhạy cảm/danh mục đọc nhiều. Không dùng KV làm nguồn thật cho permission, workflow, điểm hoặc audit.
+Chỉ dùng nếu cần cache cấu hình không nhạy cảm/danh mục đọc nhiều. Không dùng
+KV làm nguồn thật cho permission, workflow, điểm hoặc audit.
 
 ### Queues
 
-Các job: tạo báo cáo, import master data, notification và integration retry. Queue có thể giao lại message nên consumer bắt buộc dùng idempotency key/deduplication.
+Các job: tạo báo cáo, import master data, notification và integration retry.
+Consumer bắt buộc dùng idempotency key/deduplication.
 
 ## Authentication và authorization
 
-1. Cloudflare Access bảo vệ cả hostname web và API, liên kết IdP tổ chức và yêu cầu MFA.
-2. API tự xác minh JWT Access, gồm signature, issuer và audience.
-3. Email/subject từ Access map sang `UserIdentity`.
+Prototype/pilot candidate:
+
+1. Cloudflare Access bảo vệ web/API và liên kết IdP.
+2. API xác minh JWT Access gồm signature, issuer và audience.
+3. Email/subject map sang `UserIdentity`.
 4. Policy engine nội bộ kiểm tra `action + resource + scope + context`.
 5. Không tin role do frontend gửi lên.
 
-Local development dùng signed test identity hoặc dev-only auth adapter; adapter này không được build/deploy vào production.
+Production identity/MFA mechanism phải được xác nhận theo hạ tầng được phê duyệt.
+
+Local development dùng signed test identity hoặc dev-only auth adapter; adapter này
+không được build/deploy vào production.
 
 ## Monorepo
 
 ```text
 apps/
   web/                 Next.js
-  api/                 Hono Worker
+  api/                 Hono Worker / backend adapter
 packages/
   contracts/           OpenAPI schemas + generated client
   domain/              entities, value objects, policies
-  db/                  Drizzle schema, migrations, repositories
+  db/                  schema, migrations, repositories
   auth/                identity and authorization contracts
   observability/       logger, trace, audit envelope
   config/              shared TypeScript/ESLint config
@@ -125,25 +169,26 @@ tools/
   excel-import/        Node CLI: Excel -> validated staging JSON
 ```
 
-`pnpm` workspace là đủ; chưa cần Turborepo. Excel được parse bằng Node CLI ở bước quản trị/offline, không parse workbook lớn trong request Worker. CLI tạo manifest/checksum/validation report rồi API import staging JSON.
+`pnpm` workspace là đủ; chưa cần Turborepo. Excel được parse bằng Node CLI ở
+bước quản trị/offline, không parse workbook lớn trong request Worker. CLI tạo
+manifest/checksum/validation report rồi API import staging JSON.
 
 ## Quality toolchain
 
-- TypeScript strict, ESLint, Prettier, commitlint tùy nhu cầu.
+- TypeScript strict, ESLint, Prettier.
 - Vitest cho domain/application; Cloudflare Vitest plugin cho bindings.
-- Playwright cho 3 luồng: happy path, return-for-correction, permission denied.
+- Playwright cho happy path, return-for-correction và permission denied.
 - OpenAPI contract tests; migration test trên DB sạch.
 - GitHub Actions: install → lint → typecheck → unit → integration → build → E2E preview.
-- Dependabot/Renovate, dependency audit và secret scanning.
+- dependency audit và secret scanning.
 
 ## Môi trường
 
-| Environment | Data | Cloudflare resources |
+| Environment | Data | Deployment |
 |---|---|---|
 | Local | synthetic fixtures | local bindings/Miniflare |
-| Preview PR | synthetic, resettable | preview Worker, isolated DB/bucket nếu cần |
-| Staging | synthetic/approved masked | riêng D1/R2/Queue/Access app |
-| Production | data thật sau approval | resource riêng, least privilege, deployment gate |
+| Preview PR | synthetic, resettable | Cloudflare preview resources |
+| Staging/demo | synthetic/approved masked only if allowed | isolated prototype resources |
+| Production | real data only after formal approval | **TBD — approved infrastructure required** |
 
 Không dùng chung database/bucket/secrets giữa staging và production.
-
