@@ -34,7 +34,7 @@ The KPI percentage is used to calculate the work-performance block.
 4. competent authority decides;
 5. notify/store result.
 
-## SOURCE INCONSISTENCY
+## SOURCE INCONSISTENCY — worked-example arithmetic inconsistency
 
 The worked example gives:
 
@@ -42,7 +42,8 @@ The worked example gives:
 - general score = 30;
 - then prints `30 + (82.3% × 70) = 80.3`.
 
-Arithmetic gives **87.61**, not 80.3.
+Arithmetic gives **87.61**, not 80.3. This identifies an inconsistency in the
+worked example; it does not by itself prove that the official formula is wrong.
 
 Project treatment:
 
@@ -87,12 +88,17 @@ flowchart LR
 
 ## Individual vs collective
 
-`EvaluationSubject` should support:
+The assignment requires evaluation for both individuals and departments, while
+QĐ39 covers collective and individual evaluation. From those two inputs,
+`EvaluationSubject` is a proposed software abstraction [INFERENCE] supporting:
 
 - `PERSON`
 - `DEPARTMENT`
 
-Department evaluation is a separate subject. **Do not define department score as average employee score** unless an approved rule explicitly requires it.
+`DEPARTMENT` is therefore a design-derived entity name, not an entity explicitly
+defined by QĐ39. Department evaluation is a separate subject. **Do not define
+department score as average employee score** unless an approved rule explicitly
+requires it.
 
 ## Staff/non-manager formula — TBD
 

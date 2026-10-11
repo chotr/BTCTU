@@ -54,32 +54,50 @@ Frontend:
 - audit reassign/cancel;
 - optimistic concurrency.
 
-**Nguồn:** QĐ01 Điều 7.2 + Excel sau khi được duyệt.  
-**Exit:** demo phân công; app ghi rõ catalog demo nếu Excel chưa có.
+**Nguồn:** QĐ01 Điều 7.2 + 05-HD/TU Phụ lục 1 + Excel vận hành/draft.
+
+**Rule:** không cần chờ Excel được xác nhận chính thức mới code importer/catalog.
+Excel được import vào staging/DRAFT; chỉ version đã được review/phê duyệt mới
+được publish với trạng thái chính thức.
+
+**Exit:** demo phân công bằng catalog candidate/synthetic và hiển thị rõ trạng thái/version.
 
 ## Milestone 4 — Result/product/evidence
 
 - result draft/submit;
 - product metadata;
-- private R2 upload/download flow;
+- private R2 upload/download flow cho dữ liệu synthetic;
 - checksum/classification/status;
 - return-for-correction;
 - file permission tests.
 
-**Nguồn:** 05-HD/TU còn là gate.  
-**Exit:** có thể dùng candidate form bằng synthetic data nhưng không gọi là rule chính thức.
+**Nguồn:** 05-HD/TU đã xác nhận mô hình công việc/sản phẩm/kết quả ở mức nghiệp vụ.
+
+**TBD/gate production:** nội dung evidence thật có được lưu trong app hay chỉ giữ
+reference đến DMS/kho tài liệu được phê duyệt.
+
+**Exit:** candidate form chạy bằng synthetic data, không chứa tài liệu bí mật nhà nước.
 
 ## Milestone 5 — KPI calculation
 
 - evaluation period;
-- criterion/formula version;
+- `ScoringRuleVersion` / criterion/formula version;
 - calculation input snapshot;
 - deterministic calculation run;
 - explanation breakdown;
 - manual override with reason/audit.
 
-**Gate:** bảng FACT từ 05-HD/TU được duyệt.  
-**Exit:** golden test cho từng formula và boundary/rounding case.
+**Nguồn đã xác nhận:** 05-HD/TU cung cấp cấu trúc 30 + 70 và A/B/C/D cho
+lãnh đạo/quản lý.
+
+**Không block implementation:** INC-01 (worked-example arithmetic inconsistency)
+không chặn engine candidate. Nó chỉ chặn việc publish/activate rule bị ảnh hưởng
+dưới trạng thái `OFFICIAL/ACTIVE`.
+
+**TBD:** công thức chính thức cho người không giữ chức vụ lãnh đạo/quản lý,
+rounding và một số trường hợp biên.
+
+**Exit:** golden test cho từng candidate/approved formula và boundary/rounding case.
 
 ## Milestone 6 — Evaluation/classification workflow
 
@@ -90,7 +108,12 @@ Frontend:
 - period lock/reopen policy;
 - transition/audit timeline.
 
-**Gate:** state/role/rule matrix từ 39-QĐ/TU được duyệt.  
+**Nguồn:** 05-HD/TU + QĐ39/TU đã xác nhận các stage khái niệm,
+ngưỡng xếp loại và điều kiện bổ sung.
+
+**TBD:** mapping chính xác thẩm quyền/nhóm so sánh/quota trong BTCTU và
+quy trình reopen nội bộ.
+
 **Exit:** transition table tests + permission tests + concurrency test.
 
 ## Milestone 7 — Dashboard/report
@@ -107,10 +130,18 @@ Frontend:
 ## Milestone 8 — Integration contract
 
 - canonical mapping registry theo QĐ308;
-- API schema từ QĐ607 khi có;
+- contract/profile theo QĐ607;
 - fake adapter + contract tests;
+- test riêng QĐ607 OAuth 2.0 `client_credentials`/JWT behavior;
+- giữ boundary riêng cho profile LGSP được phê duyệt theo HD07;
 - sync run, checkpoint, error/dead-letter, reconciliation;
 - request ID, purpose, field allowlist và audit.
+
+**Đã biết từ source:** API contract QĐ607, 401/403 behavior, TLS/logging constraints,
+và HD07 integration requirements.
+
+**Chưa biết:** endpoint production, API subset được cấp, credentials, network route,
+certificate/profile cụ thể.
 
 Không bật endpoint thật nếu thiếu approval/network/credential/security gate.
 
@@ -137,5 +168,6 @@ Không bật endpoint thật nếu thiếu approval/network/credential/security 
 10. `ORG-003` — organization UI + source trace.
 11. `CI-001` — preview deploy + Playwright smoke.
 
-Sprint đầu dừng ở Organization. Không kéo Task/KPI vào trước khi foundation và source gate đạt.
-
+Sprint đầu dừng ở Organization. Task/KPI không được kéo vào trước foundation;
+nhưng implementation không bị chặn chỉ vì rule/catalog chính thức chưa được
+activate — dùng `DRAFT/CANDIDATE` và source trace rõ ràng.

@@ -75,7 +75,9 @@ Because classification still includes competent-authority decision and mandatory
 
 ### “You found a formula error in the source. What do you do?”
 
-Record it as source inconsistency, do not silently choose a result, request clarification, version the approved rule and lock it with tests.
+Record it narrowly as a **worked-example arithmetic inconsistency**. Do not
+claim that the official formula is wrong, do not silently choose a result;
+request clarification, version the approved rule and lock it with tests.
 
 ### “Why no real integration?”
 

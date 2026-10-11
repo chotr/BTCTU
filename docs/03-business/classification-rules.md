@@ -22,7 +22,11 @@ Each class contains additional mandatory conditions. Examples include:
 - outstanding-result requirements for excellent rating;
 - conditions tied to the performance of a unit/area/subordinates for leaders;
 - violation/discipline cases;
-- group-level quota/cap on the number of excellent ratings.
+- a group-level quota/cap on excellent ratings **when the subject category and
+  comparison scope make that rule applicable**.
+
+Quota applicability must be resolved from the configured subject category and
+comparison group. It is not a universal step for every evaluation.
 
 Therefore this is invalid:
 
@@ -36,8 +40,10 @@ if (score >= 90) return "EXCELLENT";
 flowchart LR
   S["Calculated score"] --> B["Basic band"]
   B --> G["Mandatory condition checks"]
-  G --> Q["Quota/group constraint"]
-  Q --> P["Proposed classification"]
+  G --> C{"Applicable group constraint?"}
+  C -->|"Yes"| Q["Evaluate configured quota/group cap"]
+  C -->|"No"| P["Proposed classification"]
+  Q --> P
   P --> A["Competent authority decision"]
 ```
 
@@ -57,6 +63,9 @@ ClassificationRuleVersion
 ```
 
 A small deterministic evaluator is enough for MVP. Do not build a generic DSL/rules engine unless the rule set proves it necessary.
+
+`groupQuotaRule?` is optional. Absence means the evaluation bypasses quota
+checking; it must not be interpreted as an implicit global quota.
 
 ## TBD
 
