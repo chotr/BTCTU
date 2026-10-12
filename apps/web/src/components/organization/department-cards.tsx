@@ -5,7 +5,7 @@ import { personName } from "@/lib/shared/names";
 import { Badge, Button, Card } from "@/components/ui";
 import type { AppState } from "@/lib/store";
 
-/** "Đơn vị" tab: department cards with headcount and responsibilities. */
+/** Tab "Đơn vị": các thẻ đơn vị kèm số nhân sự và trách nhiệm. */
 export function DepartmentCards({
   items,
   state,

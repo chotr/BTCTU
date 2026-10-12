@@ -5,7 +5,7 @@ import { KpiInputCard } from "./kpi-input-card";
 import { CandidateScoreCard } from "./candidate-score-card";
 import { ConditionsCard } from "./conditions-card";
 
-/** "Tính điểm & điều kiện" tab: KPI inputs, scoring and conditions. */
+/** Tab "Tính điểm & điều kiện": đầu vào KPI, tính điểm và các điều kiện. */
 export function OverviewTab({
   ev,
   tasks,

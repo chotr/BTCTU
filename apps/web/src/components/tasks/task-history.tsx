@@ -6,7 +6,7 @@ import { Card } from "@/components/ui";
 import type { AppState } from "@/lib/store";
 import type { Task } from "@/lib/types";
 
-/** "Lịch sử nhiệm vụ" card: append-only task history. */
+/** Thẻ "Lịch sử nhiệm vụ": lịch sử nhiệm vụ chỉ ghi thêm. */
 export function TaskHistory({
   task,
   state,

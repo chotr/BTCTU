@@ -17,7 +17,7 @@ import {
 } from "@/components/ui";
 import type { Task } from "@/lib/types";
 
-/** "Kết quả & sản phẩm" card: submit form, recorded result and review actions. */
+/** Thẻ "Kết quả & sản phẩm": biểu mẫu nộp, kết quả đã ghi và thao tác thẩm định. */
 export function ResultSection({
   task,
   unit,

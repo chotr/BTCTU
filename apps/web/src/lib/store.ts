@@ -240,7 +240,7 @@ export function hydrateStore(): void {
         state = restore(event.newValue);
         emit();
       } catch {
-        /* Keep the current valid session. */
+        /* Giữ phiên hợp lệ hiện tại. */
       }
     });
   }

@@ -6,7 +6,7 @@ import { Card, ClassificationBadge } from "@/components/ui";
 import type { AppState } from "@/lib/store";
 import type { Evaluation } from "@/lib/types";
 
-/** "Lần tính & lịch sử" tab: immutable calculation runs, decisions, history. */
+/** Tab "Lần tính & lịch sử": các lần tính bất biến, quyết định và lịch sử. */
 export function SnapshotsTab({
   ev,
   state,

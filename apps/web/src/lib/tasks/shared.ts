@@ -16,7 +16,7 @@ export const RESULT_QUALITY = [
 
 export const editable = (task: Task) => inGroup(TASK_EDITABLE, task.status);
 
-/** A task belongs to one evaluation period, including legacy records. */
+/** Một nhiệm vụ thuộc một kỳ đánh giá, kể cả bản ghi cũ. */
 export function taskPeriodLocked(task: Task): boolean {
   const period = getState().periods.find((p) =>
     task.periodId ? p.id === task.periodId : p.name === task.period,

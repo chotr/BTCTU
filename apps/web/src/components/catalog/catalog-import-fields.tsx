@@ -4,7 +4,7 @@ import { Button, Field } from "@/components/ui";
 import { catalogCsvTemplate, type ImportRow } from "@/lib/master-data";
 import { downloadCsv } from "@/lib/shared/csv";
 
-/** CSV import block: template, file picker, raw text and validation preview. */
+/** Khối nhập CSV: mẫu, chọn tệp, văn bản thô và xem trước kiểm tra hợp lệ. */
 export function CatalogImportFields({
   csv,
   setCsv,

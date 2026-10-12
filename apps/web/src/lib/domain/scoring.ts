@@ -4,15 +4,15 @@ import type {
   Task,
 } from "@/lib/types";
 
-/** Candidate rule version identifier shown in snapshots/UI. */
+/** Mã định danh phiên bản quy tắc đề xuất, hiển thị trong snapshot/giao diện. */
 export const CANDIDATE_RULE = "BTCTU-CANDIDATE-2026.1";
 
 export const roundScore = (value: number) =>
   Math.round((value + Number.EPSILON) * 100) / 100;
 
 /**
- * Candidate interpretation only: the source does not prescribe these per-task
- * weights. Pure function — no state, no side effects.
+ * Chỉ là cách diễn giải đề xuất: nguồn không quy định các trọng số theo từng
+ * nhiệm vụ này. Hàm thuần túy — không trạng thái, không tác dụng phụ.
  */
 export function calculateCandidate(
   tasks: Task[],

@@ -6,7 +6,7 @@ import { deny } from "@/lib/shared/feedback";
 import { personName, departmentName } from "@/lib/shared/names";
 import type { Evaluation } from "@/lib/types";
 
-/** Append a history entry and audit record; bumps the record revision. */
+/** Thêm một mục lịch sử và bản ghi audit; tăng số phiên bản bản ghi. */
 export function record(ev: Evaluation, action: string, note: string): Evaluation {
   const actorId = getState().user!.id;
   appendAudit({
@@ -23,7 +23,7 @@ export function record(ev: Evaluation, action: string, note: string): Evaluation
   };
 }
 
-/** Deny-and-return guard: the case exists, is in scope and in an editable state. */
+/** Kiểm tra từ chối-kèm-trả về: hồ sơ tồn tại, trong phạm vi và ở trạng thái chỉnh sửa được. */
 export function editable(
   id: string,
   action: string,

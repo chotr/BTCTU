@@ -1,6 +1,6 @@
 import type { ConditionCheck } from "@/lib/types";
 
-/** Candidate mandatory-condition checklist (QĐ39 Điều 11 mapping still TBD). */
+/** Danh mục điều kiện bắt buộc đề xuất (ánh xạ QĐ39 Điều 11 vẫn còn TBD). */
 export const initialConditions = (): ConditionCheck[] => [
   {
     id: "compliance",

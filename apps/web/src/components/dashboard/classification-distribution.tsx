@@ -3,7 +3,7 @@
 import { Card, Progress } from "@/components/ui";
 import { CLASS_LABELS, type Evaluation } from "@/lib/types";
 
-/** Distribution of decided classifications. */
+/** Phân bố xếp loại đã quyết định. */
 export function ClassificationDistribution({
   decided,
 }: {

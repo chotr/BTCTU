@@ -4,7 +4,7 @@ import { Badge, Card } from "@/components/ui";
 import { fmtDateTime } from "@/lib/format";
 import type { AuditEvent, Role } from "@/lib/types";
 
-/** Recent activity for managers, or the personal workflow for staff. */
+/** Hoạt động gần đây cho quản lý, hoặc luồng công việc cá nhân cho nhân viên. */
 export function ActivityPanel({
   role,
   audit,

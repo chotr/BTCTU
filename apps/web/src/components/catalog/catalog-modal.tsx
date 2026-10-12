@@ -15,7 +15,7 @@ const TITLES: Record<CatalogMode, string> = {
   import: "Nhập danh mục — staging",
 };
 
-/** Versioned-catalog modal: draft edit, copy, publish, delete and CSV import. */
+/** Modal danh mục có phiên bản: sửa nháp, sao chép, công bố, xóa và nhập CSV. */
 export function CatalogModal({
   mode,
   item,

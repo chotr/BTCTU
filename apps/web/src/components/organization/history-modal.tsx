@@ -10,7 +10,7 @@ type MembershipHistory = {
   reason: string;
 };
 
-/** Membership-history modal for a person. */
+/** Modal lịch sử thành viên của một nhân sự. */
 export function HistoryModal({
   personId,
   state,

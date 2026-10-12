@@ -3,7 +3,7 @@
 import { Field, Input, Select } from "@/components/ui";
 import type { CatalogItem } from "@/lib/types";
 
-/** Draft catalog-item fields (code, name, product, metrics). */
+/** Các trường công việc danh mục nháp (mã, tên, sản phẩm, chỉ số). */
 export function CatalogEditFields({
   item,
   setItem,

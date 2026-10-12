@@ -1,7 +1,7 @@
 import { defineConfig } from "vitest/config";
 
-// Route tests use the Web API-compatible Node runtime so they remain runnable
-// in local Windows sandboxes. Wrangler still validates and bundles the Worker.
+// Test route dùng runtime Node tương thích Web API để vẫn chạy được
+// trong sandbox Windows cục bộ. Wrangler vẫn kiểm tra và đóng gói Worker.
 export default defineConfig({
   test: {
     environment: "node",

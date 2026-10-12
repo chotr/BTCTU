@@ -9,7 +9,7 @@ import {
   type OrgTab,
 } from "./model";
 
-/** Create / update / delete modal for the active organization tab. */
+/** Modal tạo / cập nhật / xóa cho tab tổ chức đang hoạt động. */
 export function MasterDataModal({
   tab,
   form,

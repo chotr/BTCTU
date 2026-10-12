@@ -6,12 +6,10 @@ import {
   CheckCircle,
   ClipboardText,
   FileText,
-  GearSix,
   House,
   Kanban,
   List,
   ListMagnifyingGlass,
-  PlugsConnected,
   SignOut,
   X,
 } from "@phosphor-icons/react";
@@ -20,7 +18,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { api } from "@/lib/api";
 import { dismissToast, useApp } from "@/lib/store";
-import { canManage, canViewAudit } from "@/lib/policy";
+import { canViewAudit } from "@/lib/policy";
 import { scopedData } from "@/lib/exports";
 import { runtimeLabel } from "@/lib/runtime-config";
 import { Avatar, Badge, Button, Callout, Modal } from "./ui";
@@ -48,8 +46,6 @@ const groups = [
     items: [
       { href: "/reports", label: "Báo cáo", icon: FileText },
       { href: "/audit", label: "Nhật ký hoạt động", icon: ListMagnifyingGlass },
-      { href: "/integration", label: "Kết nối dữ liệu", icon: PlugsConnected },
-      { href: "/settings", label: "Thiết lập", icon: GearSix },
     ],
   },
 ];
@@ -77,11 +73,9 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
               .filter((item) =>
                 item.href === "/audit"
                   ? canViewAudit(user)
-                  : item.href === "/integration"
-                    ? canManage(user)
-                    : item.href === "/approvals"
-                      ? user?.role !== "cong_chuc"
-                      : true,
+                  : item.href === "/approvals"
+                    ? user?.role !== "cong_chuc"
+                    : true,
               )
               .map((item) => {
                 const active =

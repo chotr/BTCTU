@@ -5,7 +5,7 @@ import { TASK_DONE, inGroup } from "@/lib/domain/workflow";
 import type { AppState } from "@/lib/store";
 import type { Role, Task } from "@/lib/types";
 
-/** Personal / department completion progress card. */
+/** Thẻ tiến độ hoàn thành cá nhân / đơn vị. */
 export function DepartmentProgress({
   departments,
   tasks,

@@ -4,7 +4,7 @@ import { Button, Card, Field, Select } from "@/components/ui";
 import { PROFILES, type ProfileKey } from "@/lib/integration";
 import type { IntegrationState } from "@/lib/store";
 
-/** "Ánh xạ từ điển dữ liệu" card for the candidate canonical mapping. */
+/** Thẻ "Ánh xạ từ điển dữ liệu" cho ánh xạ chuẩn tắc đề xuất. */
 export function MappingCard({
   profile,
   mappings,

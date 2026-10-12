@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button, Card, Field, Input, Select } from "@/components/ui";
 import { PROFILES, previewPayload, type ProfileKey } from "@/lib/integration";
 
-/** Development sync check: profile selection, payload preview and run. */
+/** Kiểm tra đồng bộ phát triển: chọn hồ sơ, xem trước payload và chạy. */
 export function SyncPanel({
   profile,
   setProfile,

@@ -1,6 +1,6 @@
 import type { AppUser, AuditEvent, Evaluation, Task } from "./types";
 
-// UI policy improves usability; the API remains the authoritative enforcement point.
+// Chính sách giao diện giúp tăng khả dụng; API vẫn là nơi thực thi có thẩm quyền.
 export const canManage = (u: AppUser | null) => u?.role === "lanh_dao";
 export const canAssign = (u: AppUser | null) => !!u && u.role !== "cong_chuc";
 export const canViewDepartment = (u: AppUser | null, id: string) =>

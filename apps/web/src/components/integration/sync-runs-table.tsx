@@ -5,7 +5,7 @@ import { PROFILES, type ProfileKey } from "@/lib/integration";
 import { fmtDateTime } from "@/lib/format";
 import type { SyncRun } from "@/lib/store";
 
-/** Sync history table with checkpoint and retry action. */
+/** Bảng lịch sử đồng bộ kèm điểm kiểm tra và thao tác thử lại. */
 export function SyncRunsTable({
   runs,
   busy,

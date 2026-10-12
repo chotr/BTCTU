@@ -1,16 +1,11 @@
 "use client";
+
 import Link from "next/link";
 import { useState } from "react";
 import { resetWorkspace, useApp } from "@/lib/store";
 import { runtimeConfig, runtimeLabel } from "@/lib/runtime-config";
-import {
-  Badge,
-  Button,
-  Callout,
-  Card,
-  Modal,
-  SectionHeader,
-} from "@/components/ui";
+import { Badge, Button, Callout, Card, Modal } from "@/components/ui";
+
 const rows = [
   ["Nhân sự / đơn vị", "Toàn Ban", "Nhân sự phòng mình", "Xem phòng mình"],
   ["Danh mục / công bố", "Quản lý", "Xem", "Xem"],
@@ -36,15 +31,13 @@ const rows = [
   ["Báo cáo", "Toàn Ban", "Phạm vi phòng", "Cá nhân"],
   ["Quản lý kết nối dữ liệu", "Có", "Không", "Không"],
 ];
-export default function SettingsPage() {
+
+/** Tab bảng điều khiển: phiên/runtime, đặt lại, ma trận quyền và các cổng đang mở. */
+export function SettingsPanel() {
   const [open, setOpen] = useState(false);
   const state = useApp();
   return (
     <div className="space-y-4">
-      <SectionHeader
-        title="Thiết lập hệ thống"
-        hint="Thông tin phiên, nguồn dữ liệu và phạm vi phân quyền."
-      />
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <Card className="p-5">
           <h2 className="mb-3 text-sm font-semibold">Phiên làm việc</h2>
@@ -90,8 +83,8 @@ export default function SettingsPage() {
               nộp.
             </li>
             <li>
-              3. Trưởng phòng trả lại / nghiệm thu; công chức tính KPI và tự
-              đánh giá.
+              3. Trưởng phòng trả lại / nghiệm thu; công chức tính KPI và tự đánh
+              giá.
             </li>
             <li>
               4. Thẩm định điều kiện, đề xuất; lãnh đạo quyết định và khóa kỳ.
@@ -104,9 +97,7 @@ export default function SettingsPage() {
         </Card>
       </div>
       <Card className="overflow-x-auto">
-        <h2 className="p-4 text-sm font-semibold">
-          Ma trận quyền cấu hình
-        </h2>
+        <h2 className="p-4 text-sm font-semibold">Ma trận quyền cấu hình</h2>
         <table className="w-full min-w-[800px] text-[13px]">
           <thead className="bg-fill text-left text-xs text-ink-3">
             <tr>
@@ -134,9 +125,9 @@ export default function SettingsPage() {
       </Card>
       <Callout title="Các cổng xác nhận còn mở" tone="neutral">
         INC-01 số học ví dụ nguồn; INC-02 công thức nhân viên; nhóm/hạn mức Xuất
-        sắc; thẩm quyền cụ thể; quy tắc tháng→quý→năm; quy trình mở lại; hợp
-        đồng API và cấp độ ATTT. Các quy tắc chưa được phê duyệt không tự kích
-        hoạt trong môi trường chính thức.
+        sắc; thẩm quyền cụ thể; quy tắc tháng→quý→năm; quy trình mở lại; hợp đồng
+        API và cấp độ ATTT. Các quy tắc chưa được phê duyệt không tự kích hoạt
+        trong môi trường chính thức.
       </Callout>
       <Modal
         open={open}

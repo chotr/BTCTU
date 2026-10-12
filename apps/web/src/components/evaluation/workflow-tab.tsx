@@ -17,7 +17,7 @@ import {
 } from "@/components/ui";
 import { CLASS_LABELS, type Classification, type Evaluation } from "@/lib/types";
 
-/** "Tự đánh giá / xử lý" tab: opinions timeline and per-step actions. */
+/** Tab "Tự đánh giá / xử lý": dòng thời gian ý kiến và thao tác theo từng bước. */
 export function WorkflowTab({
   ev,
   locked,

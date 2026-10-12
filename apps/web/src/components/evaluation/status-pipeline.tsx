@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui";
 import { EVAL_STATUS_LABELS, type EvalStatus } from "@/lib/types";
 
-/** Horizontal stepper of the evaluation lifecycle statuses. */
+/** Bước tiến trình ngang của các trạng thái vòng đời đánh giá. */
 export function StatusPipeline({ status }: { status: EvalStatus }) {
   return (
     <Card className="p-4">

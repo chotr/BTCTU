@@ -31,7 +31,7 @@ export function scopedData(s: AppState) {
     ),
   };
 }
-// Formula-neutralized CSV protects files opened with Excel.
+// CSV đã vô hiệu hóa công thức để bảo vệ tệp khi mở bằng Excel.
 export function exportReport(
   kind: "tasks" | "evaluations" | "audit",
   periodId = "ALL",

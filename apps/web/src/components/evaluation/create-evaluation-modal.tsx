@@ -7,7 +7,7 @@ import { evaluationActions } from "@/lib/evaluation";
 import type { AppState } from "@/lib/store";
 import type { Role } from "@/lib/types";
 
-/** Modal to create a person or collective evaluation for an open period. */
+/** Modal tạo hồ sơ đánh giá cá nhân hoặc tập thể cho một kỳ đang mở. */
 export function CreateEvaluationModal({
   open,
   onClose,

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui";
 import type { Task } from "@/lib/types";
 
-/** "Đầu vào KPI" card: tasks that feed the evaluation in this period. */
+/** Thẻ "Đầu vào KPI": các nhiệm vụ cấu thành đánh giá trong kỳ này. */
 export function KpiInputCard({ tasks }: { tasks: Task[] }) {
   return (
     <Card className="p-5">

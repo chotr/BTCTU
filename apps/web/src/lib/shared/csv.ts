@@ -1,6 +1,6 @@
-/** CSV + download helpers shared by reports and catalog import/export. */
+/** Tiện ích CSV + tải xuống dùng chung cho báo cáo và nhập/xuất danh mục. */
 
-// Quoted CSV + formula-neutralization protects files opened with Excel.
+// CSV có dấu nháy bao + vô hiệu hóa công thức để bảo vệ tệp khi mở bằng Excel.
 export function csvCell(value: unknown): string {
   let text = String(value ?? "");
   if (/^[\s]*[=+@-]/.test(text) || /^[\t\r]/.test(text)) text = "'" + text;
@@ -26,7 +26,7 @@ export function downloadText(
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-/** UTF-8 BOM so Excel renders Vietnamese correctly. */
+/** BOM UTF-8 để Excel hiển thị tiếng Việt đúng. */
 export function downloadCsv(filename: string, content: string): void {
   downloadText(filename, "\uFEFF" + content, "text/csv;charset=utf-8");
 }

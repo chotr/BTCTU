@@ -6,7 +6,7 @@ import { evaluationActions } from "@/lib/evaluation";
 import { Button, Card, Field, Select } from "@/components/ui";
 import type { Evaluation } from "@/lib/types";
 
-/** "Điều kiện xếp loại" card: mandatory-condition checklist and quota. */
+/** Thẻ "Điều kiện xếp loại": danh mục điều kiện bắt buộc và hạn mức. */
 export function ConditionsCard({
   ev,
   canCalc,

@@ -10,7 +10,7 @@ import {
 import type { AppState } from "@/lib/store";
 import type { Task } from "@/lib/types";
 
-/** Department progress table (tasks by lifecycle stage). */
+/** Bảng tiến độ đơn vị (nhiệm vụ theo giai đoạn vòng đời). */
 export function DepartmentProgressTable({
   departments,
   tasks,

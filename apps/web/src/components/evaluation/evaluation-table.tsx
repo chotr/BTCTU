@@ -11,7 +11,7 @@ import { evaluationLabel, evaluationTotal } from "@/lib/evaluation";
 import type { AppState } from "@/lib/store";
 import type { Evaluation } from "@/lib/types";
 
-/** Evaluation case list table. */
+/** Bảng danh sách hồ sơ đánh giá. */
 export function EvaluationTable({
   rows,
   state,

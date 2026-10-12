@@ -8,7 +8,7 @@ import { fmtDate } from "@/lib/format";
 import type { AppState } from "@/lib/store";
 import type { Evaluation, Role, Task } from "@/lib/types";
 
-/** "Việc cần xử lý" card: pending tasks and evaluations for the current role. */
+/** Thẻ "Việc cần xử lý": nhiệm vụ và hồ sơ đánh giá đang chờ theo vai trò hiện tại. */
 export function TodoList({
   todoTasks,
   todoEvals,

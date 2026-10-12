@@ -6,7 +6,7 @@ import { catalogActions } from "./catalog";
 export { previewCatalogCsv, catalogCsvTemplate } from "./csv";
 export type { ImportRow } from "./shared";
 
-/** Composed master-data command surface (org, references and catalog). */
+/** Bề mặt lệnh dữ liệu chuẩn tổng hợp (tổ chức, tham chiếu và danh mục). */
 export const masterActions = {
   ...departmentActions,
   ...peopleActions,

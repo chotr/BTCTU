@@ -10,7 +10,7 @@ export {
   evaluationTotal,
 } from "./shared";
 
-/** Composed evaluation command surface (cases, calculation, workflow, periods). */
+/** Bề mặt lệnh đánh giá tổng hợp (hồ sơ, tính toán, quy trình, kỳ). */
 export const evaluationActions = {
   ...caseActions,
   ...calculationActions,

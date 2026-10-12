@@ -218,8 +218,7 @@ test("all screens render; imports, integration retry and keyboard dialog work", 
     "/periods",
     "/reports",
     "/audit",
-    "/integration",
-    "/settings",
+    "/console",
     "/dashboard",
   ]) {
     await page.goto(path);
@@ -260,7 +259,10 @@ test("all screens render; imports, integration retry and keyboard dialog work", 
     .click();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await page.goto("/integration");
+  await page.goto("/console");
+  await page
+    .getByRole("tab", { name: "Kết nối dữ liệu", exact: true })
+    .click();
   await page.getByLabel(/Thử tình huống timeout/).check();
   await page
     .getByRole("button", { name: "Chạy kiểm tra", exact: true })
@@ -306,7 +308,7 @@ test("mobile navigation and staff scope, including denied direct routes", async 
     "/evaluation",
     "/reports",
     "/periods",
-    "/settings",
+    "/console",
   ]) {
     await page.goto(path);
     await expect(page.locator("main#main-content")).toBeVisible();
@@ -324,7 +326,10 @@ test("mobile navigation and staff scope, including denied direct routes", async 
   await expect(
     page.getByText("Không thể mở hồ sơ", { exact: true }),
   ).toBeVisible();
-  await page.goto("/integration");
+  await page.goto("/console");
+  await page
+    .getByRole("tab", { name: "Kết nối dữ liệu", exact: true })
+    .click();
   await expect(
     page.getByText("Kết nối dữ liệu ngoài phạm vi của bạn", { exact: true }),
   ).toBeVisible();

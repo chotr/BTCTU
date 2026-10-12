@@ -1,6 +1,6 @@
 import type { AppState } from "@/lib/store";
 
-/** Single source of truth for person/department display lookups. */
+/** Nguồn chân lý duy nhất cho việc tra cứu hiển thị nhân sự/đơn vị. */
 
 export const personName = (state: AppState, id: string): string | undefined =>
   state.people.find((p) => p.id === id)?.name;
@@ -10,6 +10,6 @@ export const departmentName = (
   id: string,
 ): string | undefined => state.departments.find((d) => d.id === id)?.name;
 
-/** Resolve an evaluation subject (person or collective) to a display name. */
+/** Phân giải đối tượng đánh giá (cá nhân hoặc tập thể) thành tên hiển thị. */
 export const nameOf = (state: AppState, id: string): string | undefined =>
   personName(state, id) ?? departmentName(state, id);

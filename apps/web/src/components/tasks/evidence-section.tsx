@@ -7,7 +7,7 @@ import { fmtDate } from "@/lib/format";
 import { Badge, Button, Card, Field } from "@/components/ui";
 import type { Task } from "@/lib/types";
 
-/** "Minh chứng" card: synthetic metadata-only evidence references. */
+/** Thẻ "Minh chứng": tham chiếu minh chứng tổng hợp chỉ gồm metadata. */
 export function EvidenceSection({
   task,
   owner,

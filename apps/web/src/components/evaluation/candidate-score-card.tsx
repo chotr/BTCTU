@@ -7,7 +7,7 @@ import { evaluationActions, evaluationTotal } from "@/lib/evaluation";
 import { Button, Callout, Card, Field, Input, Progress } from "@/components/ui";
 import type { Evaluation } from "@/lib/types";
 
-/** "Tính điểm đánh giá" card: score breakdown and deterministic calc run. */
+/** Thẻ "Tính điểm đánh giá": phân tích điểm và lần tính tất định. */
 export function CandidateScoreCard({
   ev,
   canCalc,

@@ -5,7 +5,7 @@ import { taskActions } from "@/lib/tasks";
 import { Button, Card, Field, Input, Progress } from "@/components/ui";
 import type { Task } from "@/lib/types";
 
-/** "Tiến độ" card: progress bar and (for the assignee) progress update. */
+/** Thẻ "Tiến độ": thanh tiến độ và (dành cho người được giao) cập nhật tiến độ. */
 export function ProgressCard({
   task,
   owner,

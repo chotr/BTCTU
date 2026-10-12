@@ -29,7 +29,7 @@ const baseState: MockState = {
   periods: [{ id: "p-q3-2026", label: "Quý III/2026", lockedAt: null }],
 };
 
-/** Development seed factory. Replace this adapter with persistent storage without changing routes. */
+/** Factory tạo dữ liệu mồi cho phát triển. Thay adapter này bằng kho bền vững mà không đổi route. */
 export function createMockState(): MockState {
   return structuredClone(baseState);
 }

@@ -4,7 +4,7 @@ import { Button, Card, EmptyState } from "@/components/ui";
 import type { AppState } from "@/lib/store";
 import { ORG_TAB_LABELS, type OrgTab } from "./model";
 
-/** People / positions / responsibilities tab: compact reference table. */
+/** Tab nhân sự / chức vụ / trách nhiệm: bảng tham chiếu gọn. */
 export function MasterTable({
   tab,
   items,

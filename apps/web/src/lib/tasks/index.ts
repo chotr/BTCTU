@@ -4,7 +4,7 @@ import { evidenceActions } from "./evidence";
 
 export { RESULT_QUALITY, TASK_EDITABLE, taskPeriodLocked } from "./shared";
 
-/** Composed task command surface (create/execute/review/evidence). */
+/** Bề mặt lệnh nhiệm vụ tổng hợp (tạo/thực hiện/thẩm định/minh chứng). */
 export const taskActions = {
   ...lifecycleActions,
   ...reviewActions,

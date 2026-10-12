@@ -6,7 +6,7 @@ import { evaluationLabel, evaluationTotal } from "@/lib/evaluation";
 import type { AppState } from "@/lib/store";
 import type { Evaluation } from "@/lib/types";
 
-/** Evaluation trace table with source/rule version. */
+/** Bảng truy vết đánh giá kèm nguồn/phiên bản quy tắc. */
 export function EvaluationTraceTable({
   evaluations,
   state,

@@ -3,7 +3,7 @@
 import { Button, Card, EmptyState } from "@/components/ui";
 import type { CatalogItem } from "@/lib/types";
 
-/** Catalog items table for the selected version. */
+/** Bảng công việc danh mục cho phiên bản được chọn. */
 export function CatalogTable({
   rows,
   allowed,

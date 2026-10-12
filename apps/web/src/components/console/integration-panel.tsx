@@ -5,19 +5,18 @@ import { useApp } from "@/lib/store";
 import { canManage } from "@/lib/policy";
 import { saveMappings, simulateSync, type ProfileKey } from "@/lib/integration";
 import { useBusy } from "@/components/use-busy";
-import { Badge, Callout, Card, EmptyState, SectionHeader } from "@/components/ui";
+import { Badge, Callout, Card, EmptyState } from "@/components/ui";
 import {
   MappingCard,
   SyncPanel,
   SyncRunsTable,
 } from "@/components/integration";
 
-export default function IntegrationPage() {
+/** Tab bảng điều khiển: sandbox tích hợp mock (hồ sơ, ánh xạ, kiểm tra đồng bộ). */
+export function IntegrationPanel() {
   const state = useApp();
   const [profile, setProfile] = useState<ProfileKey>("personnel");
-  const [purpose, setPurpose] = useState(
-    "Đối soát danh mục nhân sự tổng hợp",
-  );
+  const [purpose, setPurpose] = useState("Đối soát danh mục nhân sự tổng hợp");
   const [fail, setFail] = useState(false);
   const { busy, run } = useBusy();
   const [mappings, setMappings] = useState(state.integration.mappings);
@@ -35,15 +34,17 @@ export default function IntegrationPage() {
   }
   return (
     <div className="space-y-4">
-      <SectionHeader
-        title="Kết nối dữ liệu"
-        hint="Future-state sandbox · không gọi API bên ngoài, không thu thập khóa bí mật."
-        actions={<Badge tone="warn">CHỜ API</Badge>}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs text-ink-3">
+          Sandbox trạng thái tương lai · không gọi API ngoài, không thu thập khóa
+          bí mật.
+        </p>
+        <Badge tone="warn">CHỜ API</Badge>
+      </div>
       <Callout title="Hai profile hợp đồng độc lập" tone="neutral">
         QĐ607 và HD07 không được gộp thành một cơ chế xác thực. Các trường bên
-        dưới là ánh xạ đang chờ phê duyệt dựa trên QĐ308/QĐ607; endpoint, quyền, scope và
-        hợp đồng chính thức còn TBD.
+        dưới là ánh xạ đang chờ phê duyệt dựa trên QĐ308/QĐ607; endpoint, quyền,
+        scope và hợp đồng chính thức còn TBD.
       </Callout>
       <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
         <SyncPanel

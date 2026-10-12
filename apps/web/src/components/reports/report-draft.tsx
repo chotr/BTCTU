@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui";
 
-/** Editable, print-friendly draft report card. */
+/** Thẻ báo cáo nháp có thể chỉnh sửa, thân thiện khi in. */
 export function ReportDraft({
   value,
   onChange,
