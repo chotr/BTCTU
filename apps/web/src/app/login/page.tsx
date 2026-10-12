@@ -4,7 +4,7 @@ import { ArrowRight, ShieldCheck } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/lib/api";
-import { USERS } from "@/lib/mock/data";
+import { USERS } from "@/lib/mock";
 import { useApp } from "@/lib/store";
 import { Avatar, Button, Card, Field, Select } from "@/components/ui";
 
@@ -44,10 +44,9 @@ export default function LoginPage() {
         </div>
 
         <Card className="p-5">
-          <h1 className="text-[16px] font-semibold">Đăng nhập bản demo</h1>
+          <h1 className="text-[16px] font-semibold">Chọn hồ sơ làm việc</h1>
           <p className="mt-1 text-[13px] leading-relaxed text-ink-2">
-            Chọn một tài khoản mẫu để xem giao diện và quyền thay đổi theo vai
-            trò.
+            Chọn tài khoản được cấp để mở không gian làm việc theo đúng vai trò.
           </p>
 
           <div className="mt-4 flex flex-col gap-2">
@@ -91,7 +90,7 @@ export default function LoginPage() {
               Tài khoản nhân sự khác
             </summary>
             <div className="mt-3 space-y-3">
-              <Field label="Nhân sự mô phỏng">
+              <Field label="Nhân sự">
                 <Select
                   className="w-full"
                   value={personId}

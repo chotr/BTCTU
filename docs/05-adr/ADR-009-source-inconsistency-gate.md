@@ -18,7 +18,7 @@ A rule can be published as `OFFICIAL/ACTIVE` only when:
 - unit tests encode the approved behavior;
 - rule version/effective period are fixed.
 
-Prototype may run a `CANDIDATE` rule for demonstration, but UI/report must label it.
+Development may run a `CANDIDATE` rule for verification, but UI/report must label it.
 
 ## Consequence
 

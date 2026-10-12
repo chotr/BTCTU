@@ -95,20 +95,20 @@ export function calculateCandidate(
       label: "Khối lượng nghiệm thu",
       value: roundScore((quantity / count) * 100),
       detail:
-        "Ứng viên: bình quân tỷ lệ khối lượng nghiệm thu/kế hoạch từng việc (tối đa 100%); việc chưa nghiệm thu = 0.",
+        "Bình quân tỷ lệ khối lượng nghiệm thu/kế hoạch từng việc (tối đa 100%); việc chưa nghiệm thu = 0.",
     },
     {
       code: "B",
       label: "Chất lượng sản phẩm",
       value: roundScore(quality / count),
       detail:
-        "Ứng viên: Đáp ứng tốt/Vượt yêu cầu = 100; Đáp ứng = 80; Cần cải thiện = 50; Không đạt = 0. Chưa nghiệm thu = 0.",
+        "Đáp ứng tốt/Vượt yêu cầu = 100; Đáp ứng = 80; Cần cải thiện = 50; Không đạt = 0. Chưa nghiệm thu = 0.",
     },
     {
       code: "C",
       label: "Tiến độ hoàn thành",
       value: roundScore((timely / count) * 100),
-      detail: `Ứng viên: ${timely}/${tasks.length} nhiệm vụ nghiệm thu hoàn thành trước hết ngày đến hạn; thiếu ngày hoàn thành dùng ngày nộp.`,
+      detail: `${timely}/${tasks.length} nhiệm vụ nghiệm thu hoàn thành trước hết ngày đến hạn; thiếu ngày hoàn thành dùng ngày nộp.`,
     },
   ];
   if (leadershipScore !== undefined)
@@ -117,7 +117,7 @@ export function calculateCandidate(
       label: "Lãnh đạo, chỉ đạo, điều hành",
       value: leadershipScore,
       detail:
-        "Điểm nhập có trách nhiệm giải trình; chỉ dùng trong công thức ứng viên lãnh đạo/tập thể.",
+        "Điểm nhập có trách nhiệm giải trình; chỉ dùng trong công thức lãnh đạo/tập thể đang chờ phê duyệt.",
     });
   const average = axes.reduce((sum, axis) => sum + axis.value, 0) / axes.length;
   const calculatedTotal = roundScore(generalScore + average * 0.7);

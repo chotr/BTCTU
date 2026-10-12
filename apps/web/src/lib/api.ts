@@ -5,13 +5,13 @@ import {
   pushToast,
   setUser,
 } from "./store";
-import { USERS } from "./mock/data";
+import { USERS } from "./mock";
 import { policy } from "./policy";
 import { personName } from "./shared/names";
 import { taskActions } from "./tasks";
 import { evaluationActions } from "./evaluation";
 import { exportReport } from "./exports";
-import type { DemoUser } from "./types";
+import type { AppUser } from "./types";
 export const perm = policy;
 export const api = {
   ...taskActions,
@@ -21,7 +21,7 @@ export const api = {
     const s = getState();
     const person = s.people.find((p) => p.id === userId);
     const department = s.departments.find((d) => d.id === person?.departmentId);
-    const user: DemoUser | undefined =
+    const user: AppUser | undefined =
       USERS.find((u) => u.id === userId) ??
       (person
         ? {
@@ -35,15 +35,15 @@ export const api = {
           }
         : undefined);
     if (!user) {
-      pushToast("error", "Tài khoản mẫu không tồn tại");
+      pushToast("error", "Tài khoản không tồn tại");
       return;
     }
     setUser(user);
     appendAudit({
       actorId: user.id,
-      action: "Đăng nhập demo",
+      action: "Đăng nhập",
       resource: "Phiên làm việc",
-      detail: `Vai trò mô phỏng: ${user.role}`,
+      detail: `Vai trò: ${user.role}`,
       outcome: "OK",
     });
   },
@@ -68,12 +68,12 @@ export const api = {
           : "tasks",
     );
   },
-  async deniedAccessDemo(resource: string): Promise<void> {
+  async deniedAccess(resource: string): Promise<void> {
     appendAudit({
       actorId: getState().user?.id ?? "?",
       action: "Truy cập bị từ chối",
       resource,
-      detail: "Ngoài phạm vi mô phỏng",
+      detail: "Ngoài phạm vi được phân quyền",
       outcome: "DENIED",
     });
     pushToast("error", "Không có quyền truy cập — đã ghi nhật ký");

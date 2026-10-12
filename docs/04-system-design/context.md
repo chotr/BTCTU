@@ -30,8 +30,8 @@ flowchart LR
   WORKER["Worker\nreports/jobs/outbox"]
   DB[("Relational DB\ntransactional data + snapshots")]
   AUD[("Audit store/read model")]
-  EVID["Evidence boundary\nsynthetic in demo; approved DMS/store later"]
-  CONN["Integration adapter\nfake in MVP"]
+  EVID["Evidence boundary\ndevelopment metadata; approved DMS/store for production"]
+  CONN["Integration adapter\nmock adapter awaiting approved API"]
 
   U -->|"HTTPS"| WEB
   WEB --> API
@@ -45,6 +45,6 @@ flowchart LR
 ## Boundary notes
 
 - “Head” does not automatically equal final approver; authority is resolved by source rules.
-- Real state-secret documents are outside prototype scope.
+- State-secret documents are outside the application boundary.
 - Real external integration is disabled until production gates are met.
 - The container split is an engineering design; QĐ342 supplies architectural/security constraints, not these exact deployable components.

@@ -9,16 +9,16 @@ import { canManage } from "./policy";
 export const PROFILES = {
   personnel: {
     name: "Hồ sơ nhân sự · QĐ607",
-    contract: "OAuth client credentials + JWT (profile ứng viên)",
+    contract: "OAuth client credentials + JWT (profile chờ phê duyệt)",
     fields: ["personnelCode", "fullName", "organizationCode"],
-    source: "QĐ607 / QĐ308 · mapping ứng viên",
+    source: "QĐ607 / QĐ308 · ánh xạ chờ phê duyệt",
   },
   lgsp: {
     name: "Kết nối LGSP · HD07",
     contract:
       "Profile cổng tích hợp HD07 riêng; không đồng nhất với OAuth QĐ607",
     fields: ["personnelCode", "fullName", "organizationCode"],
-    source: "HD07 / QĐ348 · luồng chia sẻ ứng viên",
+    source: "HD07 / QĐ348 · luồng chia sẻ chờ phê duyệt",
   },
 } as const;
 export type ProfileKey = keyof typeof PROFILES;
@@ -29,10 +29,10 @@ function guard(action: string) {
     actorId: u?.id ?? "?",
     action,
     resource: "integration",
-    detail: "Không có quyền quản lý connector demo",
+    detail: "Không có quyền quản lý kết nối dữ liệu",
     outcome: "DENIED",
   });
-  pushToast("error", "Chỉ lãnh đạo demo được quản lý kết nối mô phỏng");
+  pushToast("error", "Chỉ tài khoản lãnh đạo được quản lý kết nối dữ liệu");
   return false;
 }
 export function saveMappings(
@@ -63,10 +63,10 @@ export function saveMappings(
     actorId: getState().user!.id,
     action: "Cấu hình mapping",
     resource: "integration",
-    detail: "QĐ308/QĐ607 mapping ứng viên; chỉ trường trong allowlist",
+    detail: "Ánh xạ QĐ308/QĐ607; chỉ trường trong allowlist",
     outcome: "OK",
   });
-  pushToast("success", "Đã lưu mapping mô phỏng");
+  pushToast("success", "Đã lưu ánh xạ dữ liệu");
   return true;
 }
 export function previewPayload() {
@@ -93,7 +93,7 @@ export async function simulateSync(
   fail: boolean,
   retryOf?: string,
 ): Promise<boolean> {
-  if (!guard("Đồng bộ mô phỏng")) return false;
+  if (!guard("Kiểm tra đồng bộ")) return false;
   if (!PROFILES[profile] || purpose.trim().length < 5) {
     pushToast(
       "error",
@@ -127,9 +127,9 @@ export async function simulateSync(
     status: fail ? "FAILED" : "SUCCESS",
     records: fail ? 0 : previewPayload().length,
     checkpoint,
-    correlationId: `mock-${crypto.randomUUID().slice(0, 8)}`,
+    correlationId: `dev-${crypto.randomUUID().slice(0, 8)}`,
     error: fail
-      ? "MOCK_TIMEOUT: mô phỏng kết nối gián đoạn; không có yêu cầu mạng thật."
+      ? "DEV_TIMEOUT: kết nối thử bị gián đoạn; không có yêu cầu mạng ngoài."
       : null,
     ...(retryOf ? { retryOf } : {}),
   };
@@ -143,7 +143,7 @@ export async function simulateSync(
   }));
   appendAudit({
     actorId: s.user!.id,
-    action: retryOf ? "Thử lại đồng bộ mock" : "Đồng bộ mock",
+    action: retryOf ? "Thử lại kiểm tra đồng bộ" : "Kiểm tra đồng bộ",
     resource: "integration",
     detail: `${PROFILES[profile].name}; ${run.status}; ${run.correlationId}; mục đích ${purpose}`,
     outcome: fail ? "DENIED" : "OK",
@@ -151,8 +151,8 @@ export async function simulateSync(
   pushToast(
     fail ? "error" : "success",
     fail
-      ? "Đã ghi nhận lỗi mô phỏng; checkpoint không đổi"
-      : "Đồng bộ giả lập thành công; đã lưu checkpoint mới",
+      ? "Đã ghi nhận lỗi kiểm thử; checkpoint không đổi"
+      : "Kiểm tra đồng bộ thành công; đã lưu checkpoint mới",
   );
   return !fail;
 }

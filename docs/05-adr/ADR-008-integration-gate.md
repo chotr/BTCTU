@@ -1,6 +1,6 @@
 # ADR-008 — Real integration stays behind an approval gate
 
-**Status:** Accepted for MVP.
+**Status:** Accepted.
 
 ## Context
 
@@ -17,7 +17,7 @@ Having a known API shape does **not** mean this app is authorized to call Produc
 
 ## Decision
 
-MVP implements:
+Phase 1 implements:
 
 - integration port;
 - fake adapter with synthetic data;
@@ -37,4 +37,4 @@ Real connector remains disabled until:
 
 ## Consequence
 
-The prototype proves architecture without exposing real personnel/protected data or falsely claiming production connectivity.
+The development integration proves architecture without exposing real personnel/protected data or falsely claiming production connectivity.

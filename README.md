@@ -1,54 +1,69 @@
-# BTCTU — Task & KPI Evaluation System
+# BTCTU — Hệ thống quản lý nhiệm vụ & đánh giá
 
-Competency-test project for analyzing and prototyping an internal **task → KPI → evaluation → classification** workflow for Ban Tổ chức Tỉnh ủy.
+Ứng dụng nội bộ quản lý xuyên suốt quy trình **nhiệm vụ → KPI → đánh giá → xếp loại** cho Ban Tổ chức Tỉnh ủy.
 
-## Current status
+## Trạng thái phiên bản
 
-| Area | Status |
-|---|---|
-| Core source analysis | Reviewed: QĐ01, 05-HD, QĐ39, QĐ342, QĐ348, QĐ308, QĐ607, HD07, NĐ85/63/165/278, NQ11 and two Excel files |
-| Business/domain design | Ready for MVP implementation, with explicit TBD gates |
-| System architecture | Web modular monolith candidate; C4/ERD/permissions/audit/security/integration documented |
-| App code | Next.js UI + Hono/Cloudflare Worker mock-first API |
-| Production approval | Not claimed; security/data/integration gates remain |
+Phiên bản `1.0.0` sẵn sàng cho môi trường phát triển:
 
-## Start here
+- Next.js 16 + React 19 cho giao diện;
+- Hono trên Cloudflare Workers cho REST API;
+- phân quyền theo vai trò, audit, snapshot, khóa/mở kỳ và xuất báo cáo;
+- dữ liệu khởi tạo cục bộ được cô lập trong `apps/web/src/lib/mock/`;
+- hợp đồng HTTP và cấu hình môi trường đã sẵn sàng để thay adapter cục bộ bằng API;
+- các quy tắc nghiệp vụ chưa được phê duyệt vẫn có trạng thái kiểm soát rõ ràng.
 
-Read [docs/README.md](docs/README.md).
+Mock chỉ là nguồn dữ liệu tạm thời trong quá trình hoàn thiện API, không phải kiến trúc lưu trữ đích.
 
-## Run the local prototype
+## Khởi chạy
+
+Yêu cầu Node.js 22 và pnpm 10.
 
 ```bash
-pnpm install
-pnpm --filter @btctu/api dev      # http://localhost:8787
-pnpm --filter @btctu/web dev      # http://localhost:3000
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-The API source is in [apps/api](apps/api/README.md). It currently uses synthetic, request-scoped fixtures so the UI can be connected before D1/Drizzle, R2, Cloudflare Access and Queues are provisioned.
+- Web: `http://localhost:3000`
+- API: `http://localhost:8787`
+- OpenAPI: `http://localhost:8787/openapi.json`
 
-Key documents:
+Có thể chạy riêng từng phần:
 
-- [Source register](docs/02-source-analysis/README.md)
-- [Traceability matrix](docs/03-business/traceability-matrix.md)
-- [Known/unknown register](docs/03-business/known-unknowns.md)
-- [System context](docs/04-system-design/context.md)
-- [ERD](docs/04-system-design/erd.md)
-- [Security architecture](docs/04-system-design/security-architecture.md)
-- [Implementation plan](docs/06-plan/implementation-plan.md)
-- [Demo plan](docs/07-demo/demo-plan.md)
-- [Defense story](docs/08-presentation/defense-story.md)
+```bash
+pnpm dev:web
+pnpm dev:api
+```
 
-## Engineering rule
+Sao chép `apps/web/.env.example` thành `apps/web/.env.local` nếu cần thay cấu hình mặc định. Không commit `.env.local`, `.dev.vars` hoặc khóa bí mật.
 
-Every important statement is treated as one of:
+## Kiểm tra trước khi bàn giao
 
-- **FACT** — directly sourced;
-- **INFERENCE** — candidate design;
-- **TBD** — unresolved;
-- **SOURCE INCONSISTENCY** — source conflict/defect.
+```bash
+pnpm check
+```
 
-The project intentionally refuses to convert an analyst guess into an “official” personnel-evaluation rule.
+Lệnh này chạy typecheck, unit/contract test và production build. E2E chạy riêng:
 
-## Branch
+```bash
+pnpm --filter @btctu/web test:e2e
+```
 
-Documentation/design work is on `docs/architecture`.
+## Cấu trúc
+
+- `apps/web` — giao diện và application layer;
+- `apps/api` — REST contract, validation, auth boundary và Worker runtime;
+- `docs` — yêu cầu, phân tích nguồn, nghiệp vụ, kiến trúc, ADR và runbook nghiệm thu.
+
+Đọc [docs/README.md](docs/README.md) để đi vào bộ tài liệu hoặc [apps/web/README.md](apps/web/README.md) để cấu hình môi trường phát triển.
+
+## Nguyên tắc kỹ thuật
+
+Mọi phát biểu quan trọng được phân loại:
+
+- **FACT** — có nguồn trực tiếp;
+- **INFERENCE** — thiết kế cần phê duyệt;
+- **TBD** — chưa có quyết định;
+- **SOURCE INCONSISTENCY** — nguồn có xung đột hoặc sai khác.
+
+Ứng dụng không tự biến một giả định phân tích thành quy tắc đánh giá chính thức.

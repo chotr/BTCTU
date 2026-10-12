@@ -19,7 +19,7 @@ import {
   Select,
   TaskStatusBadge,
 } from "@/components/ui";
-import { CreateTask } from "./create-task-modal";
+import { CreateTask } from "@/components/tasks";
 
 export default function TasksPage() {
   const state = useApp();

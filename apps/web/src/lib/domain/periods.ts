@@ -1,6 +1,6 @@
 import type { Evaluation, EvaluationPeriod, Task } from "@/lib/types";
 
-/** Demo policy: tasks belong to a period by id, falling back to legacy names. */
+/** Tasks belong to a period by id, falling back to legacy names. */
 export function taskInPeriod(task: Task, period: EvaluationPeriod): boolean {
   return task.periodId
     ? task.periodId === period.id

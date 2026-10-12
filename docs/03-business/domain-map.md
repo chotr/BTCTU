@@ -37,7 +37,7 @@ Security/data law"] --> SG["Security & data governance"]
 | KPI 30/70 and A/B/C/D for leaders | 05-HD | Source-backed; worked-example arithmetic has inconsistency |
 | Self assessment / review / final decision | 05-HD + QĐ39 | Source-backed stages |
 | Classification thresholds + blockers | QĐ39 Điều 11 | Source-backed |
-| Person + collective evaluation | Đề bài + QĐ39 | Source-backed subject types; calculation of collective score still needs configuration |
+| Person + collective evaluation | Yêu cầu hệ thống + QĐ39 | Source-backed subject types; calculation of collective score still needs configuration |
 | Permission/data scope/audit | QĐ342 | Source-backed constraints |
 | Canonical dictionary | QĐ308 | Source-backed |
 | External API contract | QĐ607 | Future integration |

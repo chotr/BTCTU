@@ -41,7 +41,7 @@ Core files reviewed include:
 - NĐ278/2025;
 - NQ11/TU;
 - two operational Excel workbooks;
-- original competency-test assignment and recruitment-context documents.
+- the original assignment brief and project-context documents.
 
 ## Source integrity rule
 

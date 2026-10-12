@@ -42,8 +42,8 @@ Frontend:
 - source badge FACT/INFERENCE/TBD;
 - permission-aware actions.
 
-**Nguồn:** QĐ01.  
-**Exit:** trace được dữ liệu demo về Điều 2–7; chưa có Task taxonomy giả.
+**Nguồn:** QĐ01.
+**Exit:** trace được dữ liệu khởi tạo về Điều 2–7; chưa có Task taxonomy giả.
 
 ## Milestone 3 — Work catalog và assignment
 
@@ -60,7 +60,7 @@ Frontend:
 Excel được import vào staging/DRAFT; chỉ version đã được review/phê duyệt mới
 được publish với trạng thái chính thức.
 
-**Exit:** demo phân công bằng catalog candidate/synthetic và hiển thị rõ trạng thái/version.
+**Exit:** kiểm thử phân công bằng catalog chờ phê duyệt và hiển thị rõ trạng thái/version.
 
 ## Milestone 4 — Result/product/evidence
 
@@ -76,7 +76,7 @@ Excel được import vào staging/DRAFT; chỉ version đã được review/ph�
 **TBD/gate production:** nội dung evidence thật có được lưu trong app hay chỉ giữ
 reference đến DMS/kho tài liệu được phê duyệt.
 
-**Exit:** candidate form chạy bằng synthetic data, không chứa tài liệu bí mật nhà nước.
+**Exit:** form kết quả/sản phẩm chạy bằng dữ liệu kiểm thử (synthetic), không chứa tài liệu bí mật nhà nước.
 
 ## Milestone 5 — KPI calculation
 
@@ -91,7 +91,7 @@ reference đến DMS/kho tài liệu được phê duyệt.
 lãnh đạo/quản lý.
 
 **Không block implementation:** INC-01 (worked-example arithmetic inconsistency)
-không chặn engine candidate. Nó chỉ chặn việc publish/activate rule bị ảnh hưởng
+không chặn triển khai engine. Nó chỉ chặn việc publish/activate rule bị ảnh hưởng
 dưới trạng thái `OFFICIAL/ACTIVE`.
 
 **TBD:** công thức chính thức cho người không giữ chức vụ lãnh đạo/quản lý,

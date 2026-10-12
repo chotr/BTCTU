@@ -2,7 +2,7 @@
 
 ## Security posture
 
-Prototype is deliberately **not** a state-secret document management system and uses synthetic data only.
+The application is deliberately **not** a state-secret document management system; development uses controlled seed data.
 
 Production-connected design prepares for stronger controls, but the project must not claim an officially approved ATTT level until the formal dossier/authority confirms it.
 
@@ -27,7 +27,7 @@ classified data + encryption"]
   APP --> EV["Evidence reference/store
 separate access control"]
   APP --> INT["Integration zone
-fake in MVP / approved connector later"]
+mock adapter now / approved connector later"]
   APP --> AUD["Append-only/tamper-evident audit"]
   DB --> BAK["Encrypted backup / restore"]
   AUD --> MON["Monitoring / alerting"]
@@ -61,11 +61,11 @@ fake in MVP / approved connector later"]
 - patch/vulnerability/dependency scanning.
 - incident runbook.
 - environment separation: dev/test/prod.
-- synthetic test/demo data.
+- controlled test/development data.
 
 ## State-secret boundary
 
-MVP stores no real state-secret content.
+This system stores no real state-secret content.
 
 If production must handle it, architecture must be re-reviewed against NĐ63 and approved network/device/DMS controls. A metadata reference to an approved document system is preferable to copying secret files into this app.
 
@@ -73,7 +73,7 @@ If production must handle it, architecture must be re-reviewed against NĐ63 and
 
 If report drafting uses AI:
 
-- prototype only uses synthetic/non-sensitive input;
+- development only uses non-sensitive controlled input;
 - production requires approved AI environment;
 - AI result is draft/support only and must be human reviewed;
 - log AI use according to applicable policy.

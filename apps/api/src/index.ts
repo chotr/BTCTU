@@ -3,13 +3,13 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { z } from "zod";
-import { createDemoState } from "./demo";
-import type { Actor, Classification, DemoState, Evaluation, Role, Task } from "./types";
+import { createMockState } from "./mock-state";
+import type { Actor, Classification, MockState, Evaluation, Role, Task } from "./types";
 
 type Variables = {
   actor: Actor;
   requestId: string;
-  state: DemoState;
+  state: MockState;
 };
 
 type AppEnv = { Bindings: Env; Variables: Variables };
@@ -58,13 +58,13 @@ const openapi = {
   info: {
     title: "BTCTU Task and Evaluation API",
     version: "0.1.0",
-    description: "Mock-first REST contract. FACT/INFERENCE/TBD boundaries remain visible in responses and documentation.",
+    description: "REST contract for task, KPI, evaluation and classification workflows.",
   },
   servers: [{ url: "http://localhost:8787", description: "Local Worker" }],
-  security: [{ demoIdentity: [] }],
+  security: [{ developmentIdentity: [] }],
   components: {
     securitySchemes: {
-      demoIdentity: { type: "apiKey", in: "header", name: "x-demo-user-id", description: "Development-only actor adapter" },
+      developmentIdentity: { type: "apiKey", in: "header", name: "x-dev-user-id", description: "Local-development identity adapter" },
       accessJwt: { type: "http", scheme: "bearer", description: "Production uses Cloudflare Access JWT verification" },
     },
   },
@@ -103,7 +103,7 @@ function problem(c: AppContext, status: ContentfulStatusCode, title: string, det
   );
 }
 
-function actorFromHeader(id: string | undefined, state: DemoState): Actor | null {
+function actorFromHeader(id: string | undefined, state: MockState): Actor | null {
   const person = state.people.find((candidate) => candidate.id === id);
   if (!person) return null;
   return { id: person.id, name: person.name, role: person.role, departmentId: person.departmentId };
@@ -169,7 +169,7 @@ app.use("*", async (c, next) => {
     c.header("access-control-allow-origin", origin);
     c.header("vary", "Origin");
   }
-  c.header("access-control-allow-headers", "content-type, x-demo-user-id, x-request-id, authorization");
+  c.header("access-control-allow-headers", "content-type, x-dev-user-id, x-request-id, authorization");
   c.header("access-control-allow-methods", "GET,POST,OPTIONS");
   if (c.req.method === "OPTIONS") return c.body(null, 204);
 
@@ -177,14 +177,14 @@ app.use("*", async (c, next) => {
 });
 
 app.use("/api/v1/*", async (c, next) => {
-  const state = createDemoState();
+  const state = createMockState();
   c.set("state", state);
 
   if (c.env.ENVIRONMENT === "production" && !c.req.header("cf-access-jwt-assertion")) {
     return problem(c, 401, "Unauthorized", "Production API requires a Cloudflare Access JWT.", "missing_access_identity");
   }
 
-  const actor = actorFromHeader(c.req.header("x-demo-user-id") ?? (c.env.ENVIRONMENT === "production" ? undefined : "u-leader"), state);
+  const actor = actorFromHeader(c.req.header("x-dev-user-id") ?? (c.env.ENVIRONMENT === "production" ? undefined : "u-leader"), state);
   if (!actor) return problem(c, 401, "Unauthorized", "Unknown or missing actor identity.", "unknown_actor");
   c.set("actor", actor);
   await next();
@@ -193,7 +193,7 @@ app.use("/api/v1/*", async (c, next) => {
 app.get("/health", (c) => c.json({ status: "ok", service: "btctu-api", environment: c.env.ENVIRONMENT, now: new Date().toISOString() }));
 app.get("/openapi.json", (c) => c.json(openapi));
 
-app.get("/api/v1/me", (c) => c.json({ data: c.get("actor"), meta: { identityMode: c.env.ENVIRONMENT === "production" ? "cloudflare-access" : "demo-header" } }));
+app.get("/api/v1/me", (c) => c.json({ data: c.get("actor"), meta: { identityMode: c.env.ENVIRONMENT === "production" ? "cloudflare-access" : "development-header" } }));
 
 app.get("/api/v1/organizations", (c) => {
   const state = c.get("state");
@@ -281,7 +281,7 @@ app.get("/api/v1/evaluations", (c) => {
 
 app.get("/api/v1/evaluations/:id", (c) => {
   const evaluation = c.get("state").evaluations.find((candidate) => candidate.id === c.req.param("id"));
-  return evaluation ? c.json({ data: evaluation, meta: { formulaNote: "05-HD/TU has a worked-example arithmetic inconsistency; score is demo data." } }) : problem(c, 404, "Not found", "Evaluation does not exist.", "evaluation_not_found");
+  return evaluation ? c.json({ data: evaluation, meta: { formulaNote: "05-HD/TU has a worked-example arithmetic inconsistency; the configured rule remains subject to approval." } }) : problem(c, 404, "Not found", "Evaluation does not exist.", "evaluation_not_found");
 });
 
 app.post("/api/v1/evaluations/:id/self", zValidator("json", selfEvaluationSchema), (c) => {
@@ -317,7 +317,7 @@ app.post("/api/v1/evaluations/:id/decision", zValidator("json", decisionSchema),
   const actor = c.get("actor");
   const evaluation = state.evaluations.find((candidate) => candidate.id === c.req.param("id"));
   if (!evaluation) return problem(c, 404, "Not found", "Evaluation does not exist.", "evaluation_not_found");
-  if (!canDecide(actor)) return denied(c, "decide_evaluation", evaluation.id, "Only the competent authority demo role can decide.");
+  if (!canDecide(actor)) return denied(c, "decide_evaluation", evaluation.id, "Only the competent authority can decide.");
   const input = c.req.valid("json");
   evaluation.status = "APPROVED";
   evaluation.classification = input.classification;
@@ -331,7 +331,7 @@ app.post("/api/v1/periods/:id/lock", (c) => {
   const actor = c.get("actor");
   const period = state.periods.find((candidate) => candidate.id === c.req.param("id"));
   if (!period) return problem(c, 404, "Not found", "Period does not exist.", "period_not_found");
-  if (!canDecide(actor)) return denied(c, "lock_period", period.id, "Only the competent authority demo role can lock a period.");
+  if (!canDecide(actor)) return denied(c, "lock_period", period.id, "Only the competent authority can lock a period.");
   period.lockedAt = new Date().toISOString();
   for (const evaluation of state.evaluations.filter((candidate) => candidate.periodId === period.id && candidate.status === "APPROVED")) evaluation.status = "LOCKED";
   addAudit(c, "lock_period", period.id, "OK");
@@ -350,7 +350,7 @@ app.get("/api/v1/reports/summary", (c) => {
   const state = c.get("state");
   const tasksByStatus = Object.fromEntries([...new Set(state.tasks.map((task) => task.status))].map((status) => [status, state.tasks.filter((task) => task.status === status).length]));
   const evaluationsByClassification = Object.fromEntries([...new Set(state.evaluations.map((evaluation) => evaluation.classification))].map((classification) => [classification, state.evaluations.filter((evaluation) => evaluation.classification === classification).length]));
-  return c.json({ data: { period: state.periods[0], tasksByStatus, evaluationsByClassification, averageScore: state.evaluations.length ? Number((state.evaluations.reduce((sum, evaluation) => sum + evaluation.score, 0) / state.evaluations.length).toFixed(2)) : 0 }, meta: { sourceClass: "INFERENCE", note: "Aggregation is candidate dashboard design until official reporting rules are confirmed." } });
+  return c.json({ data: { period: state.periods[0], tasksByStatus, evaluationsByClassification, averageScore: state.evaluations.length ? Number((state.evaluations.reduce((sum, evaluation) => sum + evaluation.score, 0) / state.evaluations.length).toFixed(2)) : 0 }, meta: { sourceClass: "INFERENCE", note: "Aggregation rules require approval before official reporting." } });
 });
 
 app.notFound((c) => problem(c, 404, "Not found", "Route does not exist.", "route_not_found"));

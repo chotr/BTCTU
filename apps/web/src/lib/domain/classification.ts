@@ -36,7 +36,7 @@ export function classificationEligibility(
   if (desired === "XUAT_SAC") {
     if (conditions.some((condition) => !condition.passed))
       problems.push(
-        "Mức Xuất sắc yêu cầu toàn bộ điều kiện minh họa đã được xác nhận.",
+        "Mức Xuất sắc yêu cầu toàn bộ điều kiện bắt buộc đã được xác nhận.",
       );
     if (quota === "UNKNOWN")
       problems.push(

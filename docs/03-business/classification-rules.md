@@ -62,7 +62,7 @@ ClassificationRuleVersion
 - status
 ```
 
-A small deterministic evaluator is enough for MVP. Do not build a generic DSL/rules engine unless the rule set proves it necessary.
+A small deterministic evaluator is sufficient for the current rule set. Do not build a generic DSL/rules engine unless the rule set proves it necessary.
 
 `groupQuotaRule?` is optional. Absence means the evaluation bypasses quota
 checking; it must not be interpreted as an implicit global quota.
@@ -70,6 +70,6 @@ checking; it must not be interpreted as an implicit global quota.
 ## TBD
 
 - exact comparison group for the excellent-rating cap inside BTCTU;
-- precise mapping of each QĐ39 subject category to demo users;
+- precise mapping of each QĐ39 subject category to application roles;
 - local procedure for appeal/reopen/correction after publication;
 - official monthly-to-quarter/year aggregation rule for the test system.

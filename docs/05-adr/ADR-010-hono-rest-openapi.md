@@ -1,6 +1,6 @@
 # ADR-010 — Hono REST API trên Cloudflare Workers
 
-**Status:** Accepted for prototype.
+**Status:** Accepted.
 
 ## Decision
 
@@ -16,7 +16,7 @@ Tách API thành Hono Worker, contract REST `/api/v1` mô tả bằng OpenAPI; r
 
 - Next.js Route Handlers: ghép lifecycle frontend/backend không cần thiết.
 - tRPC: type-safe tốt nhưng kém trung lập cho integration ngoài TypeScript.
-- NestJS/Express: không tối ưu cho Workers/MVP này.
+- NestJS/Express: không tối ưu cho Workers và nhu cầu hiện tại.
 - GraphQL: không có nhu cầu đủ mạnh.
 
 ## Consequence

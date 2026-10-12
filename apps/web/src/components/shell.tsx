@@ -22,6 +22,7 @@ import { api } from "@/lib/api";
 import { dismissToast, useApp } from "@/lib/store";
 import { canManage, canViewAudit } from "@/lib/policy";
 import { scopedData } from "@/lib/exports";
+import { runtimeLabel } from "@/lib/runtime-config";
 import { Avatar, Badge, Button, Callout, Modal } from "./ui";
 
 const groups = [
@@ -48,7 +49,7 @@ const groups = [
       { href: "/reports", label: "Báo cáo", icon: FileText },
       { href: "/audit", label: "Nhật ký hoạt động", icon: ListMagnifyingGlass },
       { href: "/integration", label: "Kết nối dữ liệu", icon: PlugsConnected },
-      { href: "/settings", label: "Thiết lập demo", icon: GearSix },
+      { href: "/settings", label: "Thiết lập", icon: GearSix },
     ],
   },
 ];
@@ -148,9 +149,9 @@ export default function Shell({ children }: { children: ReactNode }) {
         <Brand />
         <Navigation />
         <p className="px-5 pb-4 text-[11px] leading-relaxed text-ink-3">
-          Bản mô phỏng · lưu trên trình duyệt
+          {runtimeLabel()}
           <br />
-          Không sử dụng dữ liệu thật
+          Phiên bản 1.0
         </p>
       </aside>
       <div className="min-w-0 lg:pl-60 print:pl-0">
@@ -168,7 +169,7 @@ export default function Shell({ children }: { children: ReactNode }) {
           </div>
           <details className="relative">
             <summary className="flex cursor-pointer list-none items-center gap-2 rounded-ctl p-1.5 hover:bg-fill">
-              <Avatar name={user?.name ?? "Demo"} />
+              <Avatar name={user?.name ?? ""} />
               <span className="hidden text-[13px] font-medium sm:inline">
                 {user?.name}
               </span>

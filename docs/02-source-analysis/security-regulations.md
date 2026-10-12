@@ -11,7 +11,7 @@
 | NĐ 165/2025/NĐ-CP | Quản trị dữ liệu gồm phân loại, truy cập/truy xuất, ghi nhận lịch sử, xác thực dữ liệu, mã hóa và vòng đời xóa/hủy |
 | NĐ 278/2025/NĐ-CP | Kết nối/chia sẻ dữ liệu bắt buộc giữa cơ quan trong hệ thống chính trị phải đúng mục đích/phạm vi, có metadata/catalog, kiểm soát truy cập, giám sát và quản trị chất lượng |
 
-## Kết luận cho prototype
+## Kết luận cho môi trường phát triển
 
 ### FACT + constraint
 
@@ -20,7 +20,7 @@
 
 ### INFERENCE / candidate baseline
 
-Prototype nên:
+Hệ thống nên:
 
 - dùng dữ liệu synthetic;
 - không chứa nội dung tài liệu bí mật nhà nước;

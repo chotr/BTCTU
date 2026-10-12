@@ -2,7 +2,7 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "btctu-api",
   "main": "src/index.ts",
-  "compatibility_date": "2026-10-10",
+  "compatibility_date": "2026-10-12",
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
     "ENVIRONMENT": "local",
@@ -10,7 +10,14 @@
   },
   "observability": {
     "enabled": true,
-    "head_sampling_rate": 1
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 0.05
+    }
   },
   "env": {
     "staging": {

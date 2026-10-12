@@ -15,7 +15,7 @@ describe("BTCTU API", () => {
   });
 
   it("denies a staff audit read", async () => {
-    const response = await app.request("http://localhost/api/v1/audit", { headers: { "x-demo-user-id": "u-staff" } }, { ENVIRONMENT: "test", CORS_ORIGIN: "http://localhost:3000" });
+    const response = await app.request("http://localhost/api/v1/audit", { headers: { "x-dev-user-id": "u-staff" } }, { ENVIRONMENT: "test", CORS_ORIGIN: "http://localhost:3000" });
     expect(response.status).toBe(403);
   });
 });

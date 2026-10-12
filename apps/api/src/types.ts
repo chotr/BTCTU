@@ -89,7 +89,7 @@ export type AuditEvent = {
 
 export type Period = { id: string; label: string; lockedAt: string | null };
 
-export type DemoState = {
+export type MockState = {
   departments: Department[];
   people: Person[];
   catalog: CatalogItem[];

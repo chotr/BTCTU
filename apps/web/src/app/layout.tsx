@@ -13,7 +13,12 @@ const beVietnam = Be_Vietnam_Pro({
 
 export const metadata: Metadata = {
   title: "BTCTU · Quản lý nhiệm vụ & đánh giá",
-  description: "",
+  description:
+    "Hệ thống quản lý nhiệm vụ, KPI, đánh giá và xếp loại cho Ban Tổ chức Tỉnh ủy.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

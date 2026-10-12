@@ -94,12 +94,12 @@ Separates work from assignee:
 
 ## Evidence [INFERENCE]
 
-Prototype should store **metadata/reference**, not use the app as a state-secret document management system.
+The application should store **metadata/reference**, not act as a state-secret document management system.
 
 Candidate:
 `EvidenceRef(id, type, uri/objectKey, checksum, classification, uploadedBy, createdAt)`.
 
-For demo: synthetic files/data only.
+For development and testing: controlled non-sensitive files/data only.
 
 ## State model [INFERENCE, not source terminology]
 

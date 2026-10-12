@@ -1,0 +1,2 @@
+# Local-only values. Copy to .dev.vars; that file is ignored by Git.
+# Secrets belong in .dev.vars locally and `wrangler secret put` remotely.

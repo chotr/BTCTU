@@ -5,3 +5,13 @@ node_modules/
 *.tsbuildinfo
 test-results/
 playwright-report/
+
+# Local configuration and secrets must never be committed.
+.env
+.env.local
+.env.*.local
+.dev.vars
+.dev.vars.*
+!.env.example
+!.env.production.example
+!.dev.vars.example

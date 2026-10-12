@@ -27,7 +27,7 @@ sequenceDiagram
   C-->>A: Minimal approved local DTO
 ```
 
-## MVP
+## Development adapter (mock)
 
 Use a fake connector implementing the same port:
 
@@ -37,7 +37,7 @@ PersonnelDirectoryPort
   listPeopleByDepartment(departmentExternalId)
 ```
 
-The fake returns synthetic data. No real credentials/endpoints in demo.
+The development adapter returns controlled data. No real credentials/endpoints are used locally.
 
 ## Production adapter requirements
 

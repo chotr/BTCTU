@@ -1,67 +1,50 @@
-# 00 — Project overview
+# 00 — Tổng quan hệ thống
 
-## Problem
+## Mục tiêu
 
-Build an internal BTCTU system for task execution and KPI/evaluation, while respecting fragmented source rules about organization, quarterly assessment, classification, data governance, integration and security.
-
-## What is now understood
+BTCTU là ứng dụng nội bộ quản lý thực hiện nhiệm vụ và quy trình KPI/đánh giá, đồng thời bảo toàn khả năng truy vết về nguồn nghiệp vụ.
 
 ```mermaid
 flowchart LR
-  Q1["QĐ01"] --> ORG["Organization / responsibility"]
-  H5["05-HD"] --> KPI["Work / product / KPI"]
-  Q39["39-QĐ"] --> EV["Classification / authority"]
-  Q342["QĐ342"] --> GOV["Access / audit / security"]
-  DICT["QĐ308 + QĐ607"] --> DATA["Canonical data / API"]
-  CONN["QĐ348 + HD07"] --> INT["Integration gates"]
-  SEC["NĐ85/63/165/278"] --> SG["Security/data governance"]
+  Q1["QĐ01"] --> ORG["Tổ chức / trách nhiệm"]
+  H5["05-HD"] --> KPI["Công việc / sản phẩm / KPI"]
+  Q39["39-QĐ"] --> EV["Xếp loại / thẩm quyền"]
+  Q342["QĐ342"] --> GOV["Quyền / audit / bảo mật"]
+  DICT["QĐ308 + QĐ607"] --> DATA["Dữ liệu chuẩn / API"]
+  CONN["QĐ348 + HD07"] --> INT["Cổng tích hợp"]
+  SEC["NĐ85/63/165/278"] --> SG["Quản trị dữ liệu / ATTT"]
 ```
 
-The project is no longer blocked by “missing documents”; the core sources have been reviewed.
+## Trạng thái
 
-## What remains unresolved
+- giao diện nghiệp vụ đã có đầy đủ luồng chính;
+- REST API và OpenAPI đã có contract, validation, policy và error envelope;
+- cấu hình local/staging/production tách biệt;
+- dữ liệu local hiện do adapter tạm thời cung cấp trong lúc chờ API/kho dữ liệu hoàn chỉnh;
+- typecheck, unit test, contract test, E2E và production build là cổng kiểm tra;
+- các quy tắc chưa đủ căn cứ vẫn được đánh dấu chờ phê duyệt.
 
-- official JobPosition master;
-- approved work-catalog effective version;
-- 05-HD arithmetic inconsistency;
-- non-manager KPI formula;
-- month→quarter→year aggregation;
-- QĐ39 excellent-rating comparison group;
-- production data classification / formal HTTT level;
-- exact real integration scope.
+## Vấn đề còn mở
 
-## Product direction [INFERENCE]
+- JobPosition master chính thức;
+- phiên bản danh mục công việc có hiệu lực;
+- sai khác số học trong ví dụ 05-HD;
+- công thức KPI cho người không giữ chức vụ;
+- tổng hợp tháng → quý → năm;
+- nhóm so sánh xếp loại Xuất sắc theo QĐ39;
+- phân loại dữ liệu và cấp độ HTTT chính thức;
+- phạm vi, endpoint và credential tích hợp thật.
 
-Prototype:
-
-- internal web app;
-- modular monolith;
-- relational DB;
-- synthetic data;
-- versioned work/scoring/classification rules;
-- contextual permission + audit;
-- fake connector.
-
-Production architecture remains subject to formal security/data/integration approvals.
-
-## Main delivery path
+## Hướng triển khai
 
 ```text
-Source analysis
-→ Traceability
-→ Business/domain model
-→ System design
-→ Vertical-slice implementation
-→ Demo
-→ Production-readiness plan
+Phân tích nguồn
+→ Truy vết
+→ Mô hình nghiệp vụ
+→ Thiết kế hệ thống
+→ Triển khai ứng dụng
+→ Nghiệm thu
+→ Chuyển adapter API và hạ tầng được phê duyệt
 ```
 
-## Interview value
-
-The project demonstrates:
-
-- requirements/business analysis from regulations;
-- ability to detect ambiguity/source defects;
-- domain and data modeling;
-- architecture/security tradeoffs;
-- explicit separation of “known”, “designed” and “not yet authorized”.
+Kiến trúc domain và API không phụ thuộc việc hạ tầng production cuối cùng là Cloudflare hay nền tảng khác được phê duyệt.

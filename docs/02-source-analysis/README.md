@@ -33,7 +33,7 @@ production rollout has been approved.
 | SRC-12 | [NĐ278/2025](nd278.md) | mandatory data-sharing governance | Reviewed from supplied PDF |
 | SRC-13 | [NQ11/TU](nq11.md) | strategic/digital-transformation context | Reviewed from supplied PDF |
 | SRC-14 | [Operational Excel files](excel-operational-data.md) | organization/task catalog seed/draft data | Both supplied workbooks inspected; operational evidence, not legal authority |
-| SRC-15 | [Recruitment/project context](project-context.md) | test/recruitment context | Triaged |
+| SRC-15 | [Project context](project-context.md) | project context and source index | Triaged |
 | CROSS | [Security regulations summary](security-regulations.md) | cross-source security conclusions | Reconciled from SRC-09..12 |
 
 ## Source authority rule

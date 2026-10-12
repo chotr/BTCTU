@@ -1,4 +1,4 @@
-# Implementation plan — build the defensible vertical slice first
+# Implementation plan — end-to-end delivery
 
 Related implementation decisions:
 
@@ -7,7 +7,7 @@ Related implementation decisions:
 
 ## Goal
 
-Deliver a demo that proves:
+Deliver an acceptance build that proves:
 
 ```text
 source regulation
@@ -17,9 +17,9 @@ source regulation
 → visible audit/decision
 ```
 
-The project is a competency test, not a production replacement for the whole HTTT TCXDĐ. Scope is therefore intentionally narrow and traceable.
+The system replaces only the task/KPI/evaluation slice of HTTT TCXDĐ, not the whole system. Scope is therefore intentionally narrow and traceable.
 
-## MVP vertical slice
+## End-to-end workflow
 
 ```text
 Organization / Position / Person
@@ -63,13 +63,13 @@ Exit gate:
 
 ### P1 — Application foundation
 
-**Candidate tech:** internal web app, Next.js + TypeScript + relational DB; modular monolith.
+**Selected tech:** internal web app, Next.js + TypeScript + relational DB; modular monolith.
 
 Deliver:
 
 - project skeleton;
 - DB migrations;
-- seed/synthetic demo data;
+- development seed data;
 - auth/session stub;
 - centralized policy interface;
 - audit-event API;
@@ -94,9 +94,9 @@ Rules:
 - historical task keeps catalog version;
 - do not claim Excel scores are official until approved.
 
-Demo checkpoint:
+Acceptance checkpoint:
 
-> recruiter can trace a catalog item back to source/workbook and see version/effective status.
+> a reviewer can trace a catalog item back to source/workbook and see version/effective status.
 
 ### P3 — Task execution
 
@@ -139,7 +139,7 @@ rule with `status = CANDIDATE`.
 
 INC-01 blocks only activation/publication of the affected rule as
 `OFFICIAL/ACTIVE`. Until confirmed, show a visible “worked-example discrepancy /
-candidate rule” flag in demo config.
+candidate rule” flag in development config.
 
 For non-manager staff, use a separate candidate/configured rule; never label it official unless business confirms it.
 
@@ -166,9 +166,9 @@ Implement:
 - authorized reopen request with reason;
 - keep old run/decision;
 - append audit timeline;
-- permission denied demo path.
+- permission-denied acceptance path.
 
-Exact reopen authority is a local design/TBD, so prototype can use a controlled demo role with clear label.
+Exact reopen authority is a local design/TBD, so development uses a controlled role with a clear label.
 
 ### P7 — Dashboard + report/template draft
 
@@ -240,7 +240,7 @@ flowchart LR
   I3["Configure QĐ39 comparison groups"] -. activation gate .-> O3
 ```
 
-## MVP cut line for interview
+## Delivery cut line for the dev milestone
 
 If time is short, finish **P1–P7** with one happy path and one exception path. P8 can be a diagram + fake port. P9 remains a readiness plan.
 
@@ -266,4 +266,4 @@ If time is short, finish **P1–P7** with one happy path and one exception path.
 - real LGSP integration;
 - complex ML/AI decision-making.
 
-These do not improve the competency-test signal enough to justify risk/complexity.
+These do not improve the delivery signal enough to justify risk/complexity.

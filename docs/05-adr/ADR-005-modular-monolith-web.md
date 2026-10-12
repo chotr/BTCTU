@@ -1,10 +1,10 @@
 # ADR-005 — Web frontend + modular-monolith backend
 
-**Status:** Accepted for prototype.
+**Status:** Accepted.
 
 ## Decision
 
-Use a responsive web application with **two deployable units** for the prototype:
+Use a responsive web application with **two deployable units**:
 
 1. `apps/web` — Next.js frontend;
 2. `apps/api` — Hono backend deployed as one modular-monolith application.
@@ -13,11 +13,11 @@ The backend keeps clear module boundaries such as Organization, Task, Evaluation
 Classification, IAM/Policy and Audit, but those backend modules are not deployed
 as separate microservices.
 
-The prototype uses a relational data model and background jobs/outbox where needed.
+The system uses a relational data model and background jobs/outbox where needed.
 
 ## Reason
 
-The competency test benefits more from an end-to-end vertical slice, traceability
+This system benefits more from an end-to-end vertical slice, traceability
 and simple operations than from microservice complexity.
 
 Separating web and API gives:

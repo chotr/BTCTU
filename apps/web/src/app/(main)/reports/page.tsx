@@ -1,28 +1,25 @@
 "use client";
-import Link from "next/link";
+
 import { useState } from "react";
 import { Export, Printer, FileText } from "@phosphor-icons/react";
 import { appendAudit, useApp } from "@/lib/store";
 import { exportReport, scopedData } from "@/lib/exports";
-import { evaluationLabel, evaluationTotal } from "@/lib/evaluation";
 import { CLASS_LABELS } from "@/lib/types";
+import { TASK_DONE, inGroup } from "@/lib/domain/workflow";
 import {
-  TASK_DONE,
-  TASK_EDITABLE,
-  TASK_IN_REVIEW,
-  inGroup,
-} from "@/lib/domain/workflow";
-import {
-  Badge,
   Button,
   Card,
-  ClassificationBadge,
-  EmptyState,
   Field,
   SectionHeader,
   Select,
   StatCard,
 } from "@/components/ui";
+import {
+  DepartmentProgressTable,
+  EvaluationTraceTable,
+  ReportDraft,
+} from "@/components/reports";
+
 export default function ReportsPage() {
   const state = useApp();
   const scoped = scopedData(state);
@@ -47,7 +44,7 @@ export default function ReportsPage() {
   const decided = evs.filter((e) => e.decision);
   function makeDraft() {
     setDraft(
-      `DỰ THẢO MINH HỌA — KHÔNG CÓ GIÁ TRỊ QUYẾT ĐỊNH\nBáo cáo kết quả ${period?.name}\nPhạm vi: ${dept === "ALL" ? "theo quyền tài khoản" : state.departments.find((d) => d.id === dept)?.name}\n\n1. Thực hiện nhiệm vụ\nCó ${tasks.length} nhiệm vụ (không tính nhiệm vụ hủy), ${done.length} nhiệm vụ được nghiệm thu.\n\n2. Đánh giá, xếp loại\n${decided.length}/${evs.length} hồ sơ có quyết định mô phỏng.\n${Object.entries(
+      `DỰ THẢO — CẦN RÀ SOÁT TRƯỚC KHI BAN HÀNH\nBáo cáo kết quả ${period?.name}\nPhạm vi: ${dept === "ALL" ? "theo quyền tài khoản" : state.departments.find((d) => d.id === dept)?.name}\n\n1. Thực hiện nhiệm vụ\nCó ${tasks.length} nhiệm vụ (không tính nhiệm vụ hủy), ${done.length} nhiệm vụ được nghiệm thu.\n\n2. Đánh giá, xếp loại\n${decided.length}/${evs.length} hồ sơ có quyết định.\n${Object.entries(
         CLASS_LABELS,
       )
         .map(
@@ -56,14 +53,13 @@ export default function ReportsPage() {
         )
         .join(
           "\n",
-        )}\n\n3. Nội dung cần rà soát\nĐối chiếu thẩm quyền, điều kiện QĐ39; quy tắc ứng viên chưa được phê duyệt chính thức. Kiểm tra nguồn và căn cứ từng hồ sơ trước khi sử dụng.\n\nNgười rà soát: ................................`,
+        )}\n\n3. Nội dung cần rà soát\nĐối chiếu thẩm quyền, điều kiện QĐ39 và các quy tắc đang chờ phê duyệt. Kiểm tra nguồn và căn cứ từng hồ sơ trước khi sử dụng.\n\nNgười rà soát: ................................`,
     );
     appendAudit({
       actorId: state.user!.id,
       action: "Tạo dự thảo báo cáo",
       resource: periodId,
-      detail:
-        "Mẫu xác định từ dữ liệu tổng hợp; không AI, không tự ký/ban hành",
+      detail: "Mẫu xác định từ dữ liệu tổng hợp; không AI, không tự ký/ban hành",
       outcome: "OK",
     });
   }
@@ -81,7 +77,7 @@ export default function ReportsPage() {
     <div className="space-y-4">
       <SectionHeader
         title="Báo cáo điều hành"
-        hint="Dữ liệu mô phỏng — chỉ tổng hợp trong phạm vi quyền của tài khoản."
+        hint="Dữ liệu được tổng hợp trong phạm vi quyền của tài khoản."
         actions={
           <div className="flex flex-wrap gap-2 print:hidden">
             <Button
@@ -152,7 +148,7 @@ export default function ReportsPage() {
         </Button>
       </Card>
       <p className="hidden text-xs print:block">
-        DỮ LIỆU MÔ PHỎNG — {period?.name} — người xuất: {state.user?.name}
+        {period?.name} — người xuất: {state.user?.name}
       </p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Nhiệm vụ" value={String(tasks.length)} />
@@ -167,137 +163,13 @@ export default function ReportsPage() {
           tone="warn"
         />
       </div>
-      <Card className="overflow-x-auto">
-        <table className="w-full min-w-[680px] text-[13px]">
-          <thead className="bg-fill text-left text-xs text-ink-3">
-            <tr>
-              {[
-                "Phòng",
-                "Tổng việc",
-                "Đang làm / trả lại",
-                "Chờ nghiệm thu",
-                "Đã nghiệm thu",
-              ].map((h) => (
-                <th key={h} className="p-3">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {scoped.departments
-              .filter((d) => dept === "ALL" || d.id === dept)
-              .map((d) => {
-                const ts = tasks.filter((t) => t.departmentId === d.id);
-                return (
-                  <tr key={d.id} className="shadow-[0_1px_0_#edf1f6]">
-                    <td className="p-3 font-medium">{d.shortName}</td>
-                    <td className="p-3">{ts.length}</td>
-                    <td className="p-3">
-                      {
-                        ts.filter((t) =>
-                          inGroup(TASK_EDITABLE,
-                            t.status,
-                          ),
-                        ).length
-                      }
-                    </td>
-                    <td className="p-3">
-                      {
-                        ts.filter((t) =>
-                          inGroup(TASK_IN_REVIEW, t.status),
-                        ).length
-                      }
-                    </td>
-                    <td className="p-3">
-                      {
-                        ts.filter((t) =>
-                          inGroup(TASK_DONE, t.status),
-                        ).length
-                      }
-                    </td>
-                  </tr>
-                );
-              })}
-          </tbody>
-        </table>
-      </Card>
-      <Card className="overflow-x-auto">
-        <h2 className="p-4 text-sm font-semibold">Truy vết kết quả đánh giá</h2>
-        {evs.length ? (
-          <table className="w-full min-w-[760px] text-[13px]">
-            <thead className="bg-fill text-left text-xs text-ink-3">
-              <tr>
-                {[
-                  "Đối tượng",
-                  "Điểm ứng viên",
-                  "Quyết định",
-                  "Nguồn / phiên bản",
-                ].map((h) => (
-                  <th key={h} className="p-3">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {evs.map((e) => (
-                <tr key={e.id} className="shadow-[0_1px_0_#edf1f6]">
-                  <td className="p-3">
-                    <Link
-                      href={`/evaluation/${e.id}`}
-                      className="font-medium text-accent-700 hover:underline"
-                    >
-                      {evaluationLabel(e, state)}
-                    </Link>
-                  </td>
-                  <td className="p-3 tabular-nums">
-                    {evaluationTotal(e).toFixed(2)}
-                    {!e.calculationRuns?.length && (
-                      <span className="ml-1 text-xs text-ink-3">(mẫu)</span>
-                    )}
-                  </td>
-                  <td className="p-3">
-                    {e.decision ? (
-                      <ClassificationBadge value={e.decision.classification} />
-                    ) : (
-                      <Badge>Chưa quyết định</Badge>
-                    )}
-                  </td>
-                  <td className="max-w-xs p-3 text-xs text-ink-3">
-                    {e.calc.ruleVersion}
-                    <p className="mt-1">
-                      05-HD/TU → KPI ứng viên → QĐ39 / điều kiện → quyết định
-                    </p>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <EmptyState title="Chưa có hồ sơ trong phạm vi đã chọn" />
-        )}
-      </Card>
-      {draft !== null && (
-        <Card className="p-5">
-          <h2 className="mb-3 text-sm font-semibold">
-            Dự thảo báo cáo · cần người rà soát
-          </h2>
-          <textarea
-            aria-label="Dự thảo báo cáo"
-            className="control min-h-96 w-full py-3 text-[13px] leading-relaxed print:hidden"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-          />
-          <pre className="hidden whitespace-pre-wrap font-sans text-sm leading-relaxed print:block">
-            {draft}
-          </pre>
-          <p className="mt-3 text-xs text-ink-3 print:hidden">
-            Chỉnh sửa trực tiếp, sau đó chọn In / lưu PDF. Không có thao tác ký
-            hoặc ban hành tự động.
-          </p>
-        </Card>
-      )}
+      <DepartmentProgressTable
+        departments={scoped.departments}
+        tasks={tasks}
+        dept={dept}
+      />
+      <EvaluationTraceTable evaluations={evs} state={state} />
+      {draft !== null && <ReportDraft value={draft} onChange={setDraft} />}
     </div>
   );
 }

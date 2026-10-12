@@ -1,4 +1,4 @@
-# Logical ERD — target for MVP
+# Logical data model (ERD)
 
 > Entity names below are **software design**. Their existence is traceable to source concepts, but the table structure itself is not prescribed by the regulations.
 
@@ -53,7 +53,7 @@ erDiagram
 - Approved evaluation keeps the exact catalog/rule/input versions used.
 - Recalculation appends a new `CalculationRun`; it does not rewrite history.
 - External person/organization data keeps source-system identity/mapping.
-- `EvidenceRef` is metadata/reference in MVP; no real secret-document content.
+- `EvidenceRef` is metadata/reference only; no real secret-document content.
 - Delete/retention is policy-driven; “soft delete forever” is not the lifecycle policy.
 
 ## Not yet authoritative

@@ -55,7 +55,7 @@
 
 ## Resolved design decisions
 
-- Prototype: web modular monolith.
+- Kiến trúc hiện tại: web + modular-monolith API.
 - Synthetic data only.
 - Versioned/source-traceable catalog and rules.
 - Fake connector first; real integration behind approval/security gate.

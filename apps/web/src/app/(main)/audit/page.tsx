@@ -7,7 +7,7 @@ import { fmtDateTime } from "@/lib/format";
 import { useApp } from "@/lib/store";
 import { scopedData } from "@/lib/exports";
 import { canViewAudit } from "@/lib/policy";
-import { USERS } from "@/lib/mock/data";
+import { USERS } from "@/lib/mock";
 import {
   Avatar,
   Badge,

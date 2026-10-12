@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { resetDemo, useApp } from "@/lib/store";
+import { resetWorkspace, useApp } from "@/lib/store";
+import { runtimeConfig, runtimeLabel } from "@/lib/runtime-config";
 import {
   Badge,
   Button,
@@ -33,7 +34,7 @@ const rows = [
   ],
   ["Quyết định / khóa / mở lại", "Có lý do + audit", "Không", "Không"],
   ["Báo cáo", "Toàn Ban", "Phạm vi phòng", "Cá nhân"],
-  ["Connector mock", "Có", "Không", "Không"],
+  ["Quản lý kết nối dữ liệu", "Có", "Không", "Không"],
 ];
 export default function SettingsPage() {
   const [open, setOpen] = useState(false);
@@ -41,8 +42,8 @@ export default function SettingsPage() {
   return (
     <div className="space-y-4">
       <SectionHeader
-        title="Thiết lập demo"
-        hint="Thông tin phiên, quyền mô phỏng và kịch bản trình bày."
+        title="Thiết lập hệ thống"
+        hint="Thông tin phiên, nguồn dữ liệu và phạm vi phân quyền."
       />
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <Card className="p-5">
@@ -59,21 +60,28 @@ export default function SettingsPage() {
                 ? "Lưu trữ cần kiểm tra"
                 : "Lưu cục bộ · schema v2"}
             </Badge>
-            <Badge>{state.tasks.length} nhiệm vụ mẫu</Badge>
+            <Badge>{state.tasks.length} nhiệm vụ</Badge>
+            <Badge tone={runtimeConfig.dataSource === "api" ? "ok" : "warn"}>
+              {runtimeLabel()}
+            </Badge>
           </div>
           <p className="my-4 text-xs leading-relaxed text-ink-3">
-            Đổi tài khoản vẫn giữ dữ liệu. Đặt lại chỉ xóa thay đổi demo của
-            trình duyệt này, khôi phục bộ mẫu và giữ phiên đăng nhập.
+            Đổi tài khoản vẫn giữ dữ liệu. Khôi phục không gian làm việc sẽ xóa
+            các thay đổi cục bộ trên trình duyệt này và giữ phiên đăng nhập.
           </p>
-          <Button onClick={() => setOpen(true)}>Đặt lại dữ liệu demo</Button>
+          <Button onClick={() => setOpen(true)}>
+            Khôi phục không gian làm việc
+          </Button>
         </Card>
         <Card className="p-5">
-          <h2 className="mb-3 text-sm font-semibold">Kịch bản bảo vệ dự án</h2>
+          <h2 className="mb-3 text-sm font-semibold">
+            Quy trình kiểm tra nghiệp vụ
+          </h2>
           <ol className="space-y-3 text-[13px] text-ink-2">
             <li>
               1.{" "}
               <Link className="text-accent-700" href="/periods">
-                Tạo kỳ demo riêng
+                Tạo kỳ đánh giá
               </Link>
               , tạo nhân sự và công việc từ danh mục đã công bố.
             </li>
@@ -97,12 +105,12 @@ export default function SettingsPage() {
       </div>
       <Card className="overflow-x-auto">
         <h2 className="p-4 text-sm font-semibold">
-          Ma trận quyền ứng viên — không phải danh sách quyền pháp lý
+          Ma trận quyền cấu hình
         </h2>
         <table className="w-full min-w-[800px] text-[13px]">
           <thead className="bg-fill text-left text-xs text-ink-3">
             <tr>
-              {["Chức năng", "Lãnh đạo demo", "Trưởng phòng", "Công chức"].map(
+              {["Chức năng", "Lãnh đạo", "Trưởng phòng", "Công chức"].map(
                 (h) => (
                   <th className="p-3" key={h}>
                     {h}
@@ -127,12 +135,12 @@ export default function SettingsPage() {
       <Callout title="Các cổng xác nhận còn mở" tone="neutral">
         INC-01 số học ví dụ nguồn; INC-02 công thức nhân viên; nhóm/hạn mức Xuất
         sắc; thẩm quyền cụ thể; quy tắc tháng→quý→năm; quy trình mở lại; hợp
-        đồng API và cấp độ ATTT. Mọi kết quả demo vẫn là candidate, không tự
-        kích hoạt chính thức.
+        đồng API và cấp độ ATTT. Các quy tắc chưa được phê duyệt không tự kích
+        hoạt trong môi trường chính thức.
       </Callout>
       <Modal
         open={open}
-        title="Đặt lại dữ liệu demo?"
+        title="Khôi phục không gian làm việc?"
         onClose={() => setOpen(false)}
       >
         <p className="text-sm leading-relaxed">
@@ -144,7 +152,7 @@ export default function SettingsPage() {
           <Button
             variant="danger"
             onClick={() => {
-              resetDemo();
+              resetWorkspace();
               setOpen(false);
             }}
           >
