@@ -1,40 +1,41 @@
-# ADR-008 — Real integration stays behind an approval gate
+# ADR-008 — Tích hợp thật nằm sau cổng phê duyệt
 
-**Status:** Accepted.
+**Trạng thái:** Accepted.
 
-## Context
+## Bối cảnh
 
-QĐ607 provides a concrete OAuth 2.0 `client_credentials`/JWT/scoped-API
-contract. HD07 lists a broader set of supported LGSP mechanisms/profiles
-(OAuth 2.1, OIDC 2.0, SAML2, JWT Federation and mTLS), while QĐ348 and HD07
-also require approved purpose/scope, test→production process, network/security
-conditions and ATTT controls.
+QĐ607 cung cấp một contract API cụ thể: OAuth 2.0 `client_credentials`/JWT/theo
+scope. HD07 liệt kê tập cơ chế/profile LGSP được hỗ trợ rộng hơn (OAuth 2.1,
+OIDC 2.0, SAML2, JWT Federation và mTLS), trong khi QĐ348 và HD07 cũng yêu cầu
+mục đích/phạm vi được phê duyệt, quy trình test→production, điều kiện mạng/bảo mật
+và các kiểm soát ATTT.
 
-These sources describe different contract layers. Their authentication wording
-must not be flattened into one interchangeable generic “OAuth2” mechanism.
+Các nguồn này mô tả những tầng contract khác nhau. Cách diễn đạt xác thực của chúng
+không được làm phẳng thành một cơ chế “OAuth2” chung có thể thay thế lẫn nhau.
 
-Having a known API shape does **not** mean this app is authorized to call Production.
+Biết được hình dạng API **không** có nghĩa ứng dụng này được phép gọi Production.
 
-## Decision
+## Quyết định
 
-Phase 1 implements:
+Giai đoạn 1 triển khai:
 
-- integration port;
-- fake adapter with synthetic data;
-- canonical mapping registry;
-- contract tests for token/error/scope behavior;
-- request/correlation ID and audit.
+- port tích hợp;
+- adapter giả với dữ liệu synthetic;
+- sổ đăng ký ánh xạ canonical;
+- contract test cho hành vi token/lỗi/scope;
+- request/correlation ID và audit.
 
-The production adapter selects the exact authentication version/profile from
-the approved endpoint/platform contract.
+Adapter production chọn đúng phiên bản/profile xác thực từ contract endpoint/nền
+tảng đã được phê duyệt.
 
-Real connector remains disabled until:
+Connector thật vẫn bị tắt cho tới khi:
 
-- exact API/data subset approved;
-- purpose/scope approved;
-- network/certificate/credential provisioned;
-- data classification and security review passed.
+- tập API/dữ liệu con chính xác được phê duyệt;
+- mục đích/phạm vi được phê duyệt;
+- mạng/chứng chỉ/credential được cấp;
+- phân loại dữ liệu và rà soát bảo mật đã đạt.
 
-## Consequence
+## Hệ quả
 
-The development integration proves architecture without exposing real personnel/protected data or falsely claiming production connectivity.
+Việc tích hợp ở môi trường phát triển chứng minh kiến trúc mà không lộ dữ liệu nhân
+sự/dữ liệu được bảo vệ thật và không tuyên bố sai rằng đã kết nối production.

@@ -34,7 +34,7 @@ Không dùng chung database, bucket, secret, audience hoặc Access policy giữ
 - repository bền vững, migration có rollback, backup/restore đã diễn tập;
 - kho tài liệu/DMS và retention được phê duyệt;
 - quyền theo action + resource + scope + context ở server;
-- rate limiting, request size limit, CSP, CORS allowlist;
+- giới hạn tần suất, giới hạn kích thước yêu cầu, CSP, allowlist CORS;
 - giám sát, cảnh báo, runbook sự cố và RPO/RTO;
 - security test và operational sign-off;
 - endpoint, scope, network route và credential cho LGSP/HTTT TCXDĐ.

@@ -1,53 +1,53 @@
-# Classification rules
+# Quy tắc xếp loại
 
 ## FACT — QĐ39
 
-### Basic score bands
+### Các dải điểm cơ bản
 
-| Classification | Basic score |
+| Xếp loại | Dải điểm cơ bản |
 |---|---:|
 | Hoàn thành xuất sắc nhiệm vụ | >= 90 |
-| Hoàn thành tốt nhiệm vụ | >= 70 and < 90 |
-| Hoàn thành nhiệm vụ | >= 50 and < 70 |
-| Không hoàn thành nhiệm vụ | < 50 or a blocking case applies |
+| Hoàn thành tốt nhiệm vụ | >= 70 và < 90 |
+| Hoàn thành nhiệm vụ | >= 50 và < 70 |
+| Không hoàn thành nhiệm vụ | < 50 hoặc có trường hợp chặn |
 
-Source: QĐ39, Điều 11.
+Nguồn: QĐ39, Điều 11.
 
-## Score is not enough
+## Chỉ điểm là chưa đủ
 
-Each class contains additional mandatory conditions. Examples include:
+Mỗi mức xếp loại có thêm các điều kiện bắt buộc. Ví dụ gồm:
 
-- completion ratio of assigned tasks;
-- quality/timeliness;
-- outstanding-result requirements for excellent rating;
-- conditions tied to the performance of a unit/area/subordinates for leaders;
-- violation/discipline cases;
-- a group-level quota/cap on excellent ratings **when the subject category and
-  comparison scope make that rule applicable**.
+- tỷ lệ hoàn thành nhiệm vụ được giao;
+- chất lượng/tiến độ;
+- yêu cầu kết quả nổi trội cho mức Xuất sắc;
+- điều kiện gắn với kết quả của đơn vị/lĩnh vực/cấp dưới đối với lãnh đạo;
+- các trường hợp vi phạm/kỷ luật;
+- hạn mức/mức trần Xuất sắc ở cấp nhóm **khi nhóm đối tượng và phạm vi so sánh
+  khiến quy tắc đó áp dụng**.
 
-Quota applicability must be resolved from the configured subject category and
-comparison group. It is not a universal step for every evaluation.
+Việc áp dụng hạn mức phải được xác định từ nhóm đối tượng và nhóm so sánh đã cấu
+hình. Đây không phải bước phổ quát cho mọi đánh giá.
 
-Therefore this is invalid:
+Vì vậy điều này là không hợp lệ:
 
 ```ts
 if (score >= 90) return "EXCELLENT";
 ```
 
-## Proposed decision pipeline [INFERENCE]
+## Pipeline quyết định đề xuất [INFERENCE]
 
 ```mermaid
 flowchart LR
-  S["Calculated score"] --> B["Basic band"]
-  B --> G["Mandatory condition checks"]
-  G --> C{"Applicable group constraint?"}
-  C -->|"Yes"| Q["Evaluate configured quota/group cap"]
-  C -->|"No"| P["Proposed classification"]
+  S["Điểm đã tính"] --> B["Dải điểm cơ bản"]
+  B --> G["Kiểm tra điều kiện bắt buộc"]
+  G --> C{"Có ràng buộc nhóm áp dụng?"}
+  C -->|"Có"| Q["Đánh giá hạn mức/mức trần nhóm đã cấu hình"]
+  C -->|"Không"| P["Xếp loại đề xuất"]
   Q --> P
-  P --> A["Competent authority decision"]
+  P --> A["Quyết định của cấp có thẩm quyền"]
 ```
 
-## Candidate rule representation
+## Biểu diễn quy tắc ứng viên
 
 ```text
 ClassificationRuleVersion
@@ -62,14 +62,15 @@ ClassificationRuleVersion
 - status
 ```
 
-A small deterministic evaluator is sufficient for the current rule set. Do not build a generic DSL/rules engine unless the rule set proves it necessary.
+Một evaluator tất định nhỏ là đủ cho tập quy tắc hiện tại. Không xây DSL/rules engine
+tổng quát trừ khi tập quy tắc chứng minh là cần thiết.
 
-`groupQuotaRule?` is optional. Absence means the evaluation bypasses quota
-checking; it must not be interpreted as an implicit global quota.
+`groupQuotaRule?` là tùy chọn. Việc thiếu nó nghĩa là đánh giá bỏ qua kiểm tra hạn
+mức; không được hiểu là một hạn mức toàn cục ngầm định.
 
 ## TBD
 
-- exact comparison group for the excellent-rating cap inside BTCTU;
-- precise mapping of each QĐ39 subject category to application roles;
-- local procedure for appeal/reopen/correction after publication;
-- official monthly-to-quarter/year aggregation rule for the test system.
+- nhóm so sánh chính xác cho mức trần Xuất sắc trong BTCTU;
+- ánh xạ chính xác từng nhóm đối tượng của QĐ39 sang vai trò trong ứng dụng;
+- quy trình khiếu nại/mở lại/chỉnh sửa cục bộ sau khi công bố;
+- quy tắc tổng hợp tháng→quý/năm chính thức cho hệ thống kiểm thử.

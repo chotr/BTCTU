@@ -1,88 +1,98 @@
-# Implementation story — presenting the solution
+# Câu chuyện triển khai — trình bày giải pháp
 
-## Thesis
+## Luận điểm
 
-The strongest part of this system is not the number of screens. It is the ability to turn fragmented regulations into a traceable system **without converting assumptions into rules**.
+Phần mạnh nhất của hệ thống này không phải số lượng màn hình. Đó là khả năng biến
+các quy định phân mảnh thành một hệ thống truy vết được **mà không biến giả định
+thành quy tắc**.
 
-## 10-slide outline
+## Dàn ý 10 slide
 
-1. **Problem**
-   - internal task/KPI/evaluation system for BTCTU;
-   - source material is fragmented across organization, evaluation, data and security documents.
+1. **Bài toán**
+   - hệ thống nhiệm vụ/KPI/đánh giá nội bộ cho BTCTU;
+   - tài liệu nguồn phân mảnh trên nhiều văn bản tổ chức, đánh giá, dữ liệu và bảo mật.
 
-2. **Method**
+2. **Phương pháp**
    - FACT / INFERENCE / TBD;
-   - source register + traceability matrix.
+   - sổ đăng ký nguồn + ma trận truy vết.
 
-3. **Organization**
-   - QĐ01 → four departments, functions/responsibilities, assignment responsibility.
+3. **Tổ chức**
+   - QĐ01 → bốn đơn vị, chức năng/trách nhiệm, trách nhiệm phân công.
 
-4. **Work → KPI**
+4. **Công việc → KPI**
    - 05-HD + Excel + QĐ308;
-   - work/product catalog → actual task → result → A/B/C/D → 30/70.
+   - danh mục công việc/sản phẩm → nhiệm vụ thực tế → kết quả → A/B/C/D → 30/70.
 
-5. **Why the source was not coded blindly**
-   - show the 05-HD worked-example arithmetic inconsistency;
-   - explain source issue → gate → versioned rule + test.
+5. **Vì sao không code nguồn một cách mù quáng**
+   - nêu sai khác số học trong ví dụ của 05-HD;
+   - giải thích vấn đề nguồn → cổng → quy tắc theo phiên bản + kiểm thử.
 
-6. **Evaluation/classification**
-   - QĐ39: score bands + mandatory conditions + authority;
-   - score is not the final decision.
+6. **Đánh giá/xếp loại**
+   - QĐ39: dải điểm + điều kiện bắt buộc + thẩm quyền;
+   - điểm không phải quyết định cuối.
 
-7. **Architecture**
+7. **Kiến trúc**
    - web modular monolith;
    - domain/module/ERD;
-   - source-traceable versions.
+   - phiên bản truy vết được về nguồn.
 
-8. **Security/data**
+8. **Bảo mật/dữ liệu**
    - QĐ342 + NĐ85/63/165/278;
-   - contextual permission, audit, development seed data, no state-secret content.
+   - phân quyền theo ngữ cảnh, audit, dữ liệu seed phát triển, không có nội dung bí mật nhà nước.
 
-9. **Integration**
+9. **Tích hợp**
    - QĐ308/607/348/HD07;
-   - authoritative SOR + mock adapter now, approved LGSP connector later.
+   - SOR chủ quản + mock adapter hiện tại, connector LGSP được phê duyệt về sau.
 
-10. **Acceptance flow + limitations**
-   - end-to-end flow;
-   - clearly list unresolved non-manager formula, monthly aggregation, production approval/data scope.
+10. **Luồng nghiệm thu + hạn chế**
+    - luồng đầu-cuối;
+    - liệt kê rõ công thức không-lãnh-đạo chưa giải quyết, tổng hợp tháng, phê duyệt
+      production/phạm vi dữ liệu.
 
-## Five key design decisions
+## Năm quyết định thiết kế then chốt
 
-1. **Web modular monolith, not microservices**
-   - internal small-user system; centralized updates; low operational burden.
+1. **Web modular monolith, không phải microservices**
+   - hệ thống nội bộ ít người dùng; cập nhật tập trung; gánh nặng vận hành thấp.
 
-2. **Version rules/catalogs**
-   - regulation/catalog changes must not rewrite historical scores.
+2. **Quy tắc/danh mục theo phiên bản**
+   - thay đổi quy định/danh mục không được viết lại điểm lịch sử.
 
-3. **Classification is a decision pipeline**
-   - threshold + conditions + authority; not `if score >= 90`.
+3. **Xếp loại là một pipeline quyết định**
+   - ngưỡng + điều kiện + thẩm quyền; không phải `if score >= 90`.
 
-4. **External personnel data remains authoritative elsewhere**
-   - connector/mapping rather than duplicate source of truth.
+4. **Dữ liệu nhân sự ngoài vẫn có thẩm quyền ở nơi khác**
+   - connector/ánh xạ thay vì nhân bản nguồn sự thật.
 
-5. **Development environment excludes real protected data**
-   - security/compliance is evidenced through design and controls, not by risking sensitive data.
+5. **Môi trường phát triển loại trừ dữ liệu được bảo vệ thật**
+   - bảo mật/tuân thủ được chứng minh qua thiết kế và kiểm soát, không bằng cách mạo
+     hiểm dữ liệu nhạy cảm.
 
-## Common review questions
+## Câu hỏi thường gặp khi rà soát
 
-### “Why not just average the employee scores for a department?”
+### “Vì sao không lấy trung bình điểm nhân viên cho một đơn vị?”
 
-Because the assignment and regulations treat collective/tập thể as an evaluation subject. The department has its own functions/tasks/products. No reviewed source says department score equals employee average.
+Vì đề bài và quy định coi tập thể là một đối tượng đánh giá. Đơn vị có chức
+năng/nhiệm vụ/sản phẩm riêng. Không nguồn nào đã rà soát nói điểm đơn vị bằng trung
+bình nhân viên.
 
-### “Why not automate 100%?”
+### “Vì sao không tự động hóa 100%?”
 
-Because classification still includes competent-authority decision and mandatory conditions. QĐ342 also requires human accountability; AI cannot be the sole basis for personnel decisions.
+Vì xếp loại vẫn bao gồm quyết định của cấp có thẩm quyền và điều kiện bắt buộc.
+QĐ342 cũng yêu cầu trách nhiệm giải trình của con người; AI không thể là căn cứ duy
+nhất cho quyết định nhân sự.
 
-### “A formula error was found in the source. What happens?”
+### “Phát hiện lỗi công thức trong nguồn. Chuyện gì xảy ra?”
 
-Record it narrowly as a **worked-example arithmetic inconsistency**. Do not
-claim that the official formula is wrong, do not silently choose a result;
-request clarification, version the approved rule and lock it with tests.
+Ghi nhận hẹp là **sai khác số học trong ví dụ**. Không tuyên bố công thức chính thức
+là sai, không âm thầm chọn một kết quả; đề nghị làm rõ, đánh phiên bản quy tắc được
+phê duyệt và khóa lại bằng kiểm thử.
 
-### “Why no real integration?”
+### “Vì sao không tích hợp thật?”
 
-The connector requires approved purpose/scope, credentials/network, security level and data classification. A mock adapter proves architecture without violating those gates.
+Connector cần mục đích/phạm vi được phê duyệt, credentials/mạng, cấp độ bảo mật và
+phân loại dữ liệu. Một mock adapter chứng minh kiến trúc mà không vi phạm các cổng đó.
 
-### “What is still unknown?”
+### “Còn gì chưa biết?”
 
-Show `known-unknowns.md`. Knowing what is not justified is part of the engineering quality.
+Đưa `known-unknowns.md`. Biết rõ điều gì chưa được biện minh là một phần của chất
+lượng kỹ thuật.

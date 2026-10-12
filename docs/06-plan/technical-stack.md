@@ -4,13 +4,13 @@
 
 | Lớp | Công nghệ | Ghi chú |
 |---|---|---|
-| Web | Next.js 16, React 19, TypeScript strict | App Router, client-heavy dashboard |
-| UI | Tailwind CSS 4, component nội bộ | design tokens và accessibility |
+| Web | Next.js 16, React 19, TypeScript strict | App Router, dashboard thiên về client |
+| UI | Tailwind CSS 4, component nội bộ | design token và khả năng truy cập |
 | API | Hono trên Cloudflare Workers | REST `/api/v1`, Zod validation |
 | Contract | OpenAPI 3.1 | client tương lai sinh từ contract |
 | Database đích | D1 + Drizzle hoặc PostgreSQL qua Hyperdrive | chọn theo cổng hạ tầng |
 | Tệp | R2 private hoặc DMS được phê duyệt | metadata tách khỏi nội dung |
-| Async | Queue/Workflow | import, report, notification, retry |
+| Async | Queue/Workflow | nhập liệu, báo cáo, thông báo, retry |
 | AuthN | Cloudflare Access + IdP | API xác minh JWT |
 | AuthZ | RBAC + organization/data scope + context | server là nguồn quyết định |
 | Quan sát | Workers Logs/Traces + structured log | request/correlation ID |
@@ -27,7 +27,7 @@
 
 ## Quy tắc backend
 
-- middleware: request ID → identity → authorization → validation → handler → audit/metrics;
+- middleware: request ID → định danh → uỷ quyền → kiểm tra → handler → audit/metric;
 - không lưu request state ở module scope;
 - mọi promise phải được await/return/waitUntil;
 - bindings được sinh kiểu bằng `wrangler types`;

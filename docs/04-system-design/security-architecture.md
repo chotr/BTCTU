@@ -1,79 +1,84 @@
-# Security architecture
+# Kiến trúc bảo mật
 
-## Security posture
+## Thế trận bảo mật
 
-The application is deliberately **not** a state-secret document management system; development uses controlled seed data.
+Ứng dụng **cố ý không** là hệ thống quản lý tài liệu bí mật nhà nước; quá trình phát
+triển dùng dữ liệu seed có kiểm soát.
 
-Production-connected design prepares for stronger controls, but the project must not claim an officially approved ATTT level until the formal dossier/authority confirms it.
+Thiết kế kết nối sản xuất chuẩn bị cho các kiểm soát mạnh hơn, nhưng dự án không
+được tuyên bố cấp độ ATTT đã được phê duyệt chính thức cho tới khi hồ sơ/cấp thẩm
+quyền xác nhận.
 
-## Source constraints
+## Ràng buộc từ nguồn
 
-- QĐ342: MFA for privileged/sensitive accounts; logging/trace; network separation; encryption, backup, incident handling.
-- QĐ348/HD07: systems participating in Party data connection must meet the connection/security process and target ATTT from level 3.
-- NĐ85: level is determined by actual information/function/impact; state-secret processing is a level-3 criterion.
-- NĐ63: electronic state-secret documents have dedicated handling/device/network processes.
-- NĐ165: access history, encryption and data lifecycle.
-- NĐ278: secure controlled data sharing.
+- QĐ342: MFA cho tài khoản đặc quyền/nhạy cảm; ghi log/truy vết; phân tách mạng; mã hóa, sao lưu, xử lý sự cố.
+- QĐ348/HD07: hệ thống tham gia kết nối dữ liệu Đảng phải đáp ứng quy trình kết nối/bảo mật và mục tiêu ATTT từ cấp 3.
+- NĐ85: cấp độ được xác định theo thông tin/chức năng/tác động thực tế; xử lý bí mật nhà nước là tiêu chí cấp 3.
+- NĐ63: tài liệu bí mật nhà nước điện tử có quy trình thiết bị/mạng xử lý riêng.
+- NĐ165: lịch sử truy cập, mã hóa và vòng đời dữ liệu.
+- NĐ278: chia sẻ dữ liệu an toàn có kiểm soát.
 
-## Candidate architecture [INFERENCE]
+## Kiến trúc đề xuất [INFERENCE]
 
 ```mermaid
 flowchart TB
-  DEVICE["Authorized device/user"] --> EDGE["Internal reverse proxy / TLS"]
-  EDGE --> IAM["Identity + MFA + policy"]
-  IAM --> APP["BTCTU modular monolith"]
-  APP --> DB["Relational DB
-classified data + encryption"]
-  APP --> EV["Evidence reference/store
-separate access control"]
-  APP --> INT["Integration zone
-mock adapter now / approved connector later"]
-  APP --> AUD["Append-only/tamper-evident audit"]
-  DB --> BAK["Encrypted backup / restore"]
-  AUD --> MON["Monitoring / alerting"]
+  DEVICE["Thiết bị/người dùng được phép"] --> EDGE["Reverse proxy nội bộ / TLS"]
+  EDGE --> IAM["Định danh + MFA + policy"]
+  IAM --> APP["Modular monolith BTCTU"]
+  APP --> DB["CSDL quan hệ
+dữ liệu phân loại + mã hóa"]
+  APP --> EV["Tham chiếu/kho minh chứng
+kiểm soát truy cập riêng"]
+  APP --> INT["Vùng tích hợp
+mock adapter hiện tại / connector được phê duyệt về sau"]
+  APP --> AUD["Audit append-only/chống sửa đổi"]
+  DB --> BAK["Sao lưu mã hóa / khôi phục"]
+  AUD --> MON["Giám sát / cảnh báo"]
 ```
 
-## Control baseline
+## Chuẩn kiểm soát cơ bản
 
-### Identity / access
-- MFA for privileged/sensitive use.
+### Định danh / truy cập
+- MFA cho sử dụng đặc quyền/nhạy cảm.
 - deny-by-default.
-- role + scope + purpose + classification + state.
-- session timeout/revocation.
-- periodic access review.
+- vai trò + phạm vi + mục đích + phân loại + trạng thái.
+- hết hạn/thu hồi phiên.
+- rà soát truy cập định kỳ.
 
-### Application
-- validation/authorization server-side.
-- CSRF/session/secure header controls.
-- safe file handling, type/size checks and malware scan if upload exists.
-- no secrets in repo/client.
-- rate limiting for sensitive/export operations.
+### Ứng dụng
+- xác thực/kiểm tra quyền phía server.
+- kiểm soát CSRF/phiên/secure header.
+- xử lý file an toàn, kiểm tra loại/kích thước và quét malware nếu có upload.
+- không để secrets trong repo/client.
+- giới hạn tần suất cho thao tác nhạy cảm/xuất.
 
-### Data
-- encryption in transit and at rest.
-- separate keys/secrets management.
-- minimize sensitive data.
-- immutable/tamper-evident audit.
-- backup + restore drills.
+### Dữ liệu
+- mã hóa khi truyền và khi lưu trữ.
+- quản lý key/secret tách biệt.
+- giảm thiểu dữ liệu nhạy cảm.
+- audit bất biến/chống sửa đổi.
+- diễn tập sao lưu + khôi phục.
 
-### Network/operations
-- management zone separated from normal user access.
-- patch/vulnerability/dependency scanning.
-- incident runbook.
-- environment separation: dev/test/prod.
-- controlled test/development data.
+### Mạng/vận hành
+- vùng quản trị tách khỏi truy cập người dùng thường.
+- quét patch/lỗ hổng/phụ thuộc.
+- runbook xử lý sự cố.
+- phân tách môi trường: dev/test/prod.
+- dữ liệu kiểm thử/phát triển có kiểm soát.
 
-## State-secret boundary
+## Ranh giới bí mật nhà nước
 
-This system stores no real state-secret content.
+Hệ thống này không lưu nội dung bí mật nhà nước thật.
 
-If production must handle it, architecture must be re-reviewed against NĐ63 and approved network/device/DMS controls. A metadata reference to an approved document system is preferable to copying secret files into this app.
+Nếu sản xuất buộc phải xử lý, kiến trúc phải được rà soát lại theo NĐ63 và các kiểm
+soát mạng/thiết bị/DMS được phê duyệt. Tham chiếu metadata tới một hệ thống tài liệu
+được phê duyệt tốt hơn việc sao chép tài liệu bí mật vào ứng dụng này.
 
-## AI boundary
+## Ranh giới AI
 
-If report drafting uses AI:
+Nếu việc soạn thảo báo cáo dùng AI:
 
-- development only uses non-sensitive controlled input;
-- production requires approved AI environment;
-- AI result is draft/support only and must be human reviewed;
-- log AI use according to applicable policy.
+- phát triển chỉ dùng đầu vào không nhạy cảm có kiểm soát;
+- sản xuất yêu cầu môi trường AI được phê duyệt;
+- kết quả AI chỉ là dự thảo/hỗ trợ và phải được con người rà soát;
+- ghi log việc dùng AI theo chính sách áp dụng.

@@ -1,4 +1,4 @@
-# Development readiness
+# Mức sẵn sàng phát triển
 
 ## Mục tiêu
 
@@ -30,7 +30,7 @@ pnpm --filter @btctu/web test:e2e
 
 | Miền | Nguồn local hiện tại | API đích |
 |---|---|---|
-| Session/actor | `mock/users.ts` | `GET /api/v1/me` |
+| Phiên/tác nhân | `mock/users.ts` | `GET /api/v1/me` |
 | Tổ chức | `mock/organization.ts` | `GET /api/v1/organizations` |
 | Danh mục | `mock/catalog.ts` | `GET /api/v1/catalog` |
 | Nhiệm vụ | `mock/tasks.ts` | `/api/v1/tasks` |
@@ -46,7 +46,7 @@ Nguyên tắc chuyển đổi:
 - không fallback im lặng từ API sang mock ở production;
 - mock chỉ được kích hoạt bằng cấu hình development/test.
 
-## Definition of done cho adapter API
+## Định nghĩa hoàn thành cho adapter API
 
 - mọi use case trên UI gọi API tương ứng;
 - không còn business mutation chỉ tồn tại trong localStorage;

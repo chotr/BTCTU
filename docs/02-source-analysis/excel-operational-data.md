@@ -5,7 +5,7 @@ Chúng không mặc nhiên là quy định pháp lý hoặc bộ quy tắc đã 
 
 ## A. Excel cây phân công nhiệm vụ
 
-### Source
+### Nguồn
 
 `Cay_so_do_phan_cong_nhiem_vu_Ban_To_chuc_Tinh_uy (3).xlsx`
 
@@ -25,7 +25,7 @@ Workbook có các sheet:
 
 Dữ liệu thể hiện cây tổ chức/phân công từ lãnh đạo Ban xuống phòng/chuyên viên, người quản lý trực tiếp, lĩnh vực phụ trách và có các cột/nội dung KPI/OKR đề xuất.
 
-### Classification
+### Phân loại
 
 **Operational/master-data draft**, không mặc định là quy định pháp lý. Tên người, phân công và KPI đề xuất cần được đối chiếu văn bản/phê duyệt hiện hành trước khi publish vào master data.
 
@@ -33,7 +33,7 @@ Dữ liệu thể hiện cây tổ chức/phân công từ lãnh đạo Ban xu�
 
 ## B. Excel danh mục công việc
 
-### Source
+### Nguồn
 
 `Danh mục công việc của BTCTU 27.9.2026.xlsx`
 
@@ -67,7 +67,7 @@ Tuy nhiên:
 
 > Không suy ra rằng mọi điểm/hệ số trong workbook đã được phê duyệt chính thức chỉ vì cấu trúc phù hợp với hướng dẫn.
 
-## INFERENCE / import design
+## INFERENCE / thiết kế nhập liệu
 
 ```text
 Raw workbook (immutable)

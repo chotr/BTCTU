@@ -7,7 +7,7 @@
 - `Danh mục tài liệu BTCTU.docx`: index các văn bản người ra đề cung cấp.
 - `Đề kiểm tra năng lực BTCTU.docx`: file đề bài gốc (problem statement).
 
-## Classification
+## Phân loại
 
 - Hai văn bản bối cảnh cung cấp **project context**, không phải nguồn định nghĩa Task/KPI workflow.
 - Danh mục tài liệu là **source index**, không thay thế nội dung từng văn bản.

@@ -1,19 +1,19 @@
-# Module boundaries — modular monolith
+# Ranh giới module — modular monolith
 
-| Module | Owns | Main source |
+| Module | Sở hữu | Nguồn chính |
 |---|---|---|
-| Organization | organization, department, person projection, membership, position ref | QĐ01 + QĐ342 authoritative-data principle |
-| Responsibility & Catalog | responsibility, catalog version/item | QĐ01 + 05-HD PL1 + Excel |
-| Task | task, assignment, result, product/evidence reference, metric snapshot | QĐ01 + 05-HD |
-| Evaluation | period, 30/70 snapshots, calculation run, assessment actions | 05-HD + QĐ39 |
-| Classification | versioned threshold/condition rules, eligibility checks, final class candidate | QĐ39 |
-| IAM / Policy | identity link, role, grant, data scope, policy decision | QĐ342 |
-| Audit | access/action events, security/business trace | QĐ342 + data/security sources |
-| Reporting | dashboard/report/export read models | test assignment + approved data only |
-| Integration | connector, canonical mapping, sync/reconciliation | QĐ308/607 + QĐ348 + HD07 |
-| Configuration | source refs, rule versions, feature gates | design choice for traceability |
+| Organization | tổ chức, đơn vị, projection nhân sự, membership, tham chiếu vị trí | QĐ01 + nguyên tắc dữ liệu chủ quản của QĐ342 |
+| Responsibility & Catalog | trách nhiệm, phiên bản/mục danh mục | QĐ01 + 05-HD PL1 + Excel |
+| Task | nhiệm vụ, phân công, kết quả, tham chiếu sản phẩm/minh chứng, snapshot chỉ số | QĐ01 + 05-HD |
+| Evaluation | kỳ, snapshot 30/70, lần tính, hành động đánh giá | 05-HD + QĐ39 |
+| Classification | quy tắc ngưỡng/điều kiện theo phiên bản, kiểm tra điều kiện, đề xuất xếp loại cuối | QĐ39 |
+| IAM / Policy | liên kết định danh, vai trò, cấp quyền, phạm vi dữ liệu, quyết định chính sách | QĐ342 |
+| Audit | sự kiện truy cập/hành động, truy vết bảo mật/nghiệp vụ | QĐ342 + các nguồn dữ liệu/bảo mật |
+| Reporting | read model dashboard/báo cáo/xuất | đề bài + chỉ dữ liệu đã phê duyệt |
+| Integration | connector, ánh xạ canonical, đồng bộ/đối soát | QĐ308/607 + QĐ348 + HD07 |
+| Configuration | tham chiếu nguồn, phiên bản quy tắc, feature gate | lựa chọn thiết kế để truy vết |
 
-## Dependency direction
+## Hướng phụ thuộc
 
 ```mermaid
 flowchart LR
@@ -32,8 +32,10 @@ flowchart LR
   REP --> EVAL
 ```
 
-## Rule
+## Quy tắc
 
-Modules do not directly mutate another module’s tables. Coordination happens through application services and domain/application events inside one deployable unit.
+Module không trực tiếp thay đổi bảng của module khác. Việc phối hợp diễn ra qua
+application service và sự kiện domain/application bên trong một đơn vị triển khai.
 
-No microservices are required for the test. Boundaries are maintained to make later extraction possible only if scale/integration demands it.
+Bài kiểm tra không yêu cầu microservices. Ranh giới được duy trì để về sau mới có
+thể tách ra nếu quy mô/tích hợp đòi hỏi.

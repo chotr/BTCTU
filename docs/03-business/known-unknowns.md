@@ -1,62 +1,62 @@
-# Known / unknown register
+# Sổ đăng ký known / unknown
 
-## Known from reviewed sources
+## Đã biết từ các nguồn đã rà soát
 
-| Concept | Status | Evidence |
+| Khái niệm | Trạng thái | Căn cứ |
 |---|---|---|
-| Four departments/functions/responsibilities | Known | QĐ01 |
-| Heads/Chánh VP responsible for assigning member work linked to position | Known | QĐ01 Điều 7.2 |
-| Work/product catalog concept | Known | 05-HD Phụ lục 1 |
-| Core task code/name data elements | Known | QĐ308 |
-| Score structure 30 + 70 | Known | 05-HD |
-| A/B/C/D KPI for leaders/managers | Known | 05-HD Phụ lục 2 |
-| Self → appraisal → final decision stages | Known | 05-HD + QĐ39 |
-| Four basic classification score bands | Known | QĐ39 Điều 11 |
-| Classification needs non-score conditions/blockers | Known | QĐ39 |
-| Multi-dimensional permission + least privilege | Known | QĐ342 Điều 16 |
-| Audit every access/update/approval/share | Known | QĐ342 |
-| Canonical dictionary / SOR | Known | QĐ308 |
-| OAuth 2.0 `client_credentials`/JWT contract for QĐ607 APIs | Known | QĐ607 |
-| OAuth 2.1/OIDC 2.0/SAML2/JWT Federation/mTLS supported at LGSP layer | Known | HD07 |
-| Connection requires purpose/scope/security approval | Known | QĐ348 + HD07 |
-| Connected systems target ATTT >= level 3 | Known in integration context | QĐ348/HD07 |
-| Operational work catalog / org assignment Excel exists | Known | two supplied XLSX files |
+| Bốn đơn vị/chức năng/trách nhiệm | Đã biết | QĐ01 |
+| Trưởng phòng/Chánh VP có trách nhiệm phân công việc gắn với vị trí cho thành viên | Đã biết | QĐ01 Điều 7.2 |
+| Khái niệm danh mục công việc/sản phẩm | Đã biết | 05-HD Phụ lục 1 |
+| Thành phần dữ liệu mã/tên nhiệm vụ cốt lõi | Đã biết | QĐ308 |
+| Cấu trúc điểm 30 + 70 | Đã biết | 05-HD |
+| KPI A/B/C/D cho lãnh đạo/quản lý | Đã biết | 05-HD Phụ lục 2 |
+| Các bước tự đánh giá → thẩm định → quyết định cuối | Đã biết | 05-HD + QĐ39 |
+| Bốn dải điểm xếp loại cơ bản | Đã biết | QĐ39 Điều 11 |
+| Xếp loại cần điều kiện/yếu tố chặn ngoài điểm | Đã biết | QĐ39 |
+| Phân quyền đa chiều + least privilege | Đã biết | QĐ342 Điều 16 |
+| Audit mọi truy cập/cập nhật/phê duyệt/chia sẻ | Đã biết | QĐ342 |
+| Từ điển canonical / SOR | Đã biết | QĐ308 |
+| Contract OAuth 2.0 `client_credentials`/JWT cho API theo QĐ607 | Đã biết | QĐ607 |
+| Tầng LGSP hỗ trợ OAuth 2.1/OIDC 2.0/SAML2/JWT Federation/mTLS | Đã biết | HD07 |
+| Kết nối cần phê duyệt mục đích/phạm vi/bảo mật | Đã biết | QĐ348 + HD07 |
+| Hệ thống kết nối hướng tới ATTT >= cấp 3 | Đã biết trong bối cảnh tích hợp | QĐ348/HD07 |
+| Có tồn tại Excel danh mục công việc vận hành / phân công tổ chức | Đã biết | hai file XLSX được cung cấp |
 
-## Source ambiguities / inconsistencies
+## Mơ hồ / bất nhất nguồn
 
-| ID | Issue | Impact |
+| ID | Vấn đề | Tác động |
 |---|---|---|
-| INC-01 | 05-HD worked example prints `30 + 82.3%×70 = 80.3`, while arithmetic gives 87.61 | blocks `OFFICIAL/ACTIVE` rule activation, not candidate KPI-engine implementation |
-| INC-02 | 05-HD explicit A/B/C/D formula targets leaders/managers; test covers all staff | non-manager formula/config needs approved design |
-| INC-03 | Excel catalog has scores/formulas but supplied material does not by itself prove approval/effective version | import as draft/staging, not official rule |
+| INC-01 | Ví dụ của 05-HD in `30 + 82,3%×70 = 80,3`, trong khi số học cho 87,61 | chặn kích hoạt quy tắc `OFFICIAL/ACTIVE`, không chặn triển khai engine KPI ứng viên |
+| INC-02 | Công thức A/B/C/D rõ ràng của 05-HD hướng tới lãnh đạo/quản lý; đề bài bao quát mọi công chức | cần thiết kế/cấu hình công thức không-lãnh-đạo được phê duyệt |
+| INC-03 | Danh mục Excel có điểm/công thức nhưng tài liệu được cung cấp tự nó không chứng minh phê duyệt/phiên bản hiệu lực | nhập dạng nháp/staging, không phải quy tắc chính thức |
 
-## Source divergences
+## Phân kỳ nguồn
 
-| ID | Sources | Divergence | Treatment |
+| ID | Nguồn | Phân kỳ | Cách xử lý |
 |---|---|---|---|
-| DIV-01 | QĐ607 vs HD07 | QĐ607 specifies OAuth 2.0 `client_credentials`; HD07 lists OAuth 2.1/OIDC 2.0/SAML2/JWT Federation/mTLS at the LGSP layer | Do not merge them into one generic auth rule; production follows the exact approved endpoint/platform contract |
+| DIV-01 | QĐ607 vs HD07 | QĐ607 quy định OAuth 2.0 `client_credentials`; HD07 liệt kê OAuth 2.1/OIDC 2.0/SAML2/JWT Federation/mTLS ở tầng LGSP | Không gộp thành một quy tắc auth chung; production theo đúng contract endpoint/nền tảng được phê duyệt |
 
-## Still unknown / needs authority
+## Vẫn chưa biết / cần cấp có thẩm quyền
 
-| ID | Question | Blocks |
+| ID | Câu hỏi | Chặn điều gì |
 |---|---|---|
-| Q-01 | Official JobPosition master and effective assignments? | authoritative org/person master |
-| Q-02 | Approved version of work catalog / coefficient values? | official KPI |
-| Q-03 | How is INC-01 resolved? | activation of the affected 70-point rule as `OFFICIAL/ACTIVE` |
-| Q-04 | Formula for non-manager staff? | staff KPI |
-| Q-05 | Exact monthly → quarterly → annual aggregation? | period automation |
-| Q-06 | Comparison group for excellent-rating quota? | final classification automation |
-| Q-07 | Local reopen/appeal/correction workflow after decision? | locked-result changes |
-| Q-08 | Exact production data classification and state-secret scope? | security level/deployment |
-| Q-09 | Formal approved HTTT level? | production gate |
-| Q-10 | Is real LGSP/TCXDĐ integration required for this app? | connector/deployment |
-| Q-11 | What API/data subset is approved? | real integration |
-| Q-12 | Can evidence files be stored, or only referenced to an approved DMS? | evidence architecture |
+| Q-01 | Master JobPosition chính thức và phân công có hiệu lực? | master tổ chức/nhân sự có thẩm quyền |
+| Q-02 | Phiên bản được phê duyệt của danh mục công việc / giá trị hệ số? | KPI chính thức |
+| Q-03 | INC-01 được giải quyết thế nào? | kích hoạt quy tắc 70 điểm bị ảnh hưởng dưới `OFFICIAL/ACTIVE` |
+| Q-04 | Công thức cho công chức không giữ chức vụ lãnh đạo? | KPI công chức |
+| Q-05 | Cách tổng hợp tháng → quý → năm chính xác? | tự động hóa theo kỳ |
+| Q-06 | Nhóm so sánh cho hạn mức Xuất sắc? | tự động hóa xếp loại cuối |
+| Q-07 | Quy trình mở lại/khiếu nại/chỉnh sửa cục bộ sau quyết định? | thay đổi kết quả đã khóa |
+| Q-08 | Phân loại dữ liệu sản xuất chính xác và phạm vi bí mật nhà nước? | cấp độ bảo mật/triển khai |
+| Q-09 | Cấp độ HTTT được phê duyệt chính thức? | cổng production |
+| Q-10 | Ứng dụng này có bắt buộc tích hợp LGSP/TCXDĐ thật không? | connector/triển khai |
+| Q-11 | Tập API/dữ liệu con nào được phê duyệt? | tích hợp thật |
+| Q-12 | Có được lưu file minh chứng, hay chỉ tham chiếu tới DMS được phê duyệt? | kiến trúc minh chứng |
 
-## Resolved design decisions
+## Quyết định thiết kế đã chốt
 
 - Kiến trúc hiện tại: web + modular-monolith API.
-- Synthetic data only.
-- Versioned/source-traceable catalog and rules.
-- Fake connector first; real integration behind approval/security gate.
-- Department is an evaluation subject; do not assume department score = average employee score.
+- Chỉ dùng dữ liệu synthetic.
+- Danh mục và quy tắc theo phiên bản/truy vết được về nguồn.
+- Fake connector trước; tích hợp thật sau cổng phê duyệt/bảo mật.
+- Đơn vị (Department) là một đối tượng đánh giá; không mặc định điểm đơn vị = trung bình điểm nhân viên.

@@ -1,119 +1,121 @@
-# Evaluation / KPI model
+# Mô hình đánh giá / KPI
 
-## FACT from 05-HD/TU
+## FACT từ 05-HD/TU
 
-### Score structure
+### Cấu trúc điểm
 
 ```text
-General criteria               max 30
-Work-performance results       max 70
+Tiêu chí chung                  tối đa 30
+Kết quả thực hiện công việc     tối đa 70
 ------------------------------------
-Total                          max 100
+Tổng                            tối đa 100
 ```
 
-For leaders/managers, Phụ lục 2 presents:
+Với lãnh đạo/quản lý, Phụ lục 2 trình bày:
 
 ```text
 KPI = (A + B + C + D) / 4
 
-A = Quantity
-B = Quality
-C = Timeliness
-D = Leadership / direction / organization of work
+A = Khối lượng
+B = Chất lượng
+C = Tiến độ
+D = Lãnh đạo / chỉ đạo / tổ chức công việc
 ```
 
-The KPI percentage is used to calculate the work-performance block.
+Phần trăm KPI được dùng để tính khối kết quả thực hiện công việc.
 
-### Evaluation stages
+### Các bước đánh giá
 
-05-HD/TU also states:
+05-HD/TU cũng nêu:
 
-1. define objectives/tasks/products;
-2. self-score/evaluate/propose classification;
-3. direct competent level reviews/evaluates/proposes;
-4. competent authority decides;
-5. notify/store result.
+1. xác định mục tiêu/nhiệm vụ/sản phẩm;
+2. tự chấm điểm/đánh giá/đề xuất xếp loại;
+3. cấp có thẩm quyền trực tiếp thẩm định/đánh giá/đề xuất;
+4. cấp có thẩm quyền quyết định;
+5. thông báo/lưu kết quả.
 
-## SOURCE INCONSISTENCY — worked-example arithmetic inconsistency
+## SOURCE INCONSISTENCY — sai khác số học trong ví dụ
 
-The worked example gives:
+Ví dụ cho:
 
-- KPI = 82.3%;
-- general score = 30;
-- then prints `30 + (82.3% × 70) = 80.3`.
+- KPI = 82,3%;
+- điểm chung = 30;
+- rồi in `30 + (82,3% × 70) = 80,3`.
 
-Arithmetic gives **87.61**, not 80.3. This identifies an inconsistency in the
-worked example; it does not by itself prove that the official formula is wrong.
+Số học cho **87,61**, không phải 80,3. Điều này xác định một sai khác trong ví dụ;
+bản thân nó không chứng minh công thức chính thức là sai.
 
-Project treatment:
+Cách xử lý của dự án:
 
-- record discrepancy;
-- do not silently “correct the law/source”;
-- scoring rule remains versioned and requires confirmation;
-- include regression/unit test once approved.
+- ghi nhận sai khác;
+- không âm thầm “sửa luật/nguồn”;
+- quy tắc chấm điểm vẫn theo phiên bản và cần xác nhận;
+- thêm kiểm thử regression/đơn vị khi được phê duyệt.
 
-## FACT from QĐ39
+## FACT từ QĐ39
 
-Final classification depends on **threshold + mandatory conditions/blockers**, not only score.
+Xếp loại cuối phụ thuộc vào **ngưỡng + điều kiện bắt buộc/yếu tố chặn**, không chỉ điểm.
 
-Therefore the model must separate calculation from classification decision.
+Vì vậy mô hình phải tách phép tính khỏi quyết định xếp loại.
 
-## Proposed model [INFERENCE]
+## Mô hình đề xuất [INFERENCE]
 
 ```mermaid
 flowchart LR
   EP["EvaluationPeriod"] --> EV["Evaluation"]
   EV --> G["GeneralCriteriaSnapshot <=30"]
   EV --> W["WorkPerformanceSnapshot <=70"]
-  W --> A["A Quantity"]
-  W --> B["B Quality"]
-  W --> C["C Timeliness"]
-  W --> D["D Leadership (when applicable)"]
+  W --> A["A Khối lượng"]
+  W --> B["B Chất lượng"]
+  W --> C["C Tiến độ"]
+  W --> D["D Lãnh đạo (khi áp dụng)"]
   G --> RUN["CalculationRun"]
   W --> RUN
   RUN --> CS["CalculatedScore"]
   CS --> CC["CandidateClassification"]
-  CC --> EL["Eligibility / blocker checks"]
-  EL --> PROP["Proposed classification"]
-  PROP --> DEC["Final decision"]
+  CC --> EL["Kiểm tra điều kiện/yếu tố chặn"]
+  EL --> PROP["Xếp loại đề xuất"]
+  PROP --> DEC["Quyết định cuối"]
 ```
 
-### Required invariants
+### Bất biến bắt buộc
 
-- calculation keeps exact rule version and input snapshot;
-- recalculation creates a new run; does not mutate old approved run;
-- self score, reviewer score/proposal and final decision are distinct;
-- manual override requires reason, actor, authority and audit;
-- finalized period is immutable except through explicit reopen procedure.
+- phép tính giữ đúng phiên bản quy tắc và snapshot đầu vào;
+- tính lại tạo một lần chạy mới; không sửa lần chạy đã phê duyệt cũ;
+- điểm tự đánh giá, điểm/đề xuất của người thẩm định và quyết định cuối là khác biệt;
+- điều chỉnh thủ công cần lý do, người thực hiện, thẩm quyền và audit;
+- kỳ đã chốt là bất biến, trừ khi qua quy trình mở lại rõ ràng.
 
-## Individual vs collective
+## Cá nhân vs tập thể
 
-The assignment requires evaluation for both individuals and departments, while
-QĐ39 covers collective and individual evaluation. From those two inputs,
-`EvaluationSubject` is a proposed software abstraction [INFERENCE] supporting:
+Đề bài yêu cầu đánh giá cho cả cá nhân và đơn vị, trong khi QĐ39 bao quát đánh giá
+tập thể và cá nhân. Từ hai đầu vào đó, `EvaluationSubject` là một abstraction phần
+mềm đề xuất [INFERENCE] hỗ trợ:
 
 - `PERSON`
 - `DEPARTMENT`
 
-`DEPARTMENT` is therefore a design-derived entity name, not an entity explicitly
-defined by QĐ39. Department evaluation is a separate subject. **Do not define
-department score as average employee score** unless an approved rule explicitly
-requires it.
+Do đó `DEPARTMENT` là tên thực thể suy ra từ thiết kế, không phải thực thể được QĐ39
+định nghĩa rõ ràng. Đánh giá đơn vị là một đối tượng riêng. **Không định nghĩa điểm
+đơn vị bằng trung bình điểm nhân viên** trừ khi có quy tắc được phê duyệt yêu cầu rõ.
 
-## Staff/non-manager formula — TBD
+## Công thức cho công chức/không giữ chức vụ lãnh đạo — TBD
 
-05-HD’s explicit A/B/C/D example targets leaders/managers. The assignment requires evaluation of all staff.
+Ví dụ A/B/C/D rõ ràng của 05-HD hướng tới lãnh đạo/quản lý. Đề bài yêu cầu đánh giá
+mọi công chức.
 
-Candidate approach:
+Hướng tiếp cận đề xuất:
 
-- use a separate `ScoringRuleVersion` for non-manager positions;
-- derive it from approved business clarification/catalog;
-- do not silently drop D and average A/B/C while labeling that as source FACT.
+- dùng `ScoringRuleVersion` riêng cho vị trí không giữ chức vụ lãnh đạo;
+- suy ra từ làm rõ nghiệp vụ/danh mục đã được phê duyệt;
+- không âm thầm bỏ D và lấy trung bình A/B/C rồi dán nhãn đó là FACT từ nguồn.
 
-## Periods
+## Các kỳ
 
-- quarterly process is explicitly source-backed by 05-HD;
-- annual classification is covered by QĐ39;
-- the test asks for month/quarter/year.
+- quy trình quý được 05-HD làm căn cứ rõ ràng;
+- xếp loại năm nằm trong QĐ39;
+- bài kiểm tra yêu cầu tháng/quý/năm.
 
-Monthly score can be designed as an operational measurement layer feeding quarterly evaluation, but its exact official aggregation is **TBD/design choice**, not a direct rule from these sources.
+Điểm tháng có thể được thiết kế như một tầng đo lường vận hành cấp vào đánh giá quý,
+nhưng cách tổng hợp chính thức của nó là **TBD/lựa chọn thiết kế**, không phải quy
+tắc trực tiếp từ các nguồn này.

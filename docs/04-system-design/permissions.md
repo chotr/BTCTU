@@ -1,35 +1,38 @@
-# Permission and data-scope model
+# Mô hình quyền và phạm vi dữ liệu
 
-## Source constraints [FACT]
+## Ràng buộc từ nguồn [FACT]
 
-QĐ342 Điều 16 requires authorization based on:
+QĐ342 Điều 16 yêu cầu uỷ quyền dựa trên:
 
-- role;
-- task;
-- data scope;
-- secrecy/classification;
-- usage period;
-- least privilege / right person / right job / right time / right purpose.
+- vai trò;
+- nhiệm vụ;
+- phạm vi dữ liệu;
+- mức bí mật/phân loại;
+- thời hạn sử dụng;
+- least privilege / đúng người / đúng việc / đúng thời điểm / đúng mục đích.
 
-A user may have multiple roles. Rights need review/revoke when job/authority changes. Access, extraction, update, approval, sharing and processing must be logged.
+Một người dùng có thể có nhiều vai trò. Quyền cần được rà soát/thu hồi khi công
+việc/thẩm quyền thay đổi. Truy cập, trích xuất, cập nhật, phê duyệt, chia sẻ và xử
+lý đều phải được ghi log.
 
-QĐ348 further constrains data sharing by approved purpose, recipient, scope and sharing level.
+QĐ348 tiếp tục ràng buộc việc chia sẻ dữ liệu theo mục đích, bên nhận, phạm vi và
+mức chia sẻ được phê duyệt.
 
-## Candidate policy model [INFERENCE]
+## Mô hình chính sách đề xuất [INFERENCE]
 
 ```mermaid
 flowchart LR
-  U["User"] --> R["Roles"]
-  R --> P["Permission action/resource"]
-  U --> S["Org/Data scope"]
+  U["Người dùng"] --> R["Vai trò"]
+  R --> P["Quyền theo hành động/tài nguyên"]
+  U --> S["Phạm vi tổ chức/dữ liệu"]
   P --> D{"Policy decision"}
   S --> D
-  C["Purpose + classification + time + workflow state"] --> D
-  D -->|"allow"| A["Execute + audit"]
-  D -->|"deny"| X["Deny + security log"]
+  C["Mục đích + phân loại + thời gian + trạng thái workflow"] --> D
+  D -->|"allow"| A["Thực thi + audit"]
+  D -->|"deny"| X["Từ chối + ghi log bảo mật"]
 ```
 
-### Policy input
+### Đầu vào policy
 
 ```text
 principal:
@@ -48,28 +51,31 @@ request:
   timestamp
 ```
 
-## Candidate roles
+## Vai trò đề xuất
 
-Role names such as `SYSTEM_ADMIN`, `STAFF`, `DEPARTMENT_HEAD`, `REVIEWER`, `APPROVER`, `DATA_ADMIN` are **software design**, not a list issued by QĐ342.
+Các tên vai trò như `SYSTEM_ADMIN`, `STAFF`, `DEPARTMENT_HEAD`, `REVIEWER`,
+`APPROVER`, `DATA_ADMIN` là **thiết kế phần mềm**, không phải danh sách do QĐ342 ban hành.
 
-Important separation:
+Tách biệt quan trọng:
 
-- technical system admin does **not** automatically have business authority to change KPI/final classification;
-- assignment responsibility from QĐ01 does not prove exclusive software permission;
-- reviewer/approver relationships are resolved using QĐ39 authority rules.
+- admin kỹ thuật **không** tự động có thẩm quyền nghiệp vụ để thay đổi KPI/xếp loại
+  cuối;
+- trách nhiệm phân công theo QĐ01 không chứng minh quyền phần mềm độc quyền;
+- quan hệ người thẩm định/phê duyệt được xác định theo quy tắc thẩm quyền của QĐ39.
 
-## High-risk actions
+## Hành động rủi ro cao
 
-Always explicit permission + reason/audit:
+Luôn cần quyền rõ ràng + lý do/audit:
 
-- access sensitive/special dataset;
-- export/print;
-- change permissions;
-- override score;
-- final decision;
-- reopen locked evaluation;
-- connector/data-share request.
+- truy cập tập dữ liệu nhạy cảm/đặc biệt;
+- xuất/in;
+- thay đổi quyền;
+- điều chỉnh điểm;
+- quyết định cuối;
+- mở lại đánh giá đã khóa;
+- yêu cầu kết nối/chia sẻ dữ liệu.
 
 ## TBD
 
-Official role/action matrix, delegation rules, data-classification labels and privileged-access review cadence for this specific deployment.
+Ma trận vai trò/hành động chính thức, quy tắc uỷ quyền, nhãn phân loại dữ liệu và
+nhịp rà soát truy cập đặc quyền cho triển khai cụ thể này.

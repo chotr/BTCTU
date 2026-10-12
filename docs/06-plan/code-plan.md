@@ -1,57 +1,57 @@
-# Code plan
+# Kế hoạch code
 
-## Milestone 0 — Architecture spike
+## Mốc 0 — Spike kiến trúc
 
 Mục tiêu: chứng minh stack trước khi code nghiệp vụ.
 
 - tạo pnpm workspace với `apps/web`, `apps/api`, `packages/*`;
-- dựng Next.js page gọi `/health` của Hono Worker;
+- dựng trang Next.js gọi `/health` của Hono Worker;
 - thiết lập Wrangler environments và generated binding types;
-- thử Cloudflare Access JWT verification;
+- thử xác thực JWT của Cloudflare Access;
 - migration D1 đầu tiên, private R2 binding và Queue producer/consumer;
 - CI lint/typecheck/test/build;
 - ghi kết quả compatibility/deployment vào ADR.
 
-**Exit:** preview deploy chạy end-to-end bằng dữ liệu giả; không có business feature.
+**Exit:** preview deploy chạy đầu-cuối bằng dữ liệu giả; không có tính năng nghiệp vụ.
 
-## Milestone 1 — Cross-cutting foundation
+## Mốc 1 — Nền tảng xuyên suốt
 
 - request/correlation ID và structured error;
-- actor/identity mapping;
-- authorization policy interface;
-- audit event envelope;
-- clock/ID abstractions;
-- source reference + version/effective-date primitives;
-- test builders và synthetic fixtures.
+- ánh xạ actor/identity;
+- interface policy uỷ quyền;
+- envelope sự kiện audit;
+- abstraction clock/ID;
+- primitive tham chiếu nguồn + version/effective-date;
+- test builder và fixture synthetic.
 
-**Exit:** một protected mutation có validation, permission, DB write và audit test.
+**Exit:** một protected mutation có validation, permission, ghi DB và kiểm thử audit.
 
-## Milestone 2 — Organization vertical slice
+## Mốc 2 — Vertical slice tổ chức
 
 Backend:
 
-- organization, department, person, membership, position reference;
-- responsibility/source reference;
+- tổ chức, đơn vị, nhân sự, membership, tham chiếu vị trí;
+- tham chiếu trách nhiệm/nguồn;
 - list/detail/create/update cho master data được phép;
 - history/effective dates.
 
 Frontend:
 
 - organization tree;
-- department/member pages;
-- source badge FACT/INFERENCE/TBD;
-- permission-aware actions.
+- trang đơn vị/thành viên;
+- badge nguồn FACT/INFERENCE/TBD;
+- hành động theo quyền.
 
-**Nguồn:** QĐ01.
-**Exit:** trace được dữ liệu khởi tạo về Điều 2–7; chưa có Task taxonomy giả.
+**Nguồn:** QĐ01.  
+**Exit:** truy vết được dữ liệu khởi tạo về Điều 2–7; chưa có Task taxonomy giả.
 
-## Milestone 3 — Work catalog và assignment
+## Mốc 3 — Danh mục công việc và phân công
 
-- Excel offline importer → staging JSON → validation report;
-- work catalog version/draft/publish;
+- bộ nhập liệu Excel offline → staging JSON → validation report;
+- version/draft/publish danh mục công việc;
 - task + assignment + assignee/assigner;
 - inbox/outbox;
-- audit reassign/cancel;
+- audit phân công lại/hủy;
 - optimistic concurrency.
 
 **Nguồn:** QĐ01 Điều 7.2 + 05-HD/TU Phụ lục 1 + Excel vận hành/draft.
@@ -62,112 +62,112 @@ Excel được import vào staging/DRAFT; chỉ version đã được review/ph�
 
 **Exit:** kiểm thử phân công bằng catalog chờ phê duyệt và hiển thị rõ trạng thái/version.
 
-## Milestone 4 — Result/product/evidence
+## Mốc 4 — Kết quả/sản phẩm/minh chứng
 
-- result draft/submit;
-- product metadata;
-- private R2 upload/download flow cho dữ liệu synthetic;
-- checksum/classification/status;
-- return-for-correction;
-- file permission tests.
+- draft/submit kết quả;
+- metadata sản phẩm;
+- luồng upload/download R2 riêng cho dữ liệu synthetic;
+- checksum/phân loại/trạng thái;
+- trả lại để chỉnh sửa;
+- kiểm thử quyền với file.
 
 **Nguồn:** 05-HD/TU đã xác nhận mô hình công việc/sản phẩm/kết quả ở mức nghiệp vụ.
 
-**TBD/gate production:** nội dung evidence thật có được lưu trong app hay chỉ giữ
-reference đến DMS/kho tài liệu được phê duyệt.
+**TBD/gate production:** nội dung minh chứng thật có được lưu trong app hay chỉ giữ
+tham chiếu đến DMS/kho tài liệu được phê duyệt.
 
 **Exit:** form kết quả/sản phẩm chạy bằng dữ liệu kiểm thử (synthetic), không chứa tài liệu bí mật nhà nước.
 
-## Milestone 5 — KPI calculation
+## Mốc 5 — Tính KPI
 
-- evaluation period;
-- `ScoringRuleVersion` / criterion/formula version;
-- calculation input snapshot;
-- deterministic calculation run;
-- explanation breakdown;
-- manual override with reason/audit.
+- kỳ đánh giá;
+- `ScoringRuleVersion` / phiên bản tiêu chí/công thức;
+- snapshot đầu vào tính;
+- lần tính tất định;
+- phân rã giải thích;
+- điều chỉnh thủ công kèm lý do/audit.
 
 **Nguồn đã xác nhận:** 05-HD/TU cung cấp cấu trúc 30 + 70 và A/B/C/D cho
 lãnh đạo/quản lý.
 
-**Không block implementation:** INC-01 (worked-example arithmetic inconsistency)
+**Không block implementation:** INC-01 (sai khác số học trong ví dụ)
 không chặn triển khai engine. Nó chỉ chặn việc publish/activate rule bị ảnh hưởng
 dưới trạng thái `OFFICIAL/ACTIVE`.
 
 **TBD:** công thức chính thức cho người không giữ chức vụ lãnh đạo/quản lý,
-rounding và một số trường hợp biên.
+làm tròn và một số trường hợp biên.
 
-**Exit:** golden test cho từng candidate/approved formula và boundary/rounding case.
+**Exit:** golden test cho từng công thức ứng viên/đã phê duyệt và các trường hợp biên/làm tròn.
 
-## Milestone 6 — Evaluation/classification workflow
+## Mốc 6 — Quy trình đánh giá/xếp loại
 
-- self evaluation;
-- reviewer queue/comment/return;
-- classification rule;
-- competent approval;
-- period lock/reopen policy;
-- transition/audit timeline.
+- tự đánh giá;
+- hàng đợi/nhận xét/trả lại của người thẩm định;
+- quy tắc xếp loại;
+- phê duyệt của cấp có thẩm quyền;
+- chính sách khóa/mở lại kỳ;
+- dòng thời gian chuyển đổi/audit.
 
 **Nguồn:** 05-HD/TU + QĐ39/TU đã xác nhận các stage khái niệm,
 ngưỡng xếp loại và điều kiện bổ sung.
 
-**TBD:** mapping chính xác thẩm quyền/nhóm so sánh/quota trong BTCTU và
-quy trình reopen nội bộ.
+**TBD:** mapping chính xác thẩm quyền/nhóm so sánh/hạn mức trong BTCTU và
+quy trình mở lại nội bộ.
 
-**Exit:** transition table tests + permission tests + concurrency test.
+**Exit:** kiểm thử bảng chuyển đổi + kiểm thử quyền + kiểm thử concurrency.
 
-## Milestone 7 — Dashboard/report
+## Mốc 7 — Dashboard/báo cáo
 
-- department/personal progress;
-- KPI/classification aggregates;
-- overdue/missing-evidence indicators nếu nguồn cho phép;
-- CSV/PDF export policy;
-- background report generation qua Queue;
-- data-scope tests để chống leakage.
+- tiến độ đơn vị/cá nhân;
+- tổng hợp KPI/xếp loại;
+- chỉ báo quá hạn/thiếu minh chứng nếu nguồn cho phép;
+- chính sách xuất CSV/PDF;
+- sinh báo cáo nền qua Queue;
+- kiểm thử phạm vi dữ liệu để chống rò rỉ.
 
-**Exit:** dashboard số liệu khớp truy vấn reconciliation.
+**Exit:** dashboard số liệu khớp truy vấn đối soát.
 
-## Milestone 8 — Integration contract
+## Mốc 8 — Contract tích hợp
 
-- canonical mapping registry theo QĐ308;
+- sổ đăng ký ánh xạ canonical theo QĐ308;
 - contract/profile theo QĐ607;
 - fake adapter + contract tests;
-- test riêng QĐ607 OAuth 2.0 `client_credentials`/JWT behavior;
+- test riêng hành vi OAuth 2.0 `client_credentials`/JWT của QĐ607;
 - giữ boundary riêng cho profile LGSP được phê duyệt theo HD07;
-- sync run, checkpoint, error/dead-letter, reconciliation;
-- request ID, purpose, field allowlist và audit.
+- lần đồng bộ, checkpoint, error/dead-letter, đối soát;
+- request ID, mục đích, allowlist trường và audit.
 
-**Đã biết từ source:** API contract QĐ607, 401/403 behavior, TLS/logging constraints,
-và HD07 integration requirements.
+**Đã biết từ source:** contract API QĐ607, hành vi 401/403, ràng buộc TLS/logging,
+và yêu cầu tích hợp của HD07.
 
-**Chưa biết:** endpoint production, API subset được cấp, credentials, network route,
-certificate/profile cụ thể.
+**Chưa biết:** endpoint production, tập API con được cấp, credentials, tuyến mạng,
+chứng chỉ/profile cụ thể.
 
-Không bật endpoint thật nếu thiếu approval/network/credential/security gate.
+Không bật endpoint thật nếu thiếu phê duyệt/mạng/credential/cổng bảo mật.
 
-## Milestone 9 — Hardening
+## Mốc 9 — Tăng cường
 
-- threat model, rate limits, WAF/Access policies;
-- backup/restore drill và DR runbook;
-- dependency/SAST/secret scans;
+- threat model, giới hạn tần suất, chính sách WAF/Access;
+- diễn tập sao lưu/khôi phục và runbook DR;
+- quét phụ thuộc/SAST/secret;
 - load test các query/dashboard;
-- audit export/monitoring/alerts;
-- ATTT/legal checklist và deployment approval.
+- xuất/giám sát/cảnh báo audit;
+- checklist ATTT/pháp lý và phê duyệt triển khai.
 
 ## Thứ tự ticket cho sprint đầu
 
 1. `ARCH-001` — workspace, TypeScript strict, lint/test/build.
 2. `CF-001` — Hono Worker `/health`, Wrangler environments.
-3. `WEB-001` — Next.js shell, navigation và generated API client.
-4. `DB-001` — Drizzle + D1 migrations + repository smoke test.
-5. `AUTH-001` — Access JWT verifier + local test adapter.
-6. `SEC-001` — authorization middleware + deny-by-default tests.
-7. `AUD-001` — audit envelope + request ID.
-8. `ORG-001` — organization/department schema và APIs.
-9. `ORG-002` — person/membership/position-reference schema và APIs.
-10. `ORG-003` — organization UI + source trace.
+3. `WEB-001` — vỏ Next.js, điều hướng và API client được sinh.
+4. `DB-001` — Drizzle + migration D1 + smoke test repository.
+5. `AUTH-001` — trình xác thực JWT Access + adapter kiểm thử cục bộ.
+6. `SEC-001` — middleware uỷ quyền + kiểm thử deny-by-default.
+7. `AUD-001` — envelope audit + request ID.
+8. `ORG-001` — schema organization/department và API.
+9. `ORG-002` — schema person/membership/position-reference và API.
+10. `ORG-003` — UI tổ chức + truy vết nguồn.
 11. `CI-001` — preview deploy + Playwright smoke.
 
 Sprint đầu dừng ở Organization. Task/KPI không được kéo vào trước foundation;
 nhưng implementation không bị chặn chỉ vì rule/catalog chính thức chưa được
-activate — dùng `DRAFT/CANDIDATE` và source trace rõ ràng.
+activate — dùng `DRAFT/CANDIDATE` và truy vết nguồn rõ ràng.
