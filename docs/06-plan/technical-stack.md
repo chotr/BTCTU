@@ -6,16 +6,16 @@
 |---|---|---|
 | Web | Next.js 16, React 19, TypeScript strict | App Router, dashboard thiên về client |
 | UI | Tailwind CSS 4, component nội bộ | design token và khả năng truy cập |
-| API | Hono trên Cloudflare Workers | REST `/api/v1`, Zod validation |
+| API | Express.js trên Node | REST `/api/v1`, Zod validation |
 | Contract | OpenAPI 3.1 | client tương lai sinh từ contract |
-| Database đích | D1 + Drizzle hoặc PostgreSQL qua Hyperdrive | chọn theo cổng hạ tầng |
-| Tệp | R2 private hoặc DMS được phê duyệt | metadata tách khỏi nội dung |
-| Async | Queue/Workflow | nhập liệu, báo cáo, thông báo, retry |
-| AuthN | Cloudflare Access + IdP | API xác minh JWT |
+| Database đích | PostgreSQL hoặc DB quan hệ được phê duyệt | chọn theo cổng hạ tầng |
+| Tệp | DMS/kho lưu trữ tệp được phê duyệt | metadata tách khỏi nội dung |
+| Async | job nền / worker | nhập liệu, báo cáo, thông báo, retry |
+| AuthN | IdP + access token (JWT) | API xác minh token |
 | AuthZ | RBAC + organization/data scope + context | server là nguồn quyết định |
-| Quan sát | Workers Logs/Traces + structured log | request/correlation ID |
-| Test | Vitest, Workers pool, Playwright | unit, contract, E2E |
-| Deploy | Wrangler theo environment | không deploy Worker root |
+| Quan sát | structured log + trace | request/correlation ID |
+| Test | Vitest, supertest, Playwright | unit, contract, E2E |
+| Deploy | Node server sau reverse proxy | theo environment |
 
 ## Ranh giới application
 
@@ -30,10 +30,10 @@
 - middleware: request ID → định danh → uỷ quyền → kiểm tra → handler → audit/metric;
 - không lưu request state ở module scope;
 - mọi promise phải được await/return/waitUntil;
-- bindings được sinh kiểu bằng `wrangler types`;
-- secret dùng `.dev.vars` local và `wrangler secret put` remote;
+- cấu hình đọc từ biến môi trường (`src/env.ts`);
+- secret dùng `.env` local (không commit) và secret manager khi triển khai;
 - mutation quan trọng dùng optimistic concurrency/idempotency;
-- side effect cần độ bền đi qua outbox/Queue/Workflow.
+- side effect cần độ bền đi qua outbox/job nền.
 
 ## Quy tắc dữ liệu
 

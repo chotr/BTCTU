@@ -7,7 +7,7 @@
 Phiên bản `1.0.0` sẵn sàng cho môi trường phát triển:
 
 - Next.js 16 + React 19 cho giao diện;
-- Hono trên Cloudflare Workers cho REST API;
+- Express.js trên Node cho REST API;
 - phân quyền theo vai trò, audit, snapshot, khóa/mở kỳ và xuất báo cáo;
 - dữ liệu khởi tạo cục bộ được cô lập trong `apps/web/src/lib/mock/`;
 - hợp đồng HTTP và cấu hình môi trường đã sẵn sàng để thay adapter cục bộ bằng API;
@@ -52,7 +52,7 @@ pnpm --filter @btctu/web test:e2e
 ## Cấu trúc
 
 - `apps/web` — giao diện và application layer;
-- `apps/api` — REST contract, validation, auth boundary và Worker runtime;
+- `apps/api` — REST contract, validation, auth boundary và runtime Express/Node;
 - `docs` — yêu cầu, phân tích nguồn, nghiệp vụ, kiến trúc, ADR và runbook nghiệm thu.
 
 Đọc [docs/README.md](docs/README.md) để đi vào bộ tài liệu hoặc [apps/web/README.md](apps/web/README.md) để cấu hình môi trường phát triển.

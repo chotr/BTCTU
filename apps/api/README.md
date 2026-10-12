@@ -1,12 +1,12 @@
 # BTCTU API
 
-Hono REST API chạy trên Cloudflare Workers, cung cấp hợp đồng cho nhiệm vụ, đánh giá, kỳ, audit và báo cáo.
+REST API **Express.js (Node)** cung cấp hợp đồng cho nhiệm vụ, đánh giá, kỳ, audit và báo cáo.
 
 ## Chạy local
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm --filter @btctu/api types
+cp apps/api/.env.example apps/api/.env
 pnpm --filter @btctu/api dev
 ```
 
@@ -38,25 +38,22 @@ Môi trường local dùng header `x-dev-user-id` (`u-leader`, `u-head`, `u-staf
 | GET | `/api/v1/audit` | nhật ký audit |
 | GET | `/api/v1/reports/summary` | số liệu tổng hợp |
 
+## Cấu trúc
+
+- `src/app.ts` — factory `createApp(env)` dựng Express app (kiểm thử được qua supertest, không cần mở cổng).
+- `src/index.ts` — entry khởi động server (`listen`).
+- `src/env.ts` — đọc cấu hình từ biến môi trường (`PORT`, `ENVIRONMENT`, `CORS_ORIGIN`).
+- `src/mock-state.ts` — dữ liệu theo từng request để contract test độc lập trong lúc chờ kho dữ liệu thật; chưa có persistence.
+- `src/types.ts` — kiểu domain của API.
+
 ## Adapter dữ liệu tạm thời
 
 `src/mock-state.ts` tạo dữ liệu theo từng request để contract test độc lập trong lúc chờ kho dữ liệu thật. Nó không cung cấp persistence.
 
 Trước khi production:
 
-- thay adapter bằng repository D1/PostgreSQL đã có migration và transaction;
-- xác minh chữ ký, issuer và audience của Cloudflare Access JWT;
+- thay adapter bằng repository DB đã có migration và transaction;
+- xác minh access token (chữ ký, issuer, audience) theo cơ chế được phê duyệt;
 - không cho phép `x-dev-user-id`;
-- dùng R2/DMS được phê duyệt cho tài liệu, Queue/Workflow cho việc nền;
+- dùng kho tài liệu (DMS) được phê duyệt cho minh chứng và job nền cho việc bất đồng bộ;
 - cấu hình origin thật, rate limiting, backup, retention và audit bất biến.
-
-## Deploy có chủ đích
-
-Không có lệnh deploy mặc định để tránh đẩy nhầm Worker root.
-
-```bash
-pnpm --filter @btctu/api deploy:staging
-pnpm --filter @btctu/api deploy:production
-```
-
-Thay origin `.invalid` trong `wrangler.jsonc` trước khi deploy. Secret được đặt bằng `wrangler secret put`, không ghi trong source hoặc config.

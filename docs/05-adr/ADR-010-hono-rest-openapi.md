@@ -1,6 +1,8 @@
 # ADR-010 — Hono REST API trên Cloudflare Workers
 
-**Status:** Accepted.
+**Trạng thái:** Superseded bởi [ADR-011](ADR-011-express-node-api.md).
+
+> ADR này đã bị thay thế: API chuyển từ Hono trên Cloudflare Workers sang Express.js trên Node (xem ADR-011). Nội dung dưới đây được giữ làm vết lịch sử.
 
 ## Quyết định
 

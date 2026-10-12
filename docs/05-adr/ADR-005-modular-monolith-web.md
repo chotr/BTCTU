@@ -7,7 +7,7 @@
 Dùng một ứng dụng web responsive với **hai đơn vị triển khai**:
 
 1. `apps/web` — frontend Next.js;
-2. `apps/api` — backend Hono triển khai như một ứng dụng modular monolith.
+2. `apps/api` — backend Express (Node) triển khai như một ứng dụng modular monolith.
 
 Backend giữ ranh giới module rõ ràng như Organization, Task, Evaluation,
 Classification, IAM/Policy và Audit, nhưng các module backend đó không được triển
@@ -44,7 +44,7 @@ tầng và yêu cầu tích hợp.
 ## Hệ quả
 
 - không mô tả toàn hệ thống là “một đơn vị triển khai”;
-- backend Hono chính là modular monolith;
+- backend Express chính là modular monolith;
 - thực thi ranh giới module để tránh backend rối như “big ball of mud”;
 - chỉ tách một module thành service riêng khi có yêu cầu thực tế về scale, quyền sở
   hữu hoặc tích hợp biện minh cho việc đó.

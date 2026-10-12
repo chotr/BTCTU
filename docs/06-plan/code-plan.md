@@ -5,10 +5,10 @@
 Mục tiêu: chứng minh stack trước khi code nghiệp vụ.
 
 - tạo pnpm workspace với `apps/web`, `apps/api`, `packages/*`;
-- dựng trang Next.js gọi `/health` của Hono Worker;
-- thiết lập Wrangler environments và generated binding types;
-- thử xác thực JWT của Cloudflare Access;
-- migration D1 đầu tiên, private R2 binding và Queue producer/consumer;
+- dựng trang Next.js gọi `/health` của API Express;
+- thiết lập biến môi trường và kiểu cấu hình;
+- thử xác thực access token (JWT);
+- migration DB quan hệ đầu tiên, lưu trữ tệp riêng và luồng job nền;
 - CI lint/typecheck/test/build;
 - ghi kết quả compatibility/deployment vào ADR.
 
@@ -66,7 +66,7 @@ Excel được import vào staging/DRAFT; chỉ version đã được review/ph�
 
 - draft/submit kết quả;
 - metadata sản phẩm;
-- luồng upload/download R2 riêng cho dữ liệu synthetic;
+- luồng upload/download lưu trữ tệp riêng cho dữ liệu synthetic;
 - checksum/phân loại/trạng thái;
 - trả lại để chỉnh sửa;
 - kiểm thử quyền với file.
@@ -122,7 +122,7 @@ quy trình mở lại nội bộ.
 - tổng hợp KPI/xếp loại;
 - chỉ báo quá hạn/thiếu minh chứng nếu nguồn cho phép;
 - chính sách xuất CSV/PDF;
-- sinh báo cáo nền qua Queue;
+- sinh báo cáo nền qua job nền;
 - kiểm thử phạm vi dữ liệu để chống rò rỉ.
 
 **Exit:** dashboard số liệu khớp truy vấn đối soát.
@@ -157,9 +157,9 @@ Không bật endpoint thật nếu thiếu phê duyệt/mạng/credential/cổng
 ## Thứ tự ticket cho sprint đầu
 
 1. `ARCH-001` — workspace, TypeScript strict, lint/test/build.
-2. `CF-001` — Hono Worker `/health`, Wrangler environments.
+2. `API-001` — Express `/health`, cấu hình môi trường.
 3. `WEB-001` — vỏ Next.js, điều hướng và API client được sinh.
-4. `DB-001` — Drizzle + migration D1 + smoke test repository.
+4. `DB-001` — Drizzle + migration DB quan hệ + smoke test repository.
 5. `AUTH-001` — trình xác thực JWT Access + adapter kiểm thử cục bộ.
 6. `SEC-001` — middleware uỷ quyền + kiểm thử deny-by-default.
 7. `AUD-001` — envelope audit + request ID.

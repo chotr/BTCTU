@@ -45,7 +45,7 @@ Không đặt secret vào biến `NEXT_PUBLIC_*`; các biến này được gử
 ## Điều kiện đưa lên production
 
 - cấu hình `NEXT_PUBLIC_DATA_SOURCE=api`;
-- xác thực qua Cloudflare Access hoặc IdP đã được phê duyệt;
+- xác thực qua IdP/access token đã được phê duyệt;
 - API thực thi phân quyền phía server;
 - dữ liệu được lưu bằng kho bền vững và có migration/backup;
 - hoàn tất thẩm định ATTT, CORS, CSP, giám sát và runbook khôi phục;
