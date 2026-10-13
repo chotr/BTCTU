@@ -7,6 +7,7 @@ const env: Env = {
   environment: "test",
   corsOrigin: "http://localhost:3000",
   port: 0,
+  databaseUrl: "postgresql://test:test@localhost:5432/btctu_test",
 };
 const app = createApp(env);
 
