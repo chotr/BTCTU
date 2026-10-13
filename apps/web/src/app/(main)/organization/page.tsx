@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Plus, PencilSimple, Trash } from "@phosphor-icons/react";
 import { useApp } from "@/lib/store";
 import { canAssign, canManage, canViewDepartment } from "@/lib/policy";
-import { masterActions } from "@/lib/master-data";
+import { api } from "@/lib/api";
 import { personName } from "@/lib/shared/names";
 import {
   Badge,
@@ -95,13 +95,13 @@ export default function OrganizationPage() {
     try {
       const id = form.id;
       if (remove) {
-        if (tab === "departments") masterActions.removeDepartment(id, reason);
-        if (tab === "people") masterActions.removePerson(id, reason);
-        if (tab === "positions") masterActions.removePosition(id);
-        if (tab === "responsibilities") masterActions.removeResponsibility(id);
+        if (tab === "departments") api.removeDepartment(id, reason);
+        if (tab === "people") api.removePerson(id, reason);
+        if (tab === "positions") api.removePosition(id);
+        if (tab === "responsibilities") api.removeResponsibility(id);
       } else {
         if (tab === "departments")
-          masterActions.saveDepartment(
+          api.saveDepartment(
             {
               id: id || undefined,
               code: form.code ?? "",
@@ -113,7 +113,7 @@ export default function OrganizationPage() {
             reason,
           );
         if (tab === "people")
-          masterActions.savePerson(
+          api.savePerson(
             {
               id: id || undefined,
               name: form.name ?? "",
@@ -124,13 +124,13 @@ export default function OrganizationPage() {
             reason,
           );
         if (tab === "positions")
-          masterActions.savePosition({
+          api.savePosition({
             id,
             title: form.title ?? "",
             scope: form.scope ?? "",
           });
         if (tab === "responsibilities")
-          masterActions.saveResponsibility({
+          api.saveResponsibility({
             id,
             name: form.name ?? "",
             departmentId: form.departmentId,

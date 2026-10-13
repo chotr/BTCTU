@@ -9,8 +9,8 @@ import {
   ChartBar,
 } from "@phosphor-icons/react";
 import { useApp } from "@/lib/store";
-import { scopedData } from "@/lib/exports";
-import { evaluationLabel } from "@/lib/evaluation";
+import { scopedData } from "@/lib/access";
+import { evaluationLabel } from "@/lib/api";
 import { CLASS_LABELS } from "@/lib/types";
 import { personName } from "@/lib/shared/names";
 import {
@@ -110,7 +110,7 @@ export default function DashboardPage() {
           icon={<CheckCircle size={18} />}
         />
         <StatCard
-          label="Chờ bạn xử lý"
+          label="Chờ xử lý"
           value={String(todoTasks.length + todoEvals.length)}
           sub="Nhiệm vụ và hồ sơ thuộc vai trò của bạn"
           tone="warn"

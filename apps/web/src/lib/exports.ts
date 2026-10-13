@@ -1,39 +1,15 @@
-import { appendAudit, getState, pushToast, type AppState } from "./store";
-import {
-  canViewAuditEvent,
-  canViewDepartment,
-  canViewEvaluation,
-  canViewTask,
-} from "./policy";
+import { appendAudit, getState, pushToast } from "./store";
+import { scopedData } from "./access";
 import { CLASS_LABELS, EVAL_STATUS_LABELS, TASK_STATUS_LABELS } from "./types";
 import { csvCell, toCsv, downloadText } from "./shared/csv";
 import { nameOf } from "./shared/names";
 
 export { csvCell, toCsv, downloadText } from "./shared/csv";
+export { scopedData } from "./access";
+export type ReportKind = "tasks" | "evaluations" | "audit";
 
-export function scopedData(s: AppState) {
-  return {
-    tasks: s.tasks.filter((t) => canViewTask(s.user, t)),
-    evaluations: s.evaluations.filter((e) => canViewEvaluation(s.user, e)),
-    departments: s.departments.filter((d) => canViewDepartment(s.user, d.id)),
-    people: s.people.filter((p) =>
-      s.user?.role === "cong_chuc"
-        ? p.id === s.user.id
-        : canViewDepartment(s.user, p.departmentId),
-    ),
-    audit: s.audit.filter((a) =>
-      canViewAuditEvent(
-        s.user,
-        a,
-        s.tasks.find((t) => t.id === a.resource)?.departmentId,
-        s.evaluations.find((e) => e.id === a.resource)?.departmentId,
-      ),
-    ),
-  };
-}
-// Formula-neutralized CSV protects files opened with Excel.
 export function exportReport(
-  kind: "tasks" | "evaluations" | "audit",
+  kind: ReportKind,
   periodId = "ALL",
   departmentId = "ALL",
   subjectType = "ALL",

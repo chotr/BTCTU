@@ -2,13 +2,7 @@
 import { useState } from "react";
 import { useApp } from "@/lib/store";
 import { canManage } from "@/lib/policy";
-import {
-  PROFILES,
-  previewPayload,
-  saveMappings,
-  simulateSync,
-  type ProfileKey,
-} from "@/lib/integration";
+import { api, PROFILES, previewPayload, type ProfileKey } from "@/lib/api";
 import { fmtDateTime } from "@/lib/format";
 import { useBusy } from "@/components/use-busy";
 import {
@@ -42,7 +36,7 @@ export default function IntegrationPage() {
       </Card>
     );
   async function sync(retryOf?: string, p = profile, reason = purpose) {
-    await run(() => simulateSync(p, reason, retryOf ? false : fail, retryOf));
+    await run(() => api.simulateSync(p, reason, retryOf ? false : fail, retryOf));
   }
   return (
     <div className="space-y-4">
@@ -136,7 +130,7 @@ export default function IntegrationPage() {
                 </Select>
               </Field>
             ))}
-            <Button onClick={() => saveMappings(mappings)}>Lưu ánh xạ</Button>
+            <Button onClick={() => api.saveMappings(mappings)}>Lưu ánh xạ</Button>
             <p className="text-xs leading-relaxed text-ink-3">
               Không đồng bộ vào danh sách nhân sự nội bộ một cách tự động. Kết
               quả là nhật ký đối soát giả, không thay đổi master data.

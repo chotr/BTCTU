@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Plus, MagnifyingGlass, Export } from "@phosphor-icons/react";
 import { useApp } from "@/lib/store";
 import { canAssign, canViewDepartment } from "@/lib/policy";
-import { exportReport, scopedData } from "@/lib/exports";
+import { scopedData } from "@/lib/access";
+import { api } from "@/lib/api";
 import { personName } from "@/lib/shared/names";
 import { TASK_STATUS_LABELS } from "@/lib/types";
 import { fmtDate } from "@/lib/format";
@@ -58,7 +59,7 @@ export default function TasksPage() {
           <>
             <Button
               icon={<Export size={15} />}
-              onClick={() => exportReport("tasks", periodId, dept)}
+              onClick={() => api.exportReport("tasks", periodId, dept)}
             >
               Xuất CSV
             </Button>

@@ -3,8 +3,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { useApp } from "@/lib/store";
 import { canManage } from "@/lib/policy";
-import { scopedData } from "@/lib/exports";
-import { evaluationActions } from "@/lib/evaluation";
+import { scopedData } from "@/lib/access";
+import { api } from "@/lib/api";
 import { EVAL_FINAL, inGroup } from "@/lib/domain/workflow";
 import { useBusy } from "@/components/use-busy";
 import {
@@ -35,15 +35,15 @@ export default function PeriodsPage() {
     await run(async () => {
       const ok =
         mode === "create"
-          ? await evaluationActions.createPeriod({
+          ? await api.createPeriod({
               name,
               kind,
               startDate: start,
               endDate: end,
             })
           : mode === "lock"
-            ? await evaluationActions.lockPeriod(id)
-            : await evaluationActions.reopenPeriod(id, reason);
+            ? await api.lockPeriod(id)
+            : await api.reopenPeriod(id, reason);
       if (ok) {
         setMode(null);
         setReason("");

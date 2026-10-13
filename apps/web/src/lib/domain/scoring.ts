@@ -1,8 +1,5 @@
-import type {
-  AxisSnapshot,
-  CalculationRun,
-  Task,
-} from "@/lib/types";
+import type { AxisSnapshot, CalculationRun, Task } from "@/lib/types";
+import { qualityScore } from "@/lib/domain/quality";
 
 /** Candidate rule version identifier shown in snapshots/UI. */
 export const CANDIDATE_RULE = "BTCTU-CANDIDATE-2026.1";
@@ -59,16 +56,6 @@ export function calculateCandidate(
     missingInputs.push(
       "Chưa có kết quả được nghiệm thu; các trục công việc đang bằng 0.",
     );
-  const qualityMap: Record<string, number> = {
-    "Vượt yêu cầu": 100,
-    "Đáp ứng tốt": 100,
-    "Đáp ứng": 80,
-    "Cần cải thiện": 50,
-    "Cần chỉnh sửa": 50,
-    "Cần hoàn thiện": 50,
-    "Không đạt": 0,
-    "Không đáp ứng": 0,
-  };
   let quantity = 0,
     quality = 0,
     timely = 0;
@@ -79,9 +66,10 @@ export function calculateCandidate(
       task.plannedQuantity > 0
         ? Math.min(1, Math.max(0, task.quantity / task.plannedQuantity))
         : 0;
-    if (!(task.quality in qualityMap))
+    const score = qualityScore(task.quality);
+    if (score === null)
       missingInputs.push(`${task.id}: chưa ánh xạ mức chất lượng.`);
-    quality += qualityMap[task.quality] ?? 0;
+    quality += score ?? 0;
     const submitted = Date.parse(task.submittedAt);
     const due = Date.parse(task.dueAt);
     if (!Number.isFinite(submitted) || !Number.isFinite(due))
@@ -102,7 +90,7 @@ export function calculateCandidate(
       label: "Chất lượng sản phẩm",
       value: roundScore(quality / count),
       detail:
-        "Ứng viên: Đáp ứng tốt/Vượt yêu cầu = 100; Đáp ứng = 80; Cần cải thiện = 50; Không đạt = 0. Chưa nghiệm thu = 0.",
+        "Ứng viên: Đáp ứng tốt = 100; Đáp ứng = 80; Cần hoàn thiện = 50; Không đáp ứng = 0. Chưa nghiệm thu = 0.",
     },
     {
       code: "C",

@@ -2,12 +2,11 @@
 
 import { Export, ListMagnifyingGlass } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
-import { api } from "@/lib/api";
+import { api, personLabel } from "@/lib/api";
 import { fmtDateTime } from "@/lib/format";
 import { useApp } from "@/lib/store";
-import { scopedData } from "@/lib/exports";
+import { scopedData } from "@/lib/access";
 import { canViewAudit } from "@/lib/policy";
-import { USERS } from "@/lib/mock/data";
 import {
   Avatar,
   Badge,
@@ -21,7 +20,7 @@ import {
 
 export default function AuditPage() {
   const state = useApp();
-  const { people, user } = state;
+  const { user } = state;
   const { audit } = scopedData(state);
   const [q, setQ] = useState("");
   const [outcome, setOutcome] = useState<"ALL" | "OK" | "DENIED">("ALL");
@@ -37,13 +36,13 @@ export default function AuditPage() {
           " " +
           a.detail +
           " " +
-          (people.find((p) => p.id === a.actorId)?.name ?? "")
+          personLabel(a.actorId)
         ).toLowerCase();
         if (!hay.includes(q.trim().toLowerCase())) return false;
       }
       return true;
     });
-  }, [audit, q, outcome, people]);
+  }, [audit, q, outcome]);
 
   if (!canViewAudit(user))
     return (
@@ -63,7 +62,7 @@ export default function AuditPage() {
           <Button
             variant="secondary"
             icon={<Export size={14} weight="bold" />}
-            onClick={() => api.exportReport("Nhật ký hoạt động")}
+            onClick={() => api.exportReport("audit")}
           >
             Xuất nhật ký
           </Button>
@@ -116,9 +115,7 @@ export default function AuditPage() {
             </thead>
             <tbody>
               {filtered.map((a) => {
-                const actor =
-                  people.find((p) => p.id === a.actorId) ??
-                  USERS.find((p) => p.id === a.actorId);
+                const name = personLabel(a.actorId);
                 return (
                   <tr
                     key={a.id}
@@ -133,8 +130,8 @@ export default function AuditPage() {
                     </td>
                     <td className="px-3 py-2.5">
                       <span className="flex items-center gap-2">
-                        <Avatar name={actor?.name ?? "?"} size="sm" />
-                        {actor?.name ?? "?"}
+                        <Avatar name={name} size="sm" />
+                        {name}
                       </span>
                     </td>
                     <td className="px-3 py-2.5 font-medium">{a.action}</td>

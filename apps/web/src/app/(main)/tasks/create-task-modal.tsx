@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useApp } from "@/lib/store";
-import { taskActions } from "@/lib/tasks";
+import { api } from "@/lib/api";
 import { useBusy } from "@/components/use-busy";
 import { Button, Field, Input, Modal, Select } from "@/components/ui";
 
@@ -30,7 +30,7 @@ export function CreateTask({
     event.preventDefault();
     await run(async () => {
       if (
-        await taskActions.createTask({
+        await api.createTask({
           catalogItemId: cat,
           assigneeId: person,
           periodId: period,

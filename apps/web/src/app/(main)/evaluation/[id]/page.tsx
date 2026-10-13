@@ -18,12 +18,12 @@ import {
   inGroup,
 } from "@/lib/domain/workflow";
 import {
+  api,
   canCalculateEvaluation,
   canSelfEvaluate,
-  evaluationActions,
   evaluationLabel,
   evaluationTotal,
-} from "@/lib/evaluation";
+} from "@/lib/api";
 import {
   classificationEligibility,
   evaluationTasks,
@@ -270,7 +270,7 @@ function Workspace({ ev }: { ev: Evaluation }) {
                   onSubmit={(e) => {
                     e.preventDefault();
                     void execute(() =>
-                      evaluationActions.calculateEvaluation(ev.id, {
+                      api.calculateEvaluation(ev.id, {
                         generalScore: Number(general),
                         leadershipScore: ev.isLeader
                           ? Number(leadership)
@@ -426,7 +426,7 @@ function Workspace({ ev }: { ev: Evaluation }) {
                   disabled={busy || !conditionReason.trim()}
                   onClick={() =>
                     execute(() =>
-                      evaluationActions.updateConditions(
+                      api.updateConditions(
                         ev.id,
                         checks,
                         conditionReason,
@@ -507,7 +507,7 @@ function Workspace({ ev }: { ev: Evaluation }) {
                       variant="primary"
                       onClick={() =>
                         execute(() =>
-                          evaluationActions.selfEvaluate(ev.id, {
+                          api.selfEvaluate(ev.id, {
                             comment,
                             proposed,
                           }),
@@ -523,7 +523,7 @@ function Workspace({ ev }: { ev: Evaluation }) {
                       variant="primary"
                       onClick={() =>
                         execute(() =>
-                          evaluationActions.reviewEvaluation(ev.id, {
+                          api.reviewEvaluation(ev.id, {
                             comment,
                             proposed,
                             action: "propose",
@@ -541,7 +541,7 @@ function Workspace({ ev }: { ev: Evaluation }) {
                         disabled={busy || !comment.trim()}
                         onClick={() =>
                           execute(() =>
-                            evaluationActions.reviewEvaluation(ev.id, {
+                            api.reviewEvaluation(ev.id, {
                               comment,
                               proposed,
                               action: "return",
@@ -561,7 +561,7 @@ function Workspace({ ev }: { ev: Evaluation }) {
                       }
                       onClick={() =>
                         execute(() =>
-                          evaluationActions.decideEvaluation(ev.id, {
+                          api.decideEvaluation(ev.id, {
                             classification: proposed,
                             note: comment,
                           }),

@@ -1,0 +1,35 @@
+import { USERS } from "./mock/data";
+import type { DemoUser, Department, Person } from "./types";
+
+type IdentityState = {
+  people: Person[];
+  departments: Department[];
+};
+
+export function resolveDemoUser(
+  state: IdentityState,
+  userId: string | null | undefined,
+): DemoUser | null {
+  if (!userId) return null;
+  const person = state.people.find((row) => row.id === userId);
+  const preset = USERS.find((row) => row.id === userId);
+  if (!person && !preset) return null;
+  const departmentId = person?.departmentId ?? preset?.departmentId ?? null;
+  const department = departmentId
+    ? state.departments.find((row) => row.id === departmentId)
+    : undefined;
+  const derivedRole =
+    person && department?.headId === person.id ? "truong_phong" : "cong_chuc";
+  return {
+    id: userId,
+    name: person?.name ?? preset?.name ?? userId,
+    title: person?.title ?? preset?.title ?? "",
+    role: preset?.role ?? derivedRole,
+    departmentId,
+    departmentName: department?.name ?? preset?.departmentName ?? null,
+  };
+}
+
+export function demoAccounts(): DemoUser[] {
+  return USERS;
+}

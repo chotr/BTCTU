@@ -18,13 +18,9 @@ import { deny } from "@/lib/shared/feedback";
 import { personName } from "@/lib/shared/names";
 import { TASK_EDITABLE, TASK_IN_REVIEW, inGroup } from "@/lib/domain/workflow";
 
-export const RESULT_QUALITY = [
-  "Đáp ứng tốt",
-  "Đáp ứng",
-  "Cần hoàn thiện",
-  "Không đáp ứng",
-] as const;
-export { TASK_EDITABLE };
+import { RESULT_QUALITY } from "@/lib/domain/quality";
+
+export { RESULT_QUALITY, TASK_EDITABLE };
 const editable = (task: Task) => inGroup(TASK_EDITABLE, task.status);
 
 /** Demo policy: a task belongs to one evaluation period, including legacy fixture names. */
@@ -272,9 +268,7 @@ export const taskActions = {
       !Number.isFinite(patch.quantity) ||
       patch.quantity <= 0 ||
       !patch.product.trim() ||
-      !RESULT_QUALITY.includes(
-        patch.qualityLevel as (typeof RESULT_QUALITY)[number],
-      )
+      !RESULT_QUALITY.includes(patch.qualityLevel as (typeof RESULT_QUALITY)[number])
     )
       return deny(
         action,

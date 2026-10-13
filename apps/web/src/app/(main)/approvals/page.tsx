@@ -2,8 +2,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useApp } from "@/lib/store";
-import { scopedData } from "@/lib/exports";
-import { evaluationLabel } from "@/lib/evaluation";
+import { scopedData } from "@/lib/access";
+import { evaluationLabel } from "@/lib/api";
 import { canAssign } from "@/lib/policy";
 import { personName } from "@/lib/shared/names";
 import {

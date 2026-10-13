@@ -6,7 +6,7 @@ import { ArrowLeft, Paperclip, CheckCircle } from "@phosphor-icons/react";
 import { useApp } from "@/lib/store";
 import { canReviewTask, canViewDepartment, canViewTask } from "@/lib/policy";
 import { personName } from "@/lib/shared/names";
-import { RESULT_QUALITY, taskActions, taskPeriodLocked } from "@/lib/tasks";
+import { api, RESULT_QUALITY, taskPeriodLocked } from "@/lib/api";
 import { useBusy } from "@/components/use-busy";
 import type { Task } from "@/lib/types";
 import { TASK_EDITABLE, TASK_IN_REVIEW, inGroup } from "@/lib/domain/workflow";
@@ -76,7 +76,7 @@ function TaskWorkspace({ task }: { task: Task }) {
     state.catalog.find((c) => c.id === task.catalogItemId);
   async function save(submit: boolean) {
     await run(() =>
-      taskActions.saveResult(
+      api.saveResult(
         task.id,
         {
           quantity: Number(quantity),
@@ -94,13 +94,13 @@ function TaskWorkspace({ task }: { task: Task }) {
     await run(async () => {
       let ok = false;
       if (action === "return")
-        ok = await taskActions.returnTask(task.id, reason);
+        ok = await api.returnTask(task.id, reason);
       if (action === "accept")
-        ok = await taskActions.acceptTask(task.id, reason);
+        ok = await api.acceptTask(task.id, reason);
       if (action === "cancel")
-        ok = await taskActions.cancelTask(task.id, reason);
+        ok = await api.cancelTask(task.id, reason);
       if (action === "reassign")
-        ok = await taskActions.reassignTask(task.id, assignee, reason);
+        ok = await api.reassignTask(task.id, assignee, reason);
       if (ok) {
         setAction(null);
         setReason("");
@@ -322,7 +322,7 @@ function TaskWorkspace({ task }: { task: Task }) {
                       <Button
                         variant="ghost"
                         onClick={() =>
-                          taskActions.removeEvidence(task.id, e.id)
+                          api.removeEvidence(task.id, e.id)
                         }
                       >
                         Gỡ
@@ -353,7 +353,7 @@ function TaskWorkspace({ task }: { task: Task }) {
                     onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (file)
-                        await taskActions.addEvidence(task.id, {
+                        await api.addEvidence(task.id, {
                           name: file.name,
                           sizeBytes: file.size,
                           kind: file.type || "FILE",
@@ -389,7 +389,7 @@ function TaskWorkspace({ task }: { task: Task }) {
                 </Field>
                 <Button
                   onClick={() =>
-                    taskActions.updateProgress(task.id, Number(progress))
+                    api.updateProgress(task.id, Number(progress))
                   }
                 >
                   Lưu tiến độ

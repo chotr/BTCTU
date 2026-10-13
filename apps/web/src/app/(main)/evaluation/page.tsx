@@ -4,13 +4,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Plus } from "@phosphor-icons/react";
 import { useApp } from "@/lib/store";
-import { scopedData } from "@/lib/exports";
+import { scopedData } from "@/lib/access";
 import { useBusy } from "@/components/use-busy";
 import {
-  evaluationActions,
+  api,
   evaluationLabel,
   evaluationTotal,
-} from "@/lib/evaluation";
+} from "@/lib/api";
 import { EVAL_STATUS_LABELS } from "@/lib/types";
 import {
   Badge,
@@ -53,7 +53,7 @@ export default function EvaluationPage() {
   async function create(e: React.FormEvent) {
     e.preventDefault();
     await run(async () => {
-      const id = await evaluationActions.createEvaluation({
+      const id = await api.createEvaluation({
         periodId: newPeriod,
         subjectType,
         subjectId: subject,

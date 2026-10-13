@@ -4,11 +4,11 @@ import { Plus, UploadSimple, Copy, CheckCircle } from "@phosphor-icons/react";
 import { useApp } from "@/lib/store";
 import { canManage } from "@/lib/policy";
 import {
+  api,
   catalogCsvTemplate,
-  masterActions,
   previewCatalogCsv,
   type ImportRow,
-} from "@/lib/master-data";
+} from "@/lib/api";
 import { downloadCsv } from "@/lib/shared/csv";
 import type { CatalogItem } from "@/lib/types";
 import {
@@ -82,14 +82,14 @@ export default function CatalogPage() {
     e.preventDefault();
     attempt(() => {
       if (mode === "copy") {
-        setVersion(masterActions.duplicateVersion(version, newVersion));
+        setVersion(api.duplicateVersion(version, newVersion));
       }
-      if (mode === "publish") masterActions.publishVersion(version, reason);
-      if (mode === "delete" && item) masterActions.removeCatalog(item.id);
+      if (mode === "publish") api.publishVersion(version, reason);
+      if (mode === "delete" && item) api.removeCatalog(item.id);
       if (mode === "edit" && item)
-        masterActions.saveCatalog({ ...item, id: item.id || undefined });
+        api.saveCatalog({ ...item, id: item.id || undefined });
       if (mode === "import") {
-        masterActions.importCatalog(csv, newVersion);
+        api.importCatalog(csv, newVersion);
         setVersion(newVersion);
       }
       setMode(null);

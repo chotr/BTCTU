@@ -22,8 +22,8 @@ import {
   POSITIONS,
   RESPONSIBILITIES,
   TASKS,
-  USERS,
 } from "./mock/data";
+import { resolveDemoUser } from "./identity";
 
 export interface SyncRun {
   id: string;
@@ -166,23 +166,10 @@ function restore(raw: string): AppState {
   )
     throw new Error("Invalid workflow");
   const base = initialState();
-  const chosen = USERS.find((u) => u.id === d.user?.id);
-  const person = d.people.find((p: Person) => p.id === d.user?.id);
-  const department =
-    person &&
-    d.departments.find((p: Department) => p.id === person.departmentId);
-  const restoredUser =
-    chosen ??
-    (person
-      ? {
-          id: person.id,
-          name: person.name,
-          title: person.title,
-          role: department?.headId === person.id ? "truong_phong" : "cong_chuc",
-          departmentId: person.departmentId,
-          departmentName: department?.name ?? null,
-        }
-      : null);
+  const restoredUser = resolveDemoUser(
+    { people: d.people, departments: d.departments },
+    d.user?.id,
+  );
   return {
     ...base,
     ...d,
@@ -208,7 +195,7 @@ export function hydrateStore(): void {
       const previous = JSON.parse(
         window.localStorage.getItem(SESSION_KEY) ?? "null",
       );
-      state.user = USERS.find((u) => u.id === previous?.userId) ?? null;
+      state.user = resolveDemoUser(state, previous?.userId);
     }
   } catch {
     state = {

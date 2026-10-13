@@ -4,7 +4,6 @@ import { ArrowRight, ShieldCheck } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/lib/api";
-import { USERS } from "@/lib/mock/data";
 import { useApp } from "@/lib/store";
 import { Avatar, Button, Card, Field, Select } from "@/components/ui";
 
@@ -17,6 +16,7 @@ const roleLabel: Record<string, string> = {
 export default function LoginPage() {
   const router = useRouter();
   const { user, people, departments, hydrated } = useApp();
+  const accounts = api.accounts();
   const [personId, setPersonId] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -51,7 +51,7 @@ export default function LoginPage() {
           </p>
 
           <div className="mt-4 flex flex-col gap-2">
-            {USERS.map((u) => {
+            {accounts.map((u) => {
               const active = user?.id === u.id;
               return (
                 <button
@@ -100,6 +100,7 @@ export default function LoginPage() {
                   <option value="">Chọn nhân sự</option>
                   {people
                     .filter((p) => !USERS.some((u) => u.id === p.id))
+                    .filter((p) => !accounts.some((u) => u.id === p.id))
                     .map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.name} ·{" "}

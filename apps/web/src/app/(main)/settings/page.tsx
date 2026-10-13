@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { resetDemo, useApp } from "@/lib/store";
+import { useApp } from "@/lib/store";
+import { api } from "@/lib/api";
 import {
   Badge,
   Button,
@@ -144,7 +145,7 @@ export default function SettingsPage() {
           <Button
             variant="danger"
             onClick={() => {
-              resetDemo();
+              api.resetDemo();
               setOpen(false);
             }}
           >

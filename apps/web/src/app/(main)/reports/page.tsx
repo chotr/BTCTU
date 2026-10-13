@@ -3,8 +3,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { Export, Printer, FileText } from "@phosphor-icons/react";
 import { appendAudit, useApp } from "@/lib/store";
-import { exportReport, scopedData } from "@/lib/exports";
-import { evaluationLabel, evaluationTotal } from "@/lib/evaluation";
+import { scopedData } from "@/lib/access";
+import { api, evaluationLabel, evaluationTotal } from "@/lib/api";
 import { CLASS_LABELS } from "@/lib/types";
 import {
   TASK_DONE,
@@ -86,13 +86,13 @@ export default function ReportsPage() {
           <div className="flex flex-wrap gap-2 print:hidden">
             <Button
               icon={<Export size={15} />}
-              onClick={() => exportReport("tasks", periodId, dept)}
+              onClick={() => api.exportReport("tasks", periodId, dept)}
             >
               CSV nhiệm vụ
             </Button>
             <Button
               icon={<Export size={15} />}
-              onClick={() => exportReport("evaluations", periodId, dept, type)}
+              onClick={() => api.exportReport("evaluations", periodId, dept, type)}
             >
               CSV đánh giá
             </Button>
