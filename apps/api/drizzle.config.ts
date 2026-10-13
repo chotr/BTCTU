@@ -8,9 +8,6 @@ import { defineConfig } from "drizzle-kit";
 import { readEnv } from "./src/env";
 
 const databaseUrl = readEnv().databaseUrl;
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL is missing");
-}
 
 export default defineConfig({
   dialect: "postgresql",
