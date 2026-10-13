@@ -6,12 +6,22 @@ node_modules/
 test-results/
 playwright-report/
 
-# Local configuration and secrets must never be committed.
-.env
-.env.local
-.env.*.local
-.dev.vars
-.dev.vars.*
-!.env.example
-!.env.production.example
-!.dev.vars.example
+# Environment files and local secrets must never be committed.
+**/.env
+**/.env.*
+**/.dev.vars
+**/.dev.vars.*
+!**/.env.example
+!**/.env.*.example
+
+# Private keys, certificates, credentials, and secret stores.
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.keystore
+**/credentials*.json
+**/service-account*.json
+**/*-credentials.json
+**/*-secrets.json
