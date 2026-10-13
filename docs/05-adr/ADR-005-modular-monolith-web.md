@@ -1,50 +1,50 @@
-# ADR-005 — Web frontend + modular-monolith backend
+# ADR-005 — Giao diện web + backend modular monolith
 
-**Status:** Accepted for prototype.
+**Trạng thái:** Accepted.
 
-## Decision
+## Quyết định
 
-Use a responsive web application with **two deployable units** for the prototype:
+Dùng một ứng dụng web responsive với **hai đơn vị triển khai**:
 
-1. `apps/web` — Next.js frontend;
-2. `apps/api` — Hono backend deployed as one modular-monolith application.
+1. `apps/web` — frontend Next.js;
+2. `apps/api` — backend Express (Node) triển khai như một ứng dụng modular monolith.
 
-The backend keeps clear module boundaries such as Organization, Task, Evaluation,
-Classification, IAM/Policy and Audit, but those backend modules are not deployed
-as separate microservices.
+Backend giữ ranh giới module rõ ràng như Organization, Task, Evaluation,
+Classification, IAM/Policy và Audit, nhưng các module backend đó không được triển
+khai như microservices riêng biệt.
 
-The prototype uses a relational data model and background jobs/outbox where needed.
+Hệ thống dùng mô hình dữ liệu quan hệ và các background job/outbox khi cần.
 
-## Reason
+## Lý do
 
-The competency test benefits more from an end-to-end vertical slice, traceability
-and simple operations than from microservice complexity.
+Hệ thống này hưởng lợi từ một vertical slice đầu-cuối, khả năng truy vết và vận hành
+đơn giản hơn là từ độ phức tạp của microservice.
 
-Separating web and API gives:
+Tách web và API mang lại:
 
-- an explicit API contract;
-- independent frontend/backend delivery;
-- easier future integration with other clients/systems.
+- một contract API rõ ràng;
+- bàn giao frontend/backend độc lập;
+- dễ tích hợp với client/hệ thống khác về sau.
 
-Keeping the backend as one modular monolith gives:
+Giữ backend là một modular monolith mang lại:
 
-- low deployment/operational overhead;
-- transactional consistency for task/evaluation flows;
-- clear module ownership without premature service extraction.
+- chi phí triển khai/vận hành thấp;
+- nhất quán giao dịch cho luồng nhiệm vụ/đánh giá;
+- quyền sở hữu module rõ ràng mà không tách service quá sớm.
 
-## Production boundary
+## Ranh giới production
 
-This ADR decides the **application structure**, not the final production hosting
-platform.
+ADR này quyết định **cấu trúc ứng dụng**, không phải nền tảng hosting production
+cuối cùng.
 
-Production hosting/network/database/object-storage choices remain subject to
-security-level assessment, data classification, state-secret scope, infrastructure
-approval and integration requirements.
+Lựa chọn hosting/mạng/cơ sở dữ liệu/object-storage cho production vẫn phụ thuộc vào
+đánh giá cấp độ bảo mật, phân loại dữ liệu, phạm vi bí mật nhà nước, phê duyệt hạ
+tầng và yêu cầu tích hợp.
 
-## Consequences
+## Hệ quả
 
-- do not describe the whole system as “one deployable unit”;
-- the Hono backend is the modular monolith;
-- enforce module boundaries to avoid a big-ball-of-mud backend;
-- extract a module into a separate service only when an actual scaling,
-  ownership or integration requirement justifies it.
+- không mô tả toàn hệ thống là “một đơn vị triển khai”;
+- backend Express chính là modular monolith;
+- thực thi ranh giới module để tránh backend rối như “big ball of mud”;
+- chỉ tách một module thành service riêng khi có yêu cầu thực tế về scale, quyền sở
+  hữu hoặc tích hợp biện minh cho việc đó.

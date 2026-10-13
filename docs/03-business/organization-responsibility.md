@@ -1,4 +1,4 @@
-# Organization / responsibility model
+# Mô hình tổ chức / trách nhiệm
 
 ```mermaid
 flowchart TD

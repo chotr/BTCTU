@@ -1,6 +1,6 @@
-# Domain model
+# Mô hình domain
 
-## Aggregates [INFERENCE]
+## Aggregate [INFERENCE]
 
 ```mermaid
 classDiagram
@@ -26,31 +26,37 @@ classDiagram
   ClassificationRuleVersion "1" --> "*" ClassificationDecision
 ```
 
-## Aggregate boundaries
+## Ranh giới aggregate
 
-### Organization
-Owns organization structure/membership references. Person master may ultimately be a projection of authoritative cadre data.
+### Tổ chức
+Sở hữu cơ cấu tổ chức/tham chiếu membership. Master nhân sự cuối cùng có thể là một
+projection từ dữ liệu cán bộ chủ quản.
 
-### Work Catalog
-Versioned definitions of expected work/product/standard measurement. Publishing a new catalog never changes historical tasks.
+### Danh mục công việc (Work Catalog)
+Định nghĩa theo phiên bản cho công việc/sản phẩm/đo lường chuẩn. Công bố danh mục
+mới không bao giờ thay đổi các nhiệm vụ lịch sử.
 
 ### Task
-Owns one actual task instance, assignments and result snapshot. Reassignment keeps history.
+Sở hữu một thực thể nhiệm vụ cụ thể, phân công và snapshot kết quả. Phân công lại
+vẫn giữ lịch sử.
 
 ### Evaluation
-Owns one subject+period evaluation, calculation runs, self/review/final decision history and lock state.
+Sở hữu một đánh giá theo đối tượng+kỳ, các lần tính, lịch sử tự đánh giá/thẩm
+định/quyết định cuối và trạng thái khóa.
 
-### Classification Rules
-Versioned thresholds/conditions/blockers. It is referenced by Evaluation rather than embedded as mutable code-only constants.
+### Quy tắc xếp loại
+Ngưỡng/điều kiện/yếu tố chặn theo phiên bản. Được Evaluation tham chiếu thay vì
+nhúng thành hằng số chỉ-trong-code có thể thay đổi.
 
 ### Audit
-Cross-cutting append-only event store/read model. Business module actions emit audit records through one service.
+Kho sự kiện/read model append-only xuyên suốt. Hành động của module nghiệp vụ phát
+sinh bản ghi audit qua một service duy nhất.
 
-## Domain invariants
+## Bất biến domain
 
-- no final classification without a final competent decision;
-- no overwriting approved calculation/decision;
-- rule/catalog version is immutable once used by an approved record;
-- score threshold alone cannot bypass QĐ39 mandatory conditions;
-- technical admin permission does not imply evaluation authority;
-- external data cannot silently become locally authoritative.
+- không có xếp loại cuối nếu thiếu quyết định của cấp có thẩm quyền;
+- không ghi đè lần tính/quyết định đã phê duyệt;
+- phiên bản quy tắc/danh mục là bất biến một khi đã được bản ghi đã phê duyệt dùng;
+- chỉ ngưỡng điểm không thể bỏ qua điều kiện bắt buộc của QĐ39;
+- quyền admin kỹ thuật không đồng nghĩa thẩm quyền đánh giá;
+- dữ liệu ngoài không thể âm thầm trở thành dữ liệu chủ quản cục bộ.

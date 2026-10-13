@@ -1,30 +1,32 @@
-# Traceability matrix — source → rule → design → implementation
+# Ma trận truy vết — nguồn → quy tắc → thiết kế → triển khai
 
-This table is the quickest evidence for an interviewer that the system is not based on invented rules.
+Bảng này là bằng chứng nhanh nhất cho người rà soát/kiểm toán rằng hệ thống không
+dựa trên quy tắc bịa đặt.
 
-| Source | Source fact | Business impact | Design/implementation |
+| Nguồn | Dữ kiện nguồn | Tác động nghiệp vụ | Thiết kế/triển khai |
 |---|---|---|---|
-| QĐ01 Điều 2–7 | 4 departments; functions/responsibilities; head assigns work linked to position | organization + assignment context | Organization, Department, Membership, Responsibility, Assignment |
-| 05-HD mục IV | 30 points general + 70 work result | two-component evaluation | GeneralCriteriaSnapshot + WorkPerformanceSnapshot |
-| 05-HD PL1 | standard work/product catalog, point/coefficient/complexity/time | catalog before task instance | WorkCatalogVersion / WorkCatalogItem |
-| 05-HD PL2 | A/B/C/D KPI for leaders | measurable performance axes | MetricSnapshot + CalculationRun |
-| 05-HD PL2 | arithmetic inconsistency in worked example | cannot blindly hard-code | SourceIssue INC-01 + unit test + approval gate |
-| QĐ39 Điều 11 | thresholds + additional conditions | score ≠ final classification | EligibilityCheck / ClassificationRuleVersion |
-| QĐ39 Điều 12 | self → appraisal → competent decision | staged workflow | Evaluation workflow |
-| QĐ342 Điều 16 | role/task/scope/classification/time; least privilege; audit | contextual authorization | PolicyDecision + AuditEvent |
-| QĐ342 Điều 23 | AI support only, human decision, no unapproved public AI for protected data | report drafting boundary | AI feature optional, human approval |
-| QĐ308 | canonical data dictionary + MaNhiemVu/TenNhiemVu + SOR | canonical mapping | DataDictionaryMapping |
-| QĐ607 | OAuth 2.0 `client_credentials`/JWT scoped APIs | concrete connector contract | Integration adapter |
-| HD07 + QĐ607 | Different authentication version/profile wording at LGSP vs concrete API layer | do not treat mechanisms as interchangeable | Approved-endpoint auth profile + SourceDivergence DIV-01 |
-| QĐ348/HD07 | approved purpose/scope, test→prod, >= level 3 for connected systems | integration/security gate | connector disabled in MVP |
-| NĐ85 | formal HTTT level criteria | cannot self-certify level | production compliance gate |
-| NĐ63 | strict state-secret e-document handling | keep secret content out of MVP | evidence reference boundary |
-| NĐ165 | access history, encryption, lifecycle | data governance | audit/encryption/retention |
-| NĐ278 | data sharing governance | integration is organizational + technical | connector governance |
-| Excel work catalog | actual draft codes/products/points/formulas | realistic seed/catalog candidate | staging import + steward approval |
-| Excel assignment tree | actual draft org/assignment context | realistic demo seed | staging/synthetic mapping |
-| NQ11 | strategic digital-transformation targets | project/OKR context | defense story / future strategic dashboard |
+| QĐ01 Điều 2–7 | 4 đơn vị; chức năng/trách nhiệm; trưởng phòng giao việc gắn với vị trí | bối cảnh tổ chức + phân công | Organization, Department, Membership, Responsibility, Assignment |
+| 05-HD mục IV | 30 điểm chung + 70 kết quả công việc | đánh giá hai thành phần | GeneralCriteriaSnapshot + WorkPerformanceSnapshot |
+| 05-HD PL1 | danh mục công việc/sản phẩm chuẩn, điểm/hệ số/độ phức tạp/thời gian | danh mục trước khi có thực thể nhiệm vụ | WorkCatalogVersion / WorkCatalogItem |
+| 05-HD PL2 | KPI A/B/C/D cho lãnh đạo | các trục hiệu suất đo lường được | MetricSnapshot + CalculationRun |
+| 05-HD PL2 | sai khác số học trong ví dụ | không thể hard-code mù quáng | SourceIssue INC-01 + kiểm thử đơn vị + cổng phê duyệt |
+| QĐ39 Điều 11 | ngưỡng + điều kiện bổ sung | điểm ≠ xếp loại cuối | EligibilityCheck / ClassificationRuleVersion |
+| QĐ39 Điều 12 | tự đánh giá → thẩm định → quyết định có thẩm quyền | quy trình theo bước | Luồng đánh giá |
+| QĐ342 Điều 16 | vai trò/nhiệm vụ/phạm vi/phân loại/thời gian; least privilege; audit | uỷ quyền theo ngữ cảnh | PolicyDecision + AuditEvent |
+| QĐ342 Điều 23 | AI chỉ hỗ trợ, con người quyết định, không dùng AI công khai chưa phê duyệt cho dữ liệu được bảo vệ | ranh giới soạn thảo báo cáo | tính năng AI tùy chọn, phê duyệt bởi con người |
+| QĐ308 | từ điển dữ liệu canonical + MaNhiemVu/TenNhiemVu + SOR | ánh xạ canonical | DataDictionaryMapping |
+| QĐ607 | API theo scope OAuth 2.0 `client_credentials`/JWT | contract connector cụ thể | Adapter tích hợp |
+| HD07 + QĐ607 | Cách diễn đạt phiên bản/profile xác thực khác nhau giữa tầng LGSP và API cụ thể | không coi các cơ chế là thay thế lẫn nhau | Profile auth theo endpoint được phê duyệt + SourceDivergence DIV-01 |
+| QĐ348/HD07 | mục đích/phạm vi được phê duyệt, test→prod, >= cấp 3 cho hệ thống kết nối | cổng tích hợp/bảo mật | connector bị chặn cho tới khi phê duyệt |
+| NĐ85 | tiêu chí cấp độ HTTT chính thức | không thể tự chứng nhận cấp độ | cổng tuân thủ production |
+| NĐ63 | xử lý tài liệu bí mật nhà nước điện tử nghiêm ngặt | nội dung bí mật nằm ngoài hệ thống | ranh giới tham chiếu minh chứng |
+| NĐ165 | lịch sử truy cập, mã hóa, vòng đời | quản trị dữ liệu | audit/mã hóa/lưu giữ |
+| NĐ278 | quản trị chia sẻ dữ liệu | tích hợp vừa tổ chức vừa kỹ thuật | quản trị connector |
+| Excel danh mục công việc | mã/sản phẩm/điểm/công thức nháp thực tế | ứng viên seed/danh mục thực tế | nhập staging + phê duyệt bởi người phụ trách |
+| Excel cây phân công | bối cảnh tổ chức/phân công nháp thực tế | seed phát triển thực tế | staging/ánh xạ được phê duyệt |
+| NQ11 | mục tiêu chuyển đổi số chiến lược | bối cảnh dự án/OKR | trình bày chiến lược / dashboard chiến lược tương lai |
 
-## Rule
+## Quy tắc
 
-A feature can be marked **source-derived** only when a row like this can point to an actual source section/page. Otherwise mark it `[INFERENCE]` or `[TBD]`.
+Một tính năng chỉ được đánh dấu **source-derived** khi có một hàng như trên trỏ tới
+đúng mục/trang nguồn thực. Nếu không, đánh dấu `[INFERENCE]` hoặc `[TBD]`.

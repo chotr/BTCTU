@@ -35,7 +35,8 @@ export type CatalogItem = {
   sourceClass: "FACT" | "INFERENCE" | "TBD";
 };
 
-export type TaskStatus = "ASSIGNED" | "IN_PROGRESS" | "SUBMITTED" | "RETURNED" | "ACCEPTED";
+export type TaskStatus =
+  "ASSIGNED" | "IN_PROGRESS" | "SUBMITTED" | "RETURNED" | "ACCEPTED";
 
 export type TaskResult = {
   quantity: number;
@@ -59,8 +60,10 @@ export type Task = {
   result: TaskResult | null;
 };
 
-export type EvaluationStatus = "DRAFT" | "SUBMITTED" | "REVIEWED" | "APPROVED" | "LOCKED";
-export type Classification = "XUAT_SAC" | "TOT" | "HOAN_THANH" | "KHONG_HOAN_THANH";
+export type EvaluationStatus =
+  "DRAFT" | "SUBMITTED" | "REVIEWED" | "APPROVED" | "LOCKED";
+export type Classification =
+  "XUAT_SAC" | "TOT" | "HOAN_THANH" | "KHONG_HOAN_THANH";
 
 export type Evaluation = {
   id: string;
@@ -89,7 +92,7 @@ export type AuditEvent = {
 
 export type Period = { id: string; label: string; lockedAt: string | null };
 
-export type DemoState = {
+export type MockState = {
   departments: Department[];
   people: Person[];
   catalog: CatalogItem[];

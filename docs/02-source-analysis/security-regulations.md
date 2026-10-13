@@ -11,20 +11,20 @@
 | NĐ 165/2025/NĐ-CP | Quản trị dữ liệu gồm phân loại, truy cập/truy xuất, ghi nhận lịch sử, xác thực dữ liệu, mã hóa và vòng đời xóa/hủy |
 | NĐ 278/2025/NĐ-CP | Kết nối/chia sẻ dữ liệu bắt buộc giữa cơ quan trong hệ thống chính trị phải đúng mục đích/phạm vi, có metadata/catalog, kiểm soát truy cập, giám sát và quản trị chất lượng |
 
-## Kết luận cho prototype
+## Kết luận cho môi trường phát triển
 
-### FACT + constraint
+### FACT + ràng buộc
 
 - Nếu hệ thống thực tế **xử lý bí mật nhà nước**, tiêu chí NĐ85 dẫn tới phạm vi cấp 3 và quy trình bảo vệ tài liệu thay đổi đáng kể.
 - Nếu hệ thống kết nối LGSP theo QĐ348/HD07, các nguồn chuyên ngành còn yêu cầu hệ thống kết nối bảo đảm ATTT **tối thiểu cấp độ 3**.
 
-### INFERENCE / candidate baseline
+### INFERENCE / baseline đề xuất
 
-Prototype nên:
+Hệ thống nên:
 
 - dùng dữ liệu synthetic;
 - không chứa nội dung tài liệu bí mật nhà nước;
-- deny-by-default; RBAC + data scope + purpose;
+- mặc định từ chối (deny-by-default); RBAC + phạm vi dữ liệu + mục đích;
 - MFA cho privileged/sensitive access;
 - mã hóa in transit / at rest;
 - append-only/tamper-evident audit;
@@ -32,7 +32,7 @@ Prototype nên:
 - secure upload/reference thay vì biến app thành full DMS;
 - threat model, SAST/dependency scan, vulnerability management và incident runbook.
 
-### TBD / legal gate
+### TBD / cổng pháp lý
 
 **Không tuyên bố “hệ thống đã được xác định cấp độ 3”.** Cấp độ chính thức cần hồ sơ, phạm vi dữ liệu, chức năng, hạ tầng và phê duyệt của cấp có thẩm quyền.
 

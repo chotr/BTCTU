@@ -1,4 +1,4 @@
-# ADR-006 — Versioned, source-traceable rules
+# ADR-006 — Quy tắc theo phiên bản, truy vết được về nguồn
 
 **Status:** Accepted.
 

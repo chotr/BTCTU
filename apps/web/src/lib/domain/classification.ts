@@ -1,6 +1,6 @@
 import type { Classification, ConditionCheck, Evaluation } from "@/lib/types";
 
-/** QĐ39-style score bands. A band alone never finalizes a classification. */
+/** Dải điểm theo kiểu QĐ39. Chỉ riêng dải điểm không bao giờ quyết định xếp loại. */
 export const scoreBand = (score: number): Classification =>
   score >= 90
     ? "XUAT_SAC"
@@ -17,7 +17,7 @@ const RANK: Record<Classification, number> = {
   XUAT_SAC: 3,
 };
 
-/** Returns problems that block a proposed classification; empty = eligible. */
+/** Trả về các vấn đề chặn mức xếp loại đề xuất; rỗng = đủ điều kiện. */
 export function classificationEligibility(
   score: number,
   conditions: ConditionCheck[],
@@ -36,7 +36,7 @@ export function classificationEligibility(
   if (desired === "XUAT_SAC") {
     if (conditions.some((condition) => !condition.passed))
       problems.push(
-        "Mức Xuất sắc yêu cầu toàn bộ điều kiện minh họa đã được xác nhận.",
+        "Mức Xuất sắc yêu cầu toàn bộ điều kiện bắt buộc đã được xác nhận.",
       );
     if (quota === "UNKNOWN")
       problems.push(

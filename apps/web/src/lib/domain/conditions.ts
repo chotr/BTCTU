@@ -1,6 +1,6 @@
 import type { ConditionCheck } from "@/lib/types";
 
-/** Candidate mandatory-condition checklist (QĐ39 Điều 11 mapping still TBD). */
+/** Danh mục điều kiện bắt buộc đề xuất (ánh xạ QĐ39 Điều 11 vẫn còn TBD). */
 export const initialConditions = (): ConditionCheck[] => [
   {
     id: "compliance",
@@ -14,7 +14,7 @@ export const initialConditions = (): ConditionCheck[] => [
     id: "mandatory",
     label: "Đủ điều kiện bắt buộc của nhóm đối tượng",
     detail:
-      "Checklist ứng viên theo QĐ39 Điều 11; mapping thẩm quyền và điều kiện cụ thể còn TBD.",
+      "Checklist theo QĐ39 Điều 11; thẩm quyền và điều kiện cụ thể còn chờ xác nhận.",
     passed: false,
     blocking: true,
   },
@@ -22,7 +22,7 @@ export const initialConditions = (): ConditionCheck[] => [
     id: "outstanding",
     label: "Có kết quả nổi trội để xét Xuất sắc",
     detail:
-      "Điều kiện minh họa; xác nhận bằng nhận xét/minh chứng, không tự suy ra từ điểm ≥90.",
+      "Điều kiện cần xác nhận bằng nhận xét hoặc minh chứng, không tự suy ra từ điểm ≥90.",
     passed: false,
     blocking: false,
   },

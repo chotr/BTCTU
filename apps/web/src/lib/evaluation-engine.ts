@@ -1,6 +1,6 @@
 /**
- * Compatibility barrel for the evaluation engine. The implementation now lives
- * in focused domain modules (pure, side-effect free):
+ * Barrel tương thích cho engine đánh giá. Phần triển khai nay nằm trong các
+ * module domain chuyên biệt (thuần túy, không tác dụng phụ):
  *   - `@/lib/domain/scoring`        → calculateCandidate, roundScore, CANDIDATE_RULE
  *   - `@/lib/domain/classification` → scoreBand, classificationEligibility
  *   - `@/lib/domain/periods`        → taskInPeriod, evaluationTasks

@@ -16,7 +16,6 @@ const roleLabel: Record<string, string> = {
 export default function LoginPage() {
   const router = useRouter();
   const { user, people, departments, hydrated } = useApp();
-  const accounts = api.accounts();
   const [personId, setPersonId] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -44,14 +43,13 @@ export default function LoginPage() {
         </div>
 
         <Card className="p-5">
-          <h1 className="text-[16px] font-semibold">Đăng nhập bản demo</h1>
+          <h1 className="text-[16px] font-semibold">Chọn hồ sơ làm việc</h1>
           <p className="mt-1 text-[13px] leading-relaxed text-ink-2">
-            Chọn một tài khoản mẫu để xem giao diện và quyền thay đổi theo vai
-            trò.
+            Chọn tài khoản được cấp để mở không gian làm việc theo đúng vai trò.
           </p>
 
           <div className="mt-4 flex flex-col gap-2">
-            {accounts.map((u) => {
+            {api.accounts().map((u) => {
               const active = user?.id === u.id;
               return (
                 <button
@@ -91,7 +89,7 @@ export default function LoginPage() {
               Tài khoản nhân sự khác
             </summary>
             <div className="mt-3 space-y-3">
-              <Field label="Nhân sự mô phỏng">
+              <Field label="Nhân sự">
                 <Select
                   className="w-full"
                   value={personId}
@@ -99,8 +97,7 @@ export default function LoginPage() {
                 >
                   <option value="">Chọn nhân sự</option>
                   {people
-                    .filter((p) => !USERS.some((u) => u.id === p.id))
-                    .filter((p) => !accounts.some((u) => u.id === p.id))
+                    .filter((p) => !api.accounts().some((u) => u.id === p.id))
                     .map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.name} ·{" "}

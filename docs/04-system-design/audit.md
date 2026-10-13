@@ -1,29 +1,32 @@
-# Audit design
+# Thiết kế audit
 
-## FACT constraints
+## Ràng buộc FACT
 
-QĐ342 requires trace/logging for access, exploitation, update, approval, sharing and data processing, with ability to inspect, monitor and trace origins. Important-data changes must have protected logging.
+QĐ342 yêu cầu truy vết/ghi log cho truy cập, khai thác, cập nhật, phê duyệt, chia
+sẻ và xử lý dữ liệu, kèm khả năng kiểm tra, giám sát và truy vết nguồn gốc. Thay
+đổi dữ liệu quan trọng phải có ghi log được bảo vệ.
 
-QĐ308/QĐ348/HD07 also make source/scope/transaction trace important for integration.
+QĐ308/QĐ348/HD07 cũng làm cho việc truy vết nguồn/phạm vi/giao dịch trở nên quan
+trọng với tích hợp.
 
-## Candidate event coverage [INFERENCE]
+## Phạm vi sự kiện đề xuất [INFERENCE]
 
-Log at minimum:
+Ghi log tối thiểu:
 
-- authentication/MFA/failed privileged access;
-- sensitive record read;
-- create/update/delete/archive;
-- assign/reassign;
-- task result submit/accept/rework;
-- evaluation submit/review/return/final decision;
-- score calculation and manual override;
-- lock/reopen;
-- export/print;
-- permission/grant change;
-- connector request/status;
-- AI-assisted draft generation, if enabled.
+- xác thực/MFA/truy cập đặc quyền thất bại;
+- đọc bản ghi nhạy cảm;
+- tạo/cập nhật/xóa/lưu trữ;
+- phân công/phân công lại;
+- nộp/nghiệm thu/trả lại kết quả nhiệm vụ;
+- nộp/thẩm định/trả lại/quyết định cuối của đánh giá;
+- tính điểm và điều chỉnh thủ công;
+- khóa/mở lại;
+- xuất/in;
+- thay đổi quyền/cấp quyền;
+- yêu cầu/trạng thái connector;
+- sinh dự thảo có hỗ trợ AI, nếu được bật.
 
-## Event schema candidate
+## Schema sự kiện đề xuất
 
 ```text
 AuditEvent
@@ -41,19 +44,20 @@ AuditEvent
 - reason
 - request/correlationId
 - rule/catalog/version references
-- safe before/after diff or hashes
-- source IP/device info where permitted
+- safe before/after diff hoặc hash
+- thông tin IP/thiết bị nguồn khi được phép
 ```
 
-## Security rules
+## Quy tắc bảo mật
 
-- do not log secrets/tokens/file bodies;
-- minimize sensitive payload in logs;
-- append-only/tamper-evident storage;
-- restricted audit-reader permission;
-- centralized time/correlation IDs;
-- security monitoring can consume audit stream/read model.
+- không ghi log secrets/token/nội dung file;
+- giảm thiểu payload nhạy cảm trong log;
+- lưu trữ append-only/chống sửa đổi;
+- quyền đọc audit bị giới hạn;
+- thời gian/correlation ID tập trung;
+- giám sát bảo mật có thể tiêu thụ luồng/read model audit.
 
 ## TBD
 
-Retention duration, legal hold, exact authorized audit readers and any digital-signature/WORM requirement for production.
+Thời hạn lưu giữ, legal hold, người được phép đọc audit chính xác và mọi yêu cầu
+chữ ký số/WORM cho môi trường sản xuất.

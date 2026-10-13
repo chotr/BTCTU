@@ -1,52 +1,52 @@
-# Assignment and delivery boundary
+# Yêu cầu và ranh giới bàn giao
 
-## Original problem
+## Phát biểu bài toán
 
-The competency test asks the candidate to:
+Hệ thống phải:
 
-1. build quantitative KPI/OKR criteria for individuals and departments by month/quarter/year;
-2. build software for staff/department/position, tasks/KPI, result tracking, automatic scoring/classification, aggregation, permissions/approval, history, search/report/export, dashboard and draft reports/decisions;
-3. determine the information-system security level with legal/practical basis and propose security/cybersecurity/data/state-secret controls.
+1. xây dựng tiêu chí KPI/OKR định lượng cho cá nhân và đơn vị theo tháng/quý/năm;
+2. xây dựng phần mềm cho công chức/đơn vị/vị trí, nhiệm vụ/KPI, theo dõi kết quả, chấm điểm/xếp loại tự động, tổng hợp, phân quyền/phê duyệt, lịch sử, tìm kiếm/báo cáo/xuất, dashboard và dự thảo báo cáo/quyết định;
+3. xác định cấp độ bảo đảm an toàn thông tin của hệ thống, kèm căn cứ pháp lý/thực tiễn, và đề xuất kiểm soát an ninh/an toàn thông tin/dữ liệu/bí mật nhà nước.
 
-The candidate may add appropriate useful/creative functions.
+Có thể bổ sung các chức năng hữu ích khác nếu phục vụ quy trình nghiệp vụ.
 
-## Project goal
+## Mục tiêu dự án
 
-Build a **defensible prototype** and engineering dossier that can trace:
+Xây dựng một **hệ thống triển khai có thể truy vết** và hồ sơ kỹ thuật truy vết được:
 
 ```text
-source
-→ business fact/rule
-→ domain model
-→ architecture decision
-→ feature/test/demo
+nguồn
+→ dữ kiện/quy tắc nghiệp vụ
+→ mô hình domain
+→ quyết định kiến trúc
+→ tính năng/kiểm thử/nghiệm thu
 ```
 
-## MVP vertical slice
+## Quy trình đầu-cuối
 
-`organization → person/position → work catalog → assignment → result/product/evidenceRef → KPI → self evaluation → review → classification → final decision → lock → audit → dashboard/report`
+`tổ chức → nhân sự/vị trí → danh mục công việc → phân công → kết quả/sản phẩm/minh chứng → KPI → tự đánh giá → thẩm định → xếp loại → quyết định cuối → khóa → audit → dashboard/báo cáo`
 
-## Evidence convention
+## Quy ước căn cứ
 
-- `[FACT]`: source says it directly.
-- `[INFERENCE]`: candidate interpretation/design.
-- `[TBD]`: insufficient basis/needs authority.
-- `[SOURCE-INCONSISTENCY]`: source itself conflicts or appears arithmetically inconsistent.
+- `[FACT]`: nguồn nói trực tiếp.
+- `[INFERENCE]`: diễn giải thiết kế, cần phê duyệt.
+- `[TBD]`: thiếu căn cứ/cần cấp thẩm quyền.
+- `[SOURCE-INCONSISTENCY]`: bản thân nguồn mâu thuẫn hoặc có vẻ sai số học.
 
-## Delivery rules
+## Quy tắc bàn giao
 
-- Excel is operational/master-data draft unless approval/effect is proven.
-- A legal/security requirement is not “implemented” merely because a diagram mentions it.
-- Prototype uses synthetic data.
-- Real protected data/LGSP integration is out of MVP until approved.
-- Department/tập thể and person/cá nhân are separate evaluation subjects.
-- Source discrepancy and non-manager KPI formula must remain visible limitations until resolved.
+- Excel là bản nháp vận hành/dữ liệu chủ, trừ khi chứng minh được đã phê duyệt/có hiệu lực.
+- Một yêu cầu pháp lý/ATTT không được coi là “đã triển khai” chỉ vì một sơ đồ có nhắc tới.
+- Phát triển dùng dữ liệu seed có kiểm soát.
+- Dữ liệu thật được bảo vệ/tích hợp LGSP nằm ngoài phạm vi cho tới khi được phê duyệt.
+- Đơn vị/tập thể và cá nhân là hai đối tượng đánh giá riêng.
+- Sai khác nguồn và công thức KPI cho người không giữ chức vụ lãnh đạo phải tiếp tục là hạn chế hiển thị cho tới khi được giải quyết.
 
-## Definition of done for design phase
+## Định nghĩa hoàn thành cho giai đoạn thiết kế
 
-1. Core source files reviewed and registered.
-2. Source→rule→design traceability matrix exists.
-3. Business/domain/C4/ERD/security/integration diagrams exist.
-4. Known/unknown/source inconsistency register is current.
-5. Implementation plan has dependency gates.
-6. Demo story clearly distinguishes implemented, designed, and TBD capabilities.
+1. Các file nguồn cốt lõi đã được rà soát và đăng ký.
+2. Có ma trận truy vết nguồn→quy tắc→thiết kế.
+3. Có sơ đồ nghiệp vụ/domain/C4/ERD/bảo mật/tích hợp.
+4. Sổ đăng ký known/unknown/source inconsistency còn hiệu lực.
+5. Kế hoạch triển khai có các cổng phụ thuộc.
+6. Câu chuyện nghiệm thu phân biệt rõ năng lực đã triển khai, đã thiết kế và TBD.

@@ -2,11 +2,11 @@
 
 import { useCallback, useState } from "react";
 
-/** Async busy/loading helper for form submits and guarded actions. */
+/** Tiện ích bận/tải bất đồng bộ cho việc gửi biểu mẫu và thao tác có kiểm soát. */
 export function useBusy() {
   const [busy, setBusy] = useState(false);
   const run = useCallback(
-    async <T,>(fn: () => T | Promise<T>): Promise<T | undefined> => {
+    async <T>(fn: () => T | Promise<T>): Promise<T | undefined> => {
       setBusy(true);
       try {
         return await fn();

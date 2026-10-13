@@ -1,37 +1,37 @@
-# System context and containers
+# Bối cảnh hệ thống và container
 
-## Context [INFERENCE based on source roles]
+## Bối cảnh [INFERENCE dựa trên vai trò trong nguồn]
 
 ```mermaid
 flowchart LR
-  STAFF["Staff / member"]
-  HEAD["Department head / Chánh VP"]
-  AUTH["Competent authority"]
-  APP["BTCTU Task & Evaluation System"]
-  IDP["Identity Provider\nProduction TBD"]
-  TCXDD["HTTT TCXDĐ / LGSP\nFuture approved integration"]
-  DMS["Approved evidence/DMS\nFuture/TBD"]
+  STAFF["Công chức / thành viên"]
+  HEAD["Trưởng phòng / Chánh VP"]
+  AUTH["Cấp có thẩm quyền"]
+  APP["Hệ thống nhiệm vụ & đánh giá BTCTU"]
+  IDP["Nhà cung cấp định danh\nProduction TBD"]
+  TCXDD["HTTT TCXDĐ / LGSP\nTích hợp được phê duyệt trong tương lai"]
+  DMS["Kho minh chứng/DMS được phê duyệt\nTương lai/TBD"]
 
-  STAFF -->|"task result / self evaluation"| APP
-  HEAD -->|"assignment / review in authorized scope"| APP
-  AUTH -->|"final decision / reports"| APP
-  APP -. "authentication / MFA" .-> IDP
-  APP -. "scoped canonical data" .-> TCXDD
-  APP -. "authorized evidence reference" .-> DMS
+  STAFF -->|"kết quả nhiệm vụ / tự đánh giá"| APP
+  HEAD -->|"phân công / thẩm định trong phạm vi được uỷ quyền"| APP
+  AUTH -->|"quyết định cuối / báo cáo"| APP
+  APP -. "xác thực / MFA" .-> IDP
+  APP -. "dữ liệu canonical theo scope" .-> TCXDD
+  APP -. "tham chiếu minh chứng được uỷ quyền" .-> DMS
 ```
 
-## Application containers [candidate]
+## Container ứng dụng [đề xuất]
 
 ```mermaid
 flowchart LR
-  U["Authorized internal user"]
+  U["Người dùng nội bộ được phép"]
   WEB["Web UI\nNext.js"]
-  API["Application\nModular monolith"]
-  WORKER["Worker\nreports/jobs/outbox"]
-  DB[("Relational DB\ntransactional data + snapshots")]
-  AUD[("Audit store/read model")]
-  EVID["Evidence boundary\nsynthetic in demo; approved DMS/store later"]
-  CONN["Integration adapter\nfake in MVP"]
+  API["Ứng dụng\nModular monolith"]
+  WORKER["Worker\nbáo cáo/job/outbox"]
+  DB[("CSDL quan hệ\ndữ liệu giao dịch + snapshot")]
+  AUD[("Kho audit/read model")]
+  EVID["Ranh giới minh chứng\nphát triển: metadata; production: DMS/kho được phê duyệt"]
+  CONN["Adapter tích hợp\nmock adapter chờ API được phê duyệt"]
 
   U -->|"HTTPS"| WEB
   WEB --> API
@@ -42,9 +42,11 @@ flowchart LR
   API --> WORKER
 ```
 
-## Boundary notes
+## Ghi chú ranh giới
 
-- “Head” does not automatically equal final approver; authority is resolved by source rules.
-- Real state-secret documents are outside prototype scope.
-- Real external integration is disabled until production gates are met.
-- The container split is an engineering design; QĐ342 supplies architectural/security constraints, not these exact deployable components.
+- “Trưởng phòng” không tự động đồng nghĩa người phê duyệt cuối; thẩm quyền được xác
+  định theo quy tắc nguồn.
+- Tài liệu bí mật nhà nước nằm ngoài ranh giới ứng dụng.
+- Tích hợp ngoài thật bị tắt cho tới khi đạt các cổng production.
+- Việc tách container là thiết kế kỹ thuật; QĐ342 cung cấp ràng buộc kiến trúc/bảo
+  mật, không phải các thành phần triển khai chính xác này.

@@ -20,7 +20,7 @@ import {
   Select,
   TaskStatusBadge,
 } from "@/components/ui";
-import { CreateTask } from "./create-task-modal";
+import { CreateTask } from "@/components/tasks";
 
 export default function TasksPage() {
   const state = useApp();
@@ -40,13 +40,7 @@ export default function TasksPage() {
       (periodId === "ALL" ||
         t.periodId === periodId ||
         t.period === periods.find((p) => p.id === periodId)?.name) &&
-      (
-        t.title +
-        " " +
-        t.id +
-        " " +
-        personName(state, t.assigneeId)
-      )
+      (t.title + " " + t.id + " " + personName(state, t.assigneeId))
         .toLocaleLowerCase("vi")
         .includes(query.toLocaleLowerCase("vi")),
   );
@@ -206,4 +200,3 @@ export default function TasksPage() {
     </div>
   );
 }
-

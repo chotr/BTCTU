@@ -1,30 +1,36 @@
 "use client";
+
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { ArrowLeft, Paperclip, CheckCircle } from "@phosphor-icons/react";
+import { ArrowLeft } from "@phosphor-icons/react";
 import { useApp } from "@/lib/store";
 import { canReviewTask, canViewDepartment, canViewTask } from "@/lib/policy";
 import { personName } from "@/lib/shared/names";
-import { api, RESULT_QUALITY, taskPeriodLocked } from "@/lib/api";
+import { api, taskPeriodLocked } from "@/lib/api";
 import { useBusy } from "@/components/use-busy";
 import type { Task } from "@/lib/types";
-import { TASK_EDITABLE, TASK_IN_REVIEW, inGroup } from "@/lib/domain/workflow";
-import { fmtDate, fmtDateTime } from "@/lib/format";
+import { TASK_EDITABLE, inGroup } from "@/lib/domain/workflow";
+import { fmtDate } from "@/lib/format";
 import {
-  Badge,
   Button,
   Callout,
   Card,
   EmptyState,
   Field,
-  Input,
   Modal,
-  Progress,
   SectionHeader,
   Select,
   TaskStatusBadge,
 } from "@/components/ui";
+import {
+  ResultSection,
+  EvidenceSection,
+  ProgressCard,
+  TaskHistory,
+} from "@/components/tasks";
+
+type TaskAction = "return" | "accept" | "reassign" | "cancel";
 
 export default function TaskDetail() {
   const { id } = useParams<{ id: string }>();
@@ -42,63 +48,27 @@ export default function TaskDetail() {
     );
   return <TaskWorkspace key={task.id} task={task} />;
 }
+
 function TaskWorkspace({ task }: { task: Task }) {
   const state = useApp();
   const { user } = state;
   const locked = taskPeriodLocked(task);
-  const editable =
-    !locked && inGroup(TASK_EDITABLE, task.status);
+  const editable = !locked && inGroup(TASK_EDITABLE, task.status);
   const owner = user?.id === task.assigneeId;
   const reviewer = canReviewTask(user, task.departmentId) && !owner;
-  const [action, setAction] = useState<
-    "return" | "accept" | "reassign" | "cancel" | null
-  >(null);
+  const [action, setAction] = useState<TaskAction | null>(null);
   const [reason, setReason] = useState("");
   const [assignee, setAssignee] = useState("");
   const { busy, run } = useBusy();
-  const [quantity, setQuantity] = useState(
-    String(task.result?.quantity ?? task.plannedQuantity ?? 1),
-  );
-  const [product, setProduct] = useState(
-    task.result?.product ?? task.catalogSnapshot?.product ?? "",
-  );
-  const [quality, setQuality] = useState(
-    task.result?.qualityLevel ?? "Đáp ứng",
-  );
-  const [note, setNote] = useState(task.result?.note ?? "");
-  const [date, setDate] = useState(
-    (task.result?.completedAt ?? new Date().toISOString()).slice(0, 10),
-  );
-  const [progress, setProgress] = useState(String(task.progress));
-  const [synthetic, setSynthetic] = useState(false);
   const catalog =
     task.catalogSnapshot ??
     state.catalog.find((c) => c.id === task.catalogItemId);
-  async function save(submit: boolean) {
-    await run(() =>
-      api.saveResult(
-        task.id,
-        {
-          quantity: Number(quantity),
-          product,
-          qualityLevel: quality,
-          note,
-          completedAt: date,
-        },
-        submit,
-        task.revision ?? 0,
-      ),
-    );
-  }
   async function act() {
     await run(async () => {
       let ok = false;
-      if (action === "return")
-        ok = await api.returnTask(task.id, reason);
-      if (action === "accept")
-        ok = await api.acceptTask(task.id, reason);
-      if (action === "cancel")
-        ok = await api.cancelTask(task.id, reason);
+      if (action === "return") ok = await api.returnTask(task.id, reason);
+      if (action === "accept") ok = await api.acceptTask(task.id, reason);
+      if (action === "cancel") ok = await api.cancelTask(task.id, reason);
       if (action === "reassign")
         ok = await api.reassignTask(task.id, assignee, reason);
       if (ok) {
@@ -124,7 +94,7 @@ function TaskWorkspace({ task }: { task: Task }) {
       {locked && (
         <Callout title="Kỳ đã khóa — chỉ đọc" tone="neutral">
           Các kết quả, minh chứng và snapshot được bảo toàn. Mở lại kỳ phải có
-          lý do của lãnh đạo demo.
+          lý do của lãnh đạo.
         </Callout>
       )}
       <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
@@ -136,10 +106,7 @@ function TaskWorkspace({ task }: { task: Task }) {
             </p>
             <dl className="mt-4 grid grid-cols-1 gap-4 text-[13px] sm:grid-cols-2">
               {[
-                [
-                  "Người thực hiện",
-                  personName(state, task.assigneeId),
-                ],
+                ["Người thực hiện", personName(state, task.assigneeId)],
                 [
                   "Vị trí lúc phân công",
                   task.assignmentSnapshot?.positionTitle ??
@@ -183,235 +150,20 @@ function TaskWorkspace({ task }: { task: Task }) {
               </div>
             )}
           </Card>
-          <Card className="p-5">
-            <SectionHeader
-              title="Kết quả & sản phẩm"
-              hint={
-                owner && editable
-                  ? "Lưu nháp trước khi nộp để nghiệm thu."
-                  : "Kết quả ghi nhận của người thực hiện."
-              }
-            />
-            {owner && editable ? (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void save(true);
-                }}
-                className="space-y-4"
-              >
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <Field label="Số lượng hoàn thành">
-                    <Input
-                      required
-                      type="number"
-                      min="0.01"
-                      step="0.01"
-                      className="w-full"
-                      value={quantity}
-                      onChange={(e) => setQuantity(e.target.value)}
-                    />
-                  </Field>
-                  <Field label="Ngày hoàn thành">
-                    <Input
-                      type="date"
-                      required
-                      className="w-full"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                    />
-                  </Field>
-                </div>
-                <Field label="Sản phẩm / kết quả">
-                  <Input
-                    required
-                    className="w-full"
-                    value={product}
-                    onChange={(e) => setProduct(e.target.value)}
-                  />
-                </Field>
-                <Field label="Chất lượng tự ghi nhận">
-                  <Select
-                    className="w-full"
-                    value={quality}
-                    onChange={(e) => setQuality(e.target.value)}
-                  >
-                    {RESULT_QUALITY.map((q) => (
-                      <option key={q}>{q}</option>
-                    ))}
-                  </Select>
-                </Field>
-                <Field label="Diễn giải kết quả">
-                  <textarea
-                    className="control min-h-24 w-full py-2"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                  />
-                </Field>
-                <div className="flex flex-wrap justify-end gap-2">
-                  <Button disabled={busy} onClick={() => void save(false)}>
-                    Lưu nháp
-                  </Button>
-                  <Button type="submit" disabled={busy} variant="primary">
-                    Nộp nghiệm thu
-                  </Button>
-                </div>
-              </form>
-            ) : task.result ? (
-              <div className="space-y-2 text-[13px]">
-                <p className="font-semibold">{task.result.product}</p>
-                <p>
-                  {task.result.quantity} {task.result.unit || catalog?.unit} ·{" "}
-                  {task.result.qualityLevel}
-                </p>
-                <p className="whitespace-pre-wrap text-ink-2">
-                  {task.result.note}
-                </p>
-                <p className="text-xs text-ink-3">
-                  Ngày nộp:{" "}
-                  {task.result.submittedAt
-                    ? fmtDateTime(task.result.submittedAt)
-                    : "Bản nháp"}
-                </p>
-              </div>
-            ) : (
-              <EmptyState
-                title="Chưa có kết quả"
-                hint="Người thực hiện sẽ nhập sản phẩm và minh chứng tại đây."
-              />
-            )}
-            {reviewer &&
-              !locked &&
-              inGroup(TASK_IN_REVIEW, task.status) && (
-                <div className="mt-4 flex flex-wrap justify-end gap-2">
-                  <Button onClick={() => setAction("return")}>
-                    Yêu cầu chỉnh sửa
-                  </Button>
-                  <Button
-                    variant="primary"
-                    icon={<CheckCircle size={16} />}
-                    onClick={() => setAction("accept")}
-                  >
-                    Nghiệm thu
-                  </Button>
-                </div>
-              )}
-          </Card>
-          <Card className="p-5">
-            <h2 className="mb-2 text-sm font-semibold">Minh chứng</h2>
-            <p className="mb-3 text-xs leading-relaxed text-ink-3">
-              Demo chỉ lưu tên và metadata, không đọc/tải nội dung tệp. Không sử
-              dụng tài liệu thật hoặc dữ liệu bí mật.
-            </p>
-            {task.evidence.length ? (
-              <ul className="space-y-2">
-                {task.evidence.map((e) => (
-                  <li
-                    key={e.id}
-                    className="flex flex-wrap items-center gap-2 rounded-ctl bg-fill p-3 text-xs"
-                  >
-                    <Paperclip size={17} />
-                    <span className="min-w-0 flex-1 break-all">
-                      {e.name}
-                      <span className="mt-1 block text-ink-3">
-                        {e.size} · {fmtDate(e.uploadedAt)} · chỉ metadata
-                      </span>
-                    </span>
-                    <Badge>{e.classification}</Badge>
-                    {owner && editable && (
-                      <Button
-                        variant="ghost"
-                        onClick={() =>
-                          api.removeEvidence(task.id, e.id)
-                        }
-                      >
-                        Gỡ
-                      </Button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="py-3 text-xs text-ink-3">Chưa có minh chứng.</p>
-            )}
-            {owner && editable && (
-              <div className="mt-4 space-y-3">
-                <label className="flex items-start gap-2 text-xs">
-                  <input
-                    type="checkbox"
-                    checked={synthetic}
-                    onChange={(e) => setSynthetic(e.target.checked)}
-                  />
-                  Tôi xác nhận tệp được chọn là dữ liệu giả lập, không chứa
-                  thông tin thật.
-                </label>
-                <Field label="Chọn tệp mẫu (tối đa 20 MB)">
-                  <input
-                    type="file"
-                    disabled={!synthetic}
-                    className="w-full text-xs file:mr-3 file:rounded-ctl file:bg-fill-2 file:px-3 file:py-2"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (file)
-                        await api.addEvidence(task.id, {
-                          name: file.name,
-                          sizeBytes: file.size,
-                          kind: file.type || "FILE",
-                          classification: "Nội bộ",
-                          synthetic,
-                        });
-                      e.target.value = "";
-                    }}
-                  />
-                </Field>
-              </div>
-            )}
-          </Card>
+          <ResultSection
+            task={task}
+            unit={catalog?.unit}
+            owner={owner}
+            editable={editable}
+            locked={locked}
+            reviewer={reviewer}
+            onAction={setAction}
+          />
+          <EvidenceSection task={task} owner={owner} editable={editable} />
         </div>
         <div className="space-y-4">
-          <Card className="p-5">
-            <div className="mb-3 flex justify-between text-sm">
-              <h2 className="font-semibold">Tiến độ</h2>
-              <span className="tabular-nums">{task.progress}%</span>
-            </div>
-            <Progress value={task.progress} />
-            {owner && editable && (
-              <div className="mt-4 space-y-2">
-                <Field label="Cập nhật tiến độ (%)">
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={progress}
-                    onChange={(e) => setProgress(e.target.value)}
-                    className="w-full"
-                  />
-                </Field>
-                <Button
-                  onClick={() =>
-                    api.updateProgress(task.id, Number(progress))
-                  }
-                >
-                  Lưu tiến độ
-                </Button>
-              </div>
-            )}
-          </Card>
-          <Card className="p-5">
-            <h2 className="mb-4 text-sm font-semibold">Lịch sử nhiệm vụ</h2>
-            <ol className="space-y-4">
-              {task.history.toReversed().map((h) => (
-                <li key={h.id} className="text-xs">
-                  <p className="font-semibold">{h.action}</p>
-                  <p className="mt-1 leading-relaxed text-ink-2">{h.note}</p>
-                  <p className="mt-1 text-ink-3">
-                    {personName(state, h.actorId) ?? h.actorId}{" "}
-                    · {fmtDateTime(h.at)}
-                  </p>
-                </li>
-              ))}
-            </ol>
-          </Card>
+          <ProgressCard task={task} owner={owner} editable={editable} />
+          <TaskHistory task={task} state={state} />
         </div>
       </div>
       <Modal

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { getState, resetDemo, setState, setUser } from "@/lib/store";
-import { USERS } from "@/lib/mock/data";
+import { getState, resetWorkspace, setState, setUser } from "@/lib/store";
+import { USERS } from "@/lib/mock";
 import { taskActions } from "@/lib/tasks";
 import { evaluationActions as ev, evaluationTotal } from "@/lib/evaluation";
 import {
@@ -18,7 +18,7 @@ import { csvCell, scopedData } from "@/lib/exports";
 import { simulateSync } from "@/lib/integration";
 const asUser = (id: string) => setUser(USERS.find((u) => u.id === id)!);
 beforeEach(() => {
-  resetDemo();
+  resetWorkspace();
   asUser("u-leader");
 });
 async function newWork() {
@@ -338,7 +338,7 @@ describe("master data and integration", () => {
     const before = structuredClone(
       getState().tasks.find((t) => t.id === id)!.catalogSnapshot,
     );
-    const version = masterActions.duplicateVersion("v1.1", "v2-demo");
+    const version = masterActions.duplicateVersion("v1.1", "v2-test");
     const item = getState().catalog.find((c) => c.version === version)!;
     masterActions.saveCatalog({ ...item, name: "Tên phiên bản mới" });
     masterActions.publishVersion(version, "Thử nghiệm công bố");

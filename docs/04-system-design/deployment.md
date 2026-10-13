@@ -1,71 +1,42 @@
-# Deployment architecture — prototype and production target
+# Kiến trúc triển khai
 
-## Decision [INFERENCE]
+## Mô hình
 
-The competency-test prototype is an **internal web application with a separate
-web frontend and a modular-monolith backend API**.
-
-This is an engineering choice for the test, not a requirement stated by the
-regulations.
-
-## Prototype / demo target
-
-Current candidate stack:
+Web và API là hai đơn vị triển khai độc lập. Backend giữ cấu trúc modular monolith để giao dịch, phân quyền và audit nhất quán.
 
 ```mermaid
 flowchart LR
-  B["Browser"] -->|"HTTPS"| WEB["Next.js Web"]
-  WEB -->|"REST / OpenAPI"| API["Hono API Worker\nmodular-monolith backend"]
-  API --> D1[("Cloudflare D1\nprototype relational DB")]
-  API --> R2["Private R2\nsynthetic evidence only"]
-  API --> Q["Cloudflare Queues\nbackground jobs"]
-  API --> AUD["Audit trail"]
-  ACCESS["Cloudflare Access / test identity"] --> WEB
-  ACCESS --> API
+  U["Người dùng được cấp quyền"] --> EDGE["TLS / SSO / MFA / access policy"]
+  EDGE --> WEB["Next.js Web"]
+  WEB -->|"REST / OpenAPI"| API["Express API (Node)"]
+  API --> DB[("Relational DB")]
+  API --> OBJ["Kho tài liệu / DMS"]
+  API --> Q["Job nền"]
+  API --> AUD["Audit / Logs / Traces"]
+  API --> CONN["Vùng tích hợp kiểm soát"]
+  DB --> DR["Backup / Restore / DR"]
 ```
 
-Prototype constraints:
+## Môi trường
 
-- synthetic/demo data only;
-- no real LGSP/TCXDĐ connection;
-- no real personnel, BVCTNB, health or state-secret content;
-- Cloudflare is a **prototype deployment choice**, not a claim that the final
-  production system is approved to run there.
+| Môi trường | Dữ liệu | Danh tính | Mục đích |
+|---|---|---|---|
+| Local | dữ liệu khởi tạo cục bộ | adapter `x-dev-user-id` | phát triển và unit/contract test |
+| Staging | dữ liệu tổng hợp hoặc đã che theo phê duyệt | IdP/access token staging | tích hợp, E2E, UAT |
+| Production | dữ liệu thật sau phê duyệt | IdP/access token production | vận hành chính thức |
 
-## Production target — platform TBD
+Không dùng chung database, bucket, secret, audience hoặc policy truy cập giữa các môi trường.
 
-At production-design level the architecture requirement is platform-neutral:
+## Cổng production
 
-```mermaid
-flowchart LR
-  U["Authorized internal clients"] --> EDGE["Approved access / TLS / identity boundary"]
-  EDGE --> WEB["BTCTU Web"]
-  WEB --> API["BTCTU Backend\nmodular monolith"]
-  API --> DB[("Approved relational DB")]
-  API --> OBJ["Approved evidence / DMS boundary"]
-  API --> AUD["Central audit / monitoring"]
-  API --> CONN["Controlled integration zone"]
-  CONN -. "approved route" .-> LGSP["LGSP / HTTT TCXDĐ"]
-  DB --> DR["Approved backup / DR"]
-```
+- phê duyệt cấp độ HTTT và phân loại dữ liệu;
+- xác minh access token đầy đủ signature, issuer và audience;
+- repository bền vững, migration có rollback, backup/restore đã diễn tập;
+- kho tài liệu/DMS và retention được phê duyệt;
+- quyền theo action + resource + scope + context ở server;
+- giới hạn tần suất, giới hạn kích thước yêu cầu, CSP, allowlist CORS;
+- giám sát, cảnh báo, runbook sự cố và RPO/RTO;
+- security test và operational sign-off;
+- endpoint, scope, network route và credential cho LGSP/HTTT TCXDĐ.
 
-Possible implementation paths after approval may include Cloudflare-based
-components or an approved self-hosted/cloud infrastructure. The application/domain
-design must not depend on Cloudflare being accepted for production.
-
-## Production gates
-
-Before selecting the final hosting stack:
-
-- formal HTTT level assessment/approval;
-- data inventory and classification;
-- approved network/hardware/cloud location;
-- state-secret handling boundary;
-- identity/MFA and privileged-access design;
-- database backup/restore, RPO/RTO and DR requirements;
-- evidence/document-storage approval;
-- LGSP/TCXDĐ integration purpose, scope, network and credentials;
-- security testing and operational approval.
-
-Until those gates are resolved, any production platform diagram is a **target
-architecture**, not an assertion of legal/security approval.
+API là Express trên Node sau reverse proxy; domain/application contract vẫn có thể chạy trên hạ tầng được phê duyệt khác.

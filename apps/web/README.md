@@ -1,31 +1,52 @@
-# BTCTU Web — bản UI mock-first
+# BTCTU Web
 
-Web quản lý nhiệm vụ & đánh giá cho Ban Tổ chức Tỉnh ủy. Bản này **chưa nối API**:
+Giao diện quản lý nhiệm vụ, KPI, đánh giá và xếp loại.
 
-- mọi dữ liệu nằm ở `src/lib/mock/` (dữ liệu minh họa, không dùng dữ liệu thật);
-- lớp nghiệp vụ ở `src/lib/api.ts` mô phỏng hợp đồng API tương lai (mỗi hàm là một async operation);
-- sau khi có backend Hono, thay phần gọi trong `api.ts` bằng `fetch`, giữ nguyên màn hình.
+## Nguồn dữ liệu
 
-## Chạy
+Application layer đi qua `src/lib/api.ts`. Trong giai đoạn chờ API hoàn chỉnh, adapter cục bộ dùng dữ liệu khởi tạo tại `src/lib/mock/` và lưu trạng thái phiên trong `localStorage`.
 
-```bash
-npm install
-npm run dev      # http://localhost:3000
-npm run build    # kiểm tra build production
+Ranh giới chuyển đổi đã được chuẩn bị:
+
+- `src/lib/runtime-config.ts` quản lý môi trường và URL API;
+- `src/lib/http-client.ts` chuẩn hóa timeout, lỗi và request ID;
+- component không đọc trực tiếp endpoint;
+- mock không được xem là nguồn dữ liệu chính thức hoặc cơ chế lưu trữ production.
+
+Khi API sẵn sàng, chuyển `NEXT_PUBLIC_DATA_SOURCE=api` và thay implementation trong application layer; không đưa logic gọi HTTP vào component.
+
+## Chạy local
+
+```powershell
+pnpm install --frozen-lockfile
+Copy-Item .env.example .env.local
+pnpm dev
 ```
 
-Đăng nhập demo: chọn một trong 3 tài khoản mẫu ở màn hình đăng nhập để thấy UI đổi theo quyền.
+Ứng dụng chạy tại `http://localhost:3000`.
 
-## Ngôn ngữ thiết kế
+```bash
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm test:e2e
+```
 
-- phẳng, nền `#F2F4F7`; card trắng tách bằng **bóng line mỏng**, không dùng border;
-- bo góc rất nhẹ: card 6px, control 4px, badge pill;
-- một accent xanh đậm duy nhất, chỉ thêm 3 màu ngữ nghĩa (ok/warn/danger);
-- font Be Vietnam Pro (tải qua `next/font/google` — build cần mạng lần đầu).
+## Biến môi trường
 
-## Ghi chú nghiệp vụ
+| Biến | Dev mặc định | Mục đích |
+|---|---|---|
+| `NEXT_PUBLIC_DATA_SOURCE` | `local` | `local` trong giai đoạn chờ API; `api` khi adapter API hoàn tất |
+| `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8787` | URL gốc của REST API |
+| `NEXT_PUBLIC_APP_ENV` | `development` | `development`, `staging` hoặc `production` |
 
-- Các con số KPI trong màn hình đánh giá lấy từ ví dụ của 05-HD/TU, gồm cả mâu thuẫn số học **INC-01** (ghi rõ, không tự sửa nguồn).
-- Công thức A/B/C/D áp dụng cho lãnh đạo/quản lý; công chức không giữ chức vụ dùng công thức ứng viên (INC-02), có gắn nhãn rõ ràng.
-- Toàn bộ trạng thái và nhãn phần mềm là lựa chọn thiết kế của ứng viên, không phải từ ngữ văn bản quy phạm.
+Không đặt secret vào biến `NEXT_PUBLIC_*`; các biến này được gửi tới trình duyệt.
 
+## Điều kiện đưa lên production
+
+- cấu hình `NEXT_PUBLIC_DATA_SOURCE=api`;
+- xác thực qua IdP/access token đã được phê duyệt;
+- API thực thi phân quyền phía server;
+- dữ liệu được lưu bằng kho bền vững và có migration/backup;
+- hoàn tất thẩm định ATTT, CORS, CSP, giám sát và runbook khôi phục;
+- phê duyệt các quy tắc nghiệp vụ còn trạng thái `CANDIDATE`/TBD.

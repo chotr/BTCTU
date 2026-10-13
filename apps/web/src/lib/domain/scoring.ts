@@ -1,15 +1,15 @@
 import type { AxisSnapshot, CalculationRun, Task } from "@/lib/types";
 import { qualityScore } from "@/lib/domain/quality";
 
-/** Candidate rule version identifier shown in snapshots/UI. */
+/** Mã định danh phiên bản quy tắc đề xuất, hiển thị trong snapshot/giao diện. */
 export const CANDIDATE_RULE = "BTCTU-CANDIDATE-2026.1";
 
 export const roundScore = (value: number) =>
   Math.round((value + Number.EPSILON) * 100) / 100;
 
 /**
- * Candidate interpretation only: the source does not prescribe these per-task
- * weights. Pure function — no state, no side effects.
+ * Chỉ là cách diễn giải đề xuất: nguồn không quy định các trọng số theo từng
+ * nhiệm vụ này. Hàm thuần túy — không trạng thái, không tác dụng phụ.
  */
 export function calculateCandidate(
   tasks: Task[],
@@ -83,20 +83,20 @@ export function calculateCandidate(
       label: "Khối lượng nghiệm thu",
       value: roundScore((quantity / count) * 100),
       detail:
-        "Ứng viên: bình quân tỷ lệ khối lượng nghiệm thu/kế hoạch từng việc (tối đa 100%); việc chưa nghiệm thu = 0.",
+        "Bình quân tỷ lệ khối lượng nghiệm thu/kế hoạch từng việc (tối đa 100%); việc chưa nghiệm thu = 0.",
     },
     {
       code: "B",
       label: "Chất lượng sản phẩm",
       value: roundScore(quality / count),
       detail:
-        "Ứng viên: Đáp ứng tốt = 100; Đáp ứng = 80; Cần hoàn thiện = 50; Không đáp ứng = 0. Chưa nghiệm thu = 0.",
+        "Đáp ứng tốt = 100; Đáp ứng = 80; Cần hoàn thiện = 50; Không đáp ứng = 0. Chưa nghiệm thu = 0.",
     },
     {
       code: "C",
       label: "Tiến độ hoàn thành",
       value: roundScore((timely / count) * 100),
-      detail: `Ứng viên: ${timely}/${tasks.length} nhiệm vụ nghiệm thu hoàn thành trước hết ngày đến hạn; thiếu ngày hoàn thành dùng ngày nộp.`,
+      detail: `${timely}/${tasks.length} nhiệm vụ nghiệm thu hoàn thành trước hết ngày đến hạn; thiếu ngày hoàn thành dùng ngày nộp.`,
     },
   ];
   if (leadershipScore !== undefined)
@@ -105,7 +105,7 @@ export function calculateCandidate(
       label: "Lãnh đạo, chỉ đạo, điều hành",
       value: leadershipScore,
       detail:
-        "Điểm nhập có trách nhiệm giải trình; chỉ dùng trong công thức ứng viên lãnh đạo/tập thể.",
+        "Điểm nhập có trách nhiệm giải trình; chỉ dùng trong công thức lãnh đạo/tập thể đang chờ phê duyệt.",
     });
   const average = axes.reduce((sum, axis) => sum + axis.value, 0) / axes.length;
   const calculatedTotal = roundScore(generalScore + average * 0.7);

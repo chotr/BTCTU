@@ -1,15 +1,15 @@
-import { USERS } from "./mock/data";
-import type { DemoUser, Department, Person } from "./types";
+import { USERS } from "./mock";
+import type { AppUser, Department, Person } from "./types";
 
 type IdentityState = {
   people: Person[];
   departments: Department[];
 };
 
-export function resolveDemoUser(
+export function resolveAppUser(
   state: IdentityState,
   userId: string | null | undefined,
-): DemoUser | null {
+): AppUser | null {
   if (!userId) return null;
   const person = state.people.find((row) => row.id === userId);
   const preset = USERS.find((row) => row.id === userId);
@@ -30,6 +30,6 @@ export function resolveDemoUser(
   };
 }
 
-export function demoAccounts(): DemoUser[] {
+export function demoAccounts(): AppUser[] {
   return USERS;
 }

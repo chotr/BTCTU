@@ -6,12 +6,10 @@ import {
   CheckCircle,
   ClipboardText,
   FileText,
-  GearSix,
   House,
   Kanban,
   List,
   ListMagnifyingGlass,
-  PlugsConnected,
   SignOut,
   X,
 } from "@phosphor-icons/react";
@@ -20,8 +18,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { api } from "@/lib/api";
 import { dismissToast, useApp } from "@/lib/store";
-import { canManage, canViewAudit } from "@/lib/policy";
+import { canViewAudit } from "@/lib/policy";
 import { scopedData } from "@/lib/access";
+import { runtimeLabel } from "@/lib/runtime-config";
 import { Avatar, Badge, Button, Callout, Modal } from "./ui";
 
 const groups = [
@@ -47,8 +46,6 @@ const groups = [
     items: [
       { href: "/reports", label: "Báo cáo", icon: FileText },
       { href: "/audit", label: "Nhật ký hoạt động", icon: ListMagnifyingGlass },
-      { href: "/integration", label: "Kết nối dữ liệu", icon: PlugsConnected },
-      { href: "/settings", label: "Thiết lập demo", icon: GearSix },
     ],
   },
 ];
@@ -76,11 +73,9 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
               .filter((item) =>
                 item.href === "/audit"
                   ? canViewAudit(user)
-                  : item.href === "/integration"
-                    ? canManage(user)
-                    : item.href === "/approvals"
-                      ? user?.role !== "cong_chuc"
-                      : true,
+                  : item.href === "/approvals"
+                    ? user?.role !== "cong_chuc"
+                    : true,
               )
               .map((item) => {
                 const active =
@@ -147,6 +142,11 @@ export default function Shell({ children }: { children: ReactNode }) {
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col bg-surface shadow-card lg:flex print:hidden">
         <Brand />
         <Navigation />
+        <p className="px-5 pb-4 text-[11px] leading-relaxed text-ink-3">
+          {runtimeLabel()}
+          <br />
+          Phiên bản 1.0
+        </p>
       </aside>
       <div className="min-w-0 lg:pl-60 print:pl-0">
         <header className="sticky top-0 z-20 flex min-h-16 items-center justify-between gap-3 bg-surface px-4 shadow-card sm:px-6 print:hidden">
@@ -163,7 +163,7 @@ export default function Shell({ children }: { children: ReactNode }) {
           </div>
           <details className="relative">
             <summary className="flex cursor-pointer list-none items-center gap-2 rounded-ctl p-1.5 hover:bg-fill">
-              <Avatar name={user?.name ?? "Demo"} />
+              <Avatar name={user?.name ?? ""} />
               <span className="hidden text-[13px] font-medium sm:inline">
                 {user?.name}
               </span>

@@ -1,35 +1,35 @@
-# Integration future-state
+# Tích hợp trạng thái tương lai
 
-## Sources
+## Nguồn
 
-- QĐ308 — canonical terms/metadata/SOR.
-- QĐ607 — concrete OAuth 2.0 `client_credentials`/JWT API contract and scoped data.
-- QĐ348 — sharing levels, purpose/scope/approval and authoritative-source principles.
-- HD07 — LGSP integration process, X-Request-ID/signature, test→prod, API lifecycle/security.
-- NĐ278 — broader mandatory data-sharing governance.
+- QĐ308 — thuật ngữ/metadata/SOR canonical.
+- QĐ607 — contract API cụ thể: OAuth 2.0 `client_credentials`/JWT và dữ liệu theo scope.
+- QĐ348 — mức chia sẻ, mục đích/phạm vi/phê duyệt và nguyên tắc nguồn chủ quản.
+- HD07 — quy trình tích hợp LGSP, X-Request-ID/chữ ký, test→prod, vòng đời/bảo mật API.
+- NĐ278 — quản trị chia sẻ dữ liệu bắt buộc ở phạm vi rộng hơn.
 
-## Candidate architecture [INFERENCE]
+## Kiến trúc đề xuất [INFERENCE]
 
 ```mermaid
 sequenceDiagram
-  participant A as BTCTU App
+  participant A as Ứng dụng BTCTU
   participant C as Connector / ACL
-  participant G as LGSP / approved platform
-  participant S as Authoritative System
+  participant G as LGSP / nền tảng được phê duyệt
+  participant S as Hệ thống chủ quản
 
-  A->>C: Read request + purpose + scope
-  C->>C: Policy + canonical mapping
-  C->>G: OAuth token / signed request / X-Request-ID
-  G->>S: Authorized lookup
-  S-->>G: Scoped source data
-  G-->>C: Response + trace
-  C->>C: Validate + map + audit
-  C-->>A: Minimal approved local DTO
+  A->>C: Yêu cầu đọc + mục đích + phạm vi
+  C->>C: Policy + ánh xạ canonical
+  C->>G: OAuth token / yêu cầu có ký / X-Request-ID
+  G->>S: Tra cứu được uỷ quyền
+  S-->>G: Dữ liệu nguồn theo scope
+  G-->>C: Phản hồi + trace
+  C->>C: Kiểm tra + ánh xạ + audit
+  C-->>A: DTO cục bộ tối thiểu đã được phê duyệt
 ```
 
-## MVP
+## Adapter phát triển (mock)
 
-Use a fake connector implementing the same port:
+Dùng một connector giả hiện thực cùng port:
 
 ```text
 PersonnelDirectoryPort
@@ -37,65 +37,67 @@ PersonnelDirectoryPort
   listPeopleByDepartment(departmentExternalId)
 ```
 
-The fake returns synthetic data. No real credentials/endpoints in demo.
+Adapter phát triển trả về dữ liệu có kiểm soát. Không dùng credentials/endpoint thật
+ở môi trường cục bộ.
 
-## Production adapter requirements
+## Yêu cầu adapter sản xuất
 
-- select authentication/authorization strictly from the approved endpoint and
-  platform contract; do not treat the mechanisms listed by QĐ607 and HD07 as
-  interchangeable;
-- for the QĐ607 APIs: OAuth 2.0 `client_credentials`, Consumer Key/Secret,
-  JWT access token and Bearer authorization;
-- for an LGSP connection: implement only the approved HD07 mechanism/profile
-  (which may involve OAuth 2.1, OIDC 2.0, SAML2, JWT Federation or mTLS);
-- correlation/request ID; `X-Request-ID` for LGSP flow.
-- signature/certificate where applicable.
-- schema/API version registry.
-- 401/403/token-expiry handling.
-- HTTPS with TLS 1.2 or newer for the QĐ607 contract.
-- never put personal data in a query string.
-- never log access tokens, passwords or personal data.
-- scope/purpose allowlist.
-- mapping registry aligned to QĐ308.
-- reconciliation/error queue and audit.
-- rate limit/retry without uncontrolled retry loops.
-- test environment before production.
-- credential rotation and revocation.
+- chọn xác thực/uỷ quyền đúng theo endpoint và contract nền tảng đã được phê duyệt;
+  không coi các cơ chế mà QĐ607 và HD07 liệt kê là thay thế lẫn nhau;
+- với API theo QĐ607: OAuth 2.0 `client_credentials`, Consumer Key/Secret, JWT access
+  token và Bearer authorization;
+- với kết nối LGSP: chỉ hiện thực cơ chế/profile HD07 đã được phê duyệt (có thể gồm
+  OAuth 2.1, OIDC 2.0, SAML2, JWT Federation hoặc mTLS);
+- correlation/request ID; `X-Request-ID` cho luồng LGSP;
+- chữ ký/chứng chỉ khi áp dụng;
+- sổ đăng ký phiên bản schema/API;
+- xử lý 401/403/hết hạn token;
+- HTTPS với TLS 1.2 trở lên cho contract QĐ607;
+- không bao giờ đặt dữ liệu cá nhân vào query string;
+- không bao giờ ghi log access token, mật khẩu hoặc dữ liệu cá nhân;
+- allowlist phạm vi/mục đích;
+- sổ đăng ký ánh xạ khớp QĐ308;
+- hàng đợi đối soát/lỗi và audit;
+- rate limit/retry không tạo vòng lặp retry mất kiểm soát;
+- môi trường test trước production;
+- luân chuyển và thu hồi credential.
 
-## SOURCE DIVERGENCE — authentication contract
+## SOURCE DIVERGENCE — contract xác thực
 
-QĐ607 specifies **OAuth 2.0 `client_credentials`** for its concrete API
-contract. HD07 describes a broader LGSP authentication/integration layer that
-supports **OAuth 2.1, OIDC 2.0, SAML2, JWT Federation and mTLS**, together with
-Bearer authorization and the applicable request-tracing/signature controls.
+QĐ607 quy định **OAuth 2.0 `client_credentials`** cho contract API cụ thể của nó.
+HD07 mô tả một tầng xác thực/tích hợp LGSP rộng hơn hỗ trợ **OAuth 2.1, OIDC 2.0,
+SAML2, JWT Federation và mTLS**, cùng Bearer authorization và các kiểm soát
+truy vết yêu cầu/chữ ký áp dụng.
 
-These statements are not collapsed into a single generic “OAuth2” rule. They
-describe different contract layers and are not assumed to be interchangeable.
-The production connector must follow the exact version, profile and mechanism
-approved for its endpoint/platform.
+Các phát biểu này không được gộp thành một quy tắc “OAuth2” chung. Chúng mô tả các
+tầng contract khác nhau và không được mặc định là thay thế lẫn nhau. Connector sản
+xuất phải theo đúng phiên bản, profile và cơ chế được phê duyệt cho endpoint/nền
+tảng của nó.
 
-## API lifecycle
+## Vòng đời API
 
-HD07 states structural API changes use versioning and old version is maintained in parallel for a transition period (source specifies minimum 180 days). Connector code must therefore be tolerant of parallel contract versions.
+HD07 nêu các thay đổi API mang tính cấu trúc dùng versioning và phiên bản cũ được
+duy trì song song trong một giai đoạn chuyển tiếp (nguồn quy định tối thiểu 180
+ngày). Do đó code connector phải chịu được các phiên bản contract song song.
 
-## Data ownership
+## Quyền sở hữu dữ liệu
 
-Do not copy authoritative person/organization data as if locally owned. Also
-do not assign one source to the whole `Person` aggregate by default: the
-authoritative source may differ by field or dataset.
+Không sao chép dữ liệu nhân sự/tổ chức chủ quản như thể sở hữu cục bộ. Cũng không
+gán một nguồn cho toàn bộ aggregate `Person` theo mặc định: nguồn chủ quản có thể
+khác nhau theo từng trường hoặc tập dữ liệu.
 
-Local projections should therefore carry field/dataset-level provenance, for
-example:
+Do đó projection cục bộ nên mang xuất xứ ở mức trường/tập dữ liệu, ví dụ:
 
 `field/dataset, sourceSystem, externalId, syncedAt/sourceVersion, mappingVersion`.
 
-Local app owns task/evaluation records it creates; external master data remains source-owned.
+Ứng dụng cục bộ sở hữu các bản ghi nhiệm vụ/đánh giá mà nó tạo; dữ liệu master từ
+ngoài vẫn thuộc nguồn chủ quản.
 
-## Gate
+## Cổng
 
-Real integration remains OFF until:
+Tích hợp thật vẫn TẮT cho tới khi:
 
-- connection/purpose/scope approved;
-- exact API subset confirmed;
-- network/cert/credentials supplied through approved mechanism;
-- ATTT/data classification review passed.
+- kết nối/mục đích/phạm vi được phê duyệt;
+- xác nhận tập API con chính xác;
+- mạng/chứng chỉ/credentials được cấp qua cơ chế được phê duyệt;
+- vượt qua rà soát ATTT/phân loại dữ liệu.

@@ -1,28 +1,31 @@
-# Task / product / evidence model
+# Mô hình nhiệm vụ / sản phẩm / minh chứng
 
-## Source-backed concepts
+## Khái niệm có căn cứ nguồn
 
 ### FACT
 
-From QĐ01:
+Từ QĐ01:
 
-- department heads / Chánh Văn phòng have responsibility to assign concrete work to members linked to job positions.
+- trưởng phòng / Chánh Văn phòng có trách nhiệm phân công công việc cụ thể gắn với
+  vị trí việc làm cho thành viên.
 
-From 05-HD/TU, especially Phụ lục 1:
+Từ 05-HD/TU, đặc biệt Phụ lục 1:
 
-- evaluation is based on assigned work and output products;
-- a standard work/product catalog may include unit of product, standard point, conversion coefficient, complexity/impact and execution time.
+- đánh giá dựa trên công việc được giao và sản phẩm đầu ra;
+- một danh mục công việc/sản phẩm chuẩn có thể gồm đơn vị sản phẩm, điểm chuẩn, hệ
+  số quy đổi, độ phức tạp/tác động và thời gian thực hiện.
 
-From QĐ308:
+Từ QĐ308:
 
-- `MaNhiemVu` and `TenNhiemVu` are standardized core data elements.
+- `MaNhiemVu` và `TenNhiemVu` là thành phần dữ liệu cốt lõi được chuẩn hóa.
 
-From the operational Excel:
+Từ Excel vận hành:
 
-- there is an actual draft catalog with work code, work name, product, complexity, max duration, score, conversion coefficient and explanation;
-- this workbook is **operational/draft data**, not automatically an approved rule.
+- có một danh mục nháp thực tế với mã công việc, tên công việc, sản phẩm, độ phức
+  tạp, thời hạn tối đa, điểm, hệ số quy đổi và giải thích;
+- workbook này là **dữ liệu vận hành/nháp**, không tự động là quy tắc đã được phê duyệt.
 
-## Proposed domain model [INFERENCE]
+## Mô hình domain đề xuất [INFERENCE]
 
 ```mermaid
 flowchart LR
@@ -33,24 +36,24 @@ flowchart LR
   TR --> P["Product"]
   TR --> M["Metric snapshot"]
   TR --> EV["EvidenceRef"]
-  EV -. authorized reference .-> DMS["Evidence store / DMS"]
+  EV -. tham chiếu được uỷ quyền .-> DMS["Kho minh chứng / DMS"]
 ```
 
 ### WorkCatalogVersion
 
-Stores a published set of work definitions:
+Lưu một tập định nghĩa công việc đã công bố:
 
-- version;
-- effective period;
-- source references;
-- approval/status;
-- checksum/import origin.
+- phiên bản;
+- khoảng hiệu lực;
+- tham chiếu nguồn;
+- phê duyệt/trạng thái;
+- checksum/xuất xứ nhập.
 
 ### WorkCatalogItem
 
-Candidate fields:
+Các trường đề xuất:
 
-- `code` — mapped to canonical task code where applicable;
+- `code` — ánh xạ tới mã nhiệm vụ canonical khi áp dụng;
 - `name`;
 - `responsibilityId`;
 - `expectedProduct`;
@@ -63,56 +66,58 @@ Candidate fields:
 
 ### Task
 
-An actual work instance. It is **not** the same as the catalog item. Candidate fields:
+Một thực thể công việc thực tế. Nó **không** giống mục danh mục. Các trường đề xuất:
 
-- task identity;
-- selected catalog item/version;
-- title/description;
-- owning department;
-- period;
-- source/origin;
-- created/assigned timestamps.
+- định danh nhiệm vụ;
+- mục/phiên bản danh mục được chọn;
+- tiêu đề/mô tả;
+- đơn vị sở hữu;
+- kỳ;
+- nguồn/xuất xứ;
+- mốc thời gian tạo/phân công.
 
 ### Assignment
 
-Separates work from assignee:
+Tách công việc khỏi người nhận:
 
-- task;
-- assignee;
-- assigner;
-- job-position/membership at assignment time;
-- assignment/reassignment history.
+- nhiệm vụ;
+- người nhận;
+- người giao;
+- vị trí/membership tại thời điểm giao;
+- lịch sử phân công/phân công lại.
 
 ### TaskResult
 
-- actual quantity;
-- completion time;
-- result/product references;
-- notes;
-- quality assessment inputs;
-- metric snapshot used by KPI calculation.
+- khối lượng thực tế;
+- thời điểm hoàn thành;
+- tham chiếu kết quả/sản phẩm;
+- ghi chú;
+- đầu vào đánh giá chất lượng;
+- snapshot chỉ số dùng cho tính KPI.
 
-## Evidence [INFERENCE]
+## Minh chứng [INFERENCE]
 
-Prototype should store **metadata/reference**, not use the app as a state-secret document management system.
+Ứng dụng nên lưu **metadata/tham chiếu**, không đóng vai trò hệ thống quản lý tài
+liệu bí mật nhà nước.
 
-Candidate:
+Đề xuất:
 `EvidenceRef(id, type, uri/objectKey, checksum, classification, uploadedBy, createdAt)`.
 
-For demo: synthetic files/data only.
+Với phát triển và kiểm thử: chỉ dùng file/dữ liệu không nhạy cảm có kiểm soát.
 
-## State model [INFERENCE, not source terminology]
+## Mô hình trạng thái [INFERENCE, không phải thuật ngữ nguồn]
 
-A minimal app may use states such as:
+Một ứng dụng tối thiểu có thể dùng các trạng thái như:
 
 `DRAFT → ASSIGNED → IN_PROGRESS → SUBMITTED → ACCEPTED/CLOSED`
 
-but these labels/transitions are product design and must not be presented as rules from 05-HD/QĐ01.
+nhưng các nhãn/chuyển đổi này là thiết kế sản phẩm và không được trình bày như quy
+tắc từ 05-HD/QĐ01.
 
-## Open items
+## Hạng mục còn mở
 
-- authoritative position list;
-- official approval/version of the Excel catalog;
-- exact acceptance/rework rule per product;
-- official treatment of ad-hoc tasks;
-- whether evidence content may be stored or only referenced in production.
+- danh sách vị trí có thẩm quyền;
+- phê duyệt/phiên bản chính thức của danh mục Excel;
+- quy tắc nghiệm thu/trả lại chính xác theo từng sản phẩm;
+- cách xử lý chính thức với nhiệm vụ phát sinh;
+- có được lưu nội dung minh chứng hay chỉ tham chiếu trong production.

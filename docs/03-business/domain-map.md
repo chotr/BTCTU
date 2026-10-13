@@ -1,50 +1,50 @@
-# Business domain map và traceability
+# Bản đồ domain nghiệp vụ và truy vết
 
-## Domain map
+## Bản đồ domain
 
 ```mermaid
 flowchart LR
   Q1["QĐ01
-Organization / responsibility"] --> ORG["Organization"]
+Tổ chức / trách nhiệm"] --> ORG["Organization"]
   H05["05-HD/TU
-Task/Product/KPI"] --> WORK["Work & performance"]
+Nhiệm vụ/Sản phẩm/KPI"] --> WORK["Công việc & hiệu suất"]
   Q39["39-QĐ/TU
-Evaluation / classification"] --> EVAL["Evaluation"]
+Đánh giá / xếp loại"] --> EVAL["Evaluation"]
   D342["342-QĐ/BTCTW
-Identity / data / audit"] --> GOV["Governance"]
+Định danh / dữ liệu / audit"] --> GOV["Governance"]
   INT["348 + 308 + 607 + HD07
-Data/integration"] --> CONN["Integration"]
+Dữ liệu/tích hợp"] --> CONN["Integration"]
   SEC["NĐ85 + NĐ63 + NĐ165 + NĐ278
-Security/data law"] --> SG["Security & data governance"]
+Bảo mật/pháp luật dữ liệu"] --> SG["Bảo mật & quản trị dữ liệu"]
 
   ORG --> WORK
   WORK --> EVAL
   GOV --> ORG
   GOV --> WORK
   GOV --> EVAL
-  CONN -. future .-> ORG
+  CONN -. tương lai .-> ORG
   SG --> GOV
 ```
 
-## Core business capabilities
+## Năng lực nghiệp vụ cốt lõi
 
-| Capability | Source basis | Status |
+| Năng lực | Căn cứ nguồn | Trạng thái |
 |---|---|---|
-| Organization / department / responsibility | QĐ01 Điều 2–7 | Source-backed |
-| Position/person assignment context | QĐ01 + Excel operational | Position master still needs authoritative confirmation |
-| Work/product catalog | 05-HD Phụ lục 1 + Excel draft + QĐ308 task fields | Source-backed concept; catalog values need approval/version |
-| Task execution/result | 05-HD task/product measurement | Software model required |
-| KPI 30/70 and A/B/C/D for leaders | 05-HD | Source-backed; worked-example arithmetic has inconsistency |
-| Self assessment / review / final decision | 05-HD + QĐ39 | Source-backed stages |
-| Classification thresholds + blockers | QĐ39 Điều 11 | Source-backed |
-| Person + collective evaluation | Đề bài + QĐ39 | Source-backed subject types; calculation of collective score still needs configuration |
-| Permission/data scope/audit | QĐ342 | Source-backed constraints |
-| Canonical dictionary | QĐ308 | Source-backed |
-| External API contract | QĐ607 | Future integration |
-| Connection security/process | QĐ348 + HD07 | Future integration / production gate |
-| Security level & protected data | NĐ85 + NĐ63 + QĐ342/348 | Formal production decision remains TBD |
+| Tổ chức / đơn vị / trách nhiệm | QĐ01 Điều 2–7 | Có căn cứ nguồn |
+| Bối cảnh phân công vị trí/nhân sự | QĐ01 + Excel vận hành | Master vị trí vẫn cần xác nhận có thẩm quyền |
+| Danh mục công việc/sản phẩm | 05-HD Phụ lục 1 + Excel draft + trường nhiệm vụ QĐ308 | Khái niệm có căn cứ nguồn; giá trị danh mục cần phê duyệt/phiên bản |
+| Thực hiện/kết quả nhiệm vụ | Đo lường nhiệm vụ/sản phẩm của 05-HD | Cần mô hình phần mềm |
+| KPI 30/70 và A/B/C/D cho lãnh đạo | 05-HD | Có căn cứ nguồn; ví dụ có sai khác số học |
+| Tự đánh giá / thẩm định / quyết định cuối | 05-HD + QĐ39 | Các bước có căn cứ nguồn |
+| Ngưỡng xếp loại + yếu tố chặn | QĐ39 Điều 11 | Có căn cứ nguồn |
+| Đánh giá cá nhân + tập thể | Yêu cầu hệ thống + QĐ39 | Loại đối tượng có căn cứ nguồn; cách tính điểm tập thể vẫn cần cấu hình |
+| Phân quyền/phạm vi dữ liệu/audit | QĐ342 | Ràng buộc có căn cứ nguồn |
+| Từ điển canonical | QĐ308 | Có căn cứ nguồn |
+| Contract API ngoài | QĐ607 | Tích hợp tương lai |
+| Bảo mật/quy trình kết nối | QĐ348 + HD07 | Tích hợp tương lai / cổng production |
+| Cấp độ bảo mật & dữ liệu được bảo vệ | NĐ85 + NĐ63 + QĐ342/348 | Quyết định production chính thức vẫn TBD |
 
-## Central mental model
+## Mô hình tư duy trung tâm
 
 ```text
 Organization
@@ -59,15 +59,16 @@ Task / Assignment
    ↓
 TaskResult / Product / EvidenceRef
    ↓
-Performance metrics
+Chỉ số hiệu suất
    ↓
 Evaluation (30 + 70)
    ↓
-Classification eligibility
+Điều kiện xếp loại
    ↓
-Review / Final decision
+Thẩm định / Quyết định cuối
    ↓
-Lock / Audit / Report
+Khóa / Audit / Báo cáo
 ```
 
-The arrows after `Responsibility` are **software interpretation** built from multiple sources; they are not one pre-existing workflow diagram in any single document.
+Các mũi tên sau `Responsibility` là **diễn giải phần mềm** dựng từ nhiều nguồn; chúng
+không phải một sơ đồ quy trình đã tồn tại sẵn trong bất kỳ văn bản đơn lẻ nào.

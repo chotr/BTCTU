@@ -85,7 +85,7 @@ export function exportReport(
         "Loại",
         "Kỳ",
         "Trạng thái",
-        "Điểm ứng viên",
+        "Điểm tính",
         "Tự đề xuất",
         "Thẩm định",
         "Quyết định",
@@ -111,8 +111,8 @@ export function exportReport(
         ]),
     ];
   downloadText(
-    `BTCTU-demo-${kind}-${periodId}.csv`,
-    toCsv([["DỮ LIỆU MÔ PHỎNG — KHÔNG PHẢI KẾT QUẢ CHÍNH THỨC"], ...rows]),
+    `BTCTU-${kind}-${periodId}.csv`,
+    toCsv([["BÁO CÁO DỰ THẢO — CẦN RÀ SOÁT TRƯỚC KHI BAN HÀNH"], ...rows]),
   );
   appendAudit({
     actorId: s.user.id,

@@ -1,54 +1,55 @@
-# Original source files
+# File nguồn gốc
 
-The analysis was produced from source files supplied in the working conversation/workspace.
+Phân tích được thực hiện từ các file nguồn được cung cấp trong nội dung trao đổi/workspace.
 
-## Public-repository policy
+## Chính sách kho công khai
 
-Original PDFs/XLSX are **not automatically committed** here.
+Các PDF/XLSX gốc **không được tự động commit** tại đây.
 
-Reasons:
+Lý do:
 
-- redistribution/publication permission may be unclear;
-- some workbooks contain names/operational assignments;
-- future documents may contain protected or sensitive data.
+- quyền phân phối lại/công bố có thể chưa rõ;
+- một số workbook chứa tên/phân công vận hành;
+- tài liệu về sau có thể chứa dữ liệu được bảo vệ hoặc nhạy cảm.
 
-The public repo therefore stores:
+Do đó kho công khai lưu:
 
-- source identity;
-- page/section references;
-- derived FACT/INFERENCE/TBD analysis;
-- no unnecessary source-file content.
+- định danh nguồn;
+- tham chiếu trang/mục;
+- phân tích phái sinh FACT/INFERENCE/TBD;
+- không lưu nội dung file nguồn không cần thiết.
 
-If permission to publish is explicitly confirmed, source files can be added with checksum/version metadata.
+Nếu quyền công bố được xác nhận rõ ràng, file nguồn có thể được thêm kèm metadata
+checksum/version.
 
-## Reviewed source inventory
+## Danh mục nguồn đã rà soát
 
-See [../02-source-analysis/README.md](../02-source-analysis/README.md).
+Xem [../02-source-analysis/README.md](../02-source-analysis/README.md).
 
-Core files reviewed include:
+Các file cốt lõi đã rà soát gồm:
 
 - 01-QĐ/BTCTU;
 - 05-HD/TU;
 - 39-QĐ/TU;
 - 342-QĐ/BTCTW;
-- 348-QĐ/BTCTW + local 1638-CV/TU rollout bundle;
+- 348-QĐ/BTCTW + bộ triển khai 1638-CV/TU tại địa phương;
 - 607-QĐ/BTCTW;
 - 308-QĐ/VPTW;
 - 07-HD/VPTW;
 - NĐ85/2016;
-- NĐ63/2026 + appendix;
+- NĐ63/2026 + phụ lục;
 - NĐ165/2025;
 - NĐ278/2025;
 - NQ11/TU;
-- two operational Excel workbooks;
-- original competency-test assignment and recruitment-context documents.
+- hai workbook Excel vận hành;
+- đề bài gốc và các tài liệu bối cảnh dự án.
 
-## Source integrity rule
+## Quy tắc toàn vẹn nguồn
 
-Before production use, a source registry should additionally store:
+Trước khi dùng cho production, sổ đăng ký nguồn nên lưu thêm:
 
-- document checksum;
-- version/effective date;
-- superseded-by relationship;
-- approval/review timestamp;
-- analyst/reviewer.
+- checksum tài liệu;
+- phiên bản/ngày hiệu lực;
+- quan hệ bị thay thế bởi;
+- thời điểm phê duyệt/rà soát;
+- chuyên viên/người rà soát.

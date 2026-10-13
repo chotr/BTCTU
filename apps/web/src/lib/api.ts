@@ -3,12 +3,12 @@ import {
   getState,
   hydrateStore,
   pushToast,
-  resetDemo,
+  resetWorkspace,
   setUser,
 } from "./store";
 import { policy } from "./policy";
 import { personName } from "./shared/names";
-import { demoAccounts, resolveDemoUser } from "./identity";
+import { demoAccounts, resolveAppUser } from "./identity";
 import { taskActions, taskPeriodLocked } from "./tasks";
 import { RESULT_QUALITY } from "./domain/quality";
 import {
@@ -48,24 +48,24 @@ export const api = {
   simulateSync,
   previewPayload,
   exportReport,
-  resetDemo,
+  resetWorkspace,
   accounts: demoAccounts,
   profiles: PROFILES,
   catalogTemplate: catalogCsvTemplate,
   previewCatalogCsv,
   async login(userId: string): Promise<void> {
     hydrateStore();
-    const user = resolveDemoUser(getState(), userId);
+    const user = resolveAppUser(getState(), userId);
     if (!user) {
-      pushToast("error", "Tài khoản mẫu không tồn tại");
+      pushToast("error", "Tài khoản không tồn tại");
       return;
     }
     setUser(user);
     appendAudit({
       actorId: user.id,
-      action: "Đăng nhập demo",
+      action: "Đăng nhập",
       resource: "Phiên làm việc",
-      detail: "Vai trò mô phỏng: " + user.role,
+      detail: `Vai trò: ${user.role}`,
       outcome: "OK",
     });
   },
@@ -81,12 +81,12 @@ export const api = {
       });
     setUser(null);
   },
-  async deniedAccessDemo(resource: string): Promise<void> {
+  async deniedAccess(resource: string): Promise<void> {
     appendAudit({
       actorId: getState().user?.id ?? "?",
       action: "Truy cập bị từ chối",
       resource,
-      detail: "Ngoài phạm vi mô phỏng",
+      detail: "Ngoài phạm vi được phân quyền",
       outcome: "DENIED",
     });
     pushToast("error", "Không có quyền truy cập — đã ghi nhật ký");
@@ -95,7 +95,7 @@ export const api = {
 
 export function personLabel(id: string): string {
   const state = getState();
-  return personName(state, id) ?? resolveDemoUser(state, id)?.name ?? id;
+  return personName(state, id) ?? resolveAppUser(state, id)?.name ?? id;
 }
 
 export {

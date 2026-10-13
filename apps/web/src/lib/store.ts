@@ -2,7 +2,7 @@ import { useSyncExternalStore } from "react";
 import type {
   AuditEvent,
   CatalogItem,
-  DemoUser,
+  AppUser,
   Department,
   Evaluation,
   EvaluationPeriod,
@@ -22,8 +22,8 @@ import {
   POSITIONS,
   RESPONSIBILITIES,
   TASKS,
-} from "./mock/data";
-import { resolveDemoUser } from "./identity";
+} from "./mock";
+import { resolveAppUser } from "./identity";
 
 export interface SyncRun {
   id: string;
@@ -43,7 +43,7 @@ export interface IntegrationState {
   checkpoint: string;
 }
 export interface AppState {
-  user: DemoUser | null;
+  user: AppUser | null;
   departments: Department[];
   people: Person[];
   positions: PositionRef[];
@@ -59,7 +59,8 @@ export interface AppState {
   hydrated: boolean;
   storageError: string | null;
 }
-export const STORAGE_KEY = "btctu:mock:v2";
+export const STORAGE_KEY = "btctu:workspace:v3";
+const LEGACY_STORAGE_KEY = "btctu:mock:v2";
 const SESSION_KEY = "btctu:session:v1";
 function initialState(): AppState {
   return structuredClone({
@@ -82,17 +83,17 @@ function initialState(): AppState {
         {
           field: "person.id",
           target: "personnelCode",
-          source: "QĐ607 · mapping ứng viên",
+          source: "QĐ607 · cấu hình chờ phê duyệt",
         },
         {
           field: "person.name",
           target: "fullName",
-          source: "QĐ308 · mapping ứng viên",
+          source: "QĐ308 · cấu hình chờ phê duyệt",
         },
         {
           field: "department.code",
           target: "organizationCode",
-          source: "QĐ308 · mapping ứng viên",
+          source: "QĐ308 · cấu hình chờ phê duyệt",
         },
       ],
       runs: [],
@@ -115,7 +116,7 @@ function persist(): void {
     } = state;
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ version: 2, data }),
+      JSON.stringify({ version: 3, data }),
     );
   } catch {
     state = {
@@ -127,7 +128,11 @@ function persist(): void {
 }
 function restore(raw: string): AppState {
   const parsed = JSON.parse(raw);
-  if (parsed?.version !== 2 || !parsed.data || typeof parsed.data !== "object")
+  if (
+    ![2, 3].includes(parsed?.version) ||
+    !parsed.data ||
+    typeof parsed.data !== "object"
+  )
     throw new Error("Invalid version");
   const d = parsed.data;
   for (const key of [
@@ -166,7 +171,7 @@ function restore(raw: string): AppState {
   )
     throw new Error("Invalid workflow");
   const base = initialState();
-  const restoredUser = resolveDemoUser(
+  const restoredUser = resolveAppUser(
     { people: d.people, departments: d.departments },
     d.user?.id,
   );
@@ -189,20 +194,29 @@ let listening = false;
 export function hydrateStore(): void {
   if (typeof window === "undefined" || state.hydrated) return;
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw =
+      window.localStorage.getItem(STORAGE_KEY) ??
+      window.localStorage.getItem(LEGACY_STORAGE_KEY);
     state = raw ? restore(raw) : { ...state, hydrated: true };
+    if (raw && !window.localStorage.getItem(STORAGE_KEY)) {
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ version: 3, data: state }),
+      );
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+    }
     if (!raw) {
       const previous = JSON.parse(
         window.localStorage.getItem(SESSION_KEY) ?? "null",
       );
-      state.user = resolveDemoUser(state, previous?.userId);
+      state.user = resolveAppUser(state, previous?.userId);
     }
   } catch {
     state = {
       ...initialState(),
       hydrated: true,
       storageError:
-        "Dữ liệu lưu không đọc được. Đang dùng bản mẫu trong bộ nhớ; đặt lại demo để lưu phiên mới.",
+        "Dữ liệu lưu không đọc được. Đang dùng dữ liệu khởi tạo trong bộ nhớ; hãy khôi phục không gian làm việc để lưu phiên mới.",
     };
   }
   if (!listening) {
@@ -213,7 +227,7 @@ export function hydrateStore(): void {
         state = restore(event.newValue);
         emit();
       } catch {
-        /* Keep the current valid session. */
+        /* Giữ phiên hợp lệ hiện tại. */
       }
     });
   }
@@ -236,7 +250,7 @@ export function getState(): AppState {
 export function useApp(): AppState {
   return useSyncExternalStore(subscribe, getState, () => serverState);
 }
-export function setUser(user: DemoUser | null): void {
+export function setUser(user: AppUser | null): void {
   setState((s) => ({ ...s, user }));
 }
 let toastSeq = 1;
@@ -294,15 +308,15 @@ export function setPeriodLocked(periodId: string, lockedAt: string): void {
     ),
   }));
 }
-export function resetDemo(): void {
+export function resetWorkspace(): void {
   const user = state.user;
   setState(() => ({ ...initialState(), user, hydrated: true }));
   appendAudit({
-    actorId: user?.id ?? "demo",
-    action: "Đặt lại dữ liệu demo",
-    resource: "Demo",
-    detail: "Khôi phục bộ dữ liệu tổng hợp; chỉ ảnh hưởng trình duyệt này.",
+    actorId: user?.id ?? "system",
+    action: "Khôi phục không gian làm việc",
+    resource: "Không gian làm việc",
+    detail: "Khôi phục dữ liệu khởi tạo; chỉ ảnh hưởng trình duyệt này.",
     outcome: "OK",
   });
-  pushToast("success", "Đã khôi phục dữ liệu mẫu");
+  pushToast("success", "Đã khôi phục dữ liệu khởi tạo");
 }

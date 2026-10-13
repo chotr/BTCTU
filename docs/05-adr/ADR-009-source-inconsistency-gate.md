@@ -1,25 +1,28 @@
-# ADR-009 — Source inconsistencies block “official” rule publication
+# ADR-009 — Bất nhất nguồn chặn công bố quy tắc “chính thức”
 
-**Status:** Accepted.
+**Trạng thái:** Accepted.
 
-## Context
+## Bối cảnh
 
-05-HD/TU contains a worked example where the printed final arithmetic does not match the formula inputs.
+05-HD/TU có một ví dụ trong đó kết quả số học in ra không khớp với đầu vào công thức.
 
-Regulatory/business sources may also be clarified or superseded over time.
+Các nguồn quy phạm/nghiệp vụ cũng có thể được làm rõ hoặc bị thay thế theo thời gian.
 
-## Decision
+## Quyết định
 
-A rule can be published as `OFFICIAL/ACTIVE` only when:
+Một quy tắc chỉ được công bố là `OFFICIAL/ACTIVE` khi:
 
-- source reference is recorded;
-- arithmetic/interpretation is internally consistent;
-- unresolved source issues are cleared or explicitly approved by competent business authority;
-- unit tests encode the approved behavior;
-- rule version/effective period are fixed.
+- tham chiếu nguồn được ghi lại;
+- số học/diễn giải nhất quán nội bộ;
+- các vấn đề nguồn chưa giải quyết được làm rõ hoặc được cấp nghiệp vụ có thẩm
+  quyền phê duyệt rõ ràng;
+- kiểm thử đơn vị mã hóa hành vi đã được phê duyệt;
+- phiên bản quy tắc/khoảng hiệu lực được cố định.
 
-Prototype may run a `CANDIDATE` rule for demonstration, but UI/report must label it.
+Quá trình phát triển có thể chạy một quy tắc `CANDIDATE` để kiểm chứng, nhưng UI/báo
+cáo phải gắn nhãn cho nó.
 
-## Consequence
+## Hệ quả
 
-The application never silently converts a suspected typo or analyst guess into an official personnel-evaluation rule.
+Ứng dụng không bao giờ âm thầm biến một lỗi nghi in ấn hoặc phỏng đoán của chuyên
+viên thành quy tắc đánh giá nhân sự chính thức.

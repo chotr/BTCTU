@@ -1,64 +1,68 @@
-# Source analysis — source register
+# Phân tích nguồn — sổ đăng ký nguồn
 
-## Rule
+## Quy tắc
 
-Every source analysis separates:
+Mỗi phân tích nguồn phải tách bạch:
 
-- **FACT** — explicitly supported by the source;
-- **INFERENCE** — software/domain interpretation;
-- **TBD** — unresolved or requiring authority;
-- **SOURCE INCONSISTENCY** — source text itself conflicts/contains an error.
-- **SOURCE DIVERGENCE** — sources describe different contract layers,
-  versions or scopes that must not be treated as interchangeable.
+- **FACT** — nguồn xác nhận trực tiếp;
+- **INFERENCE** — diễn giải phần mềm/domain;
+- **TBD** — chưa giải quyết hoặc cần cấp có thẩm quyền;
+- **SOURCE INCONSISTENCY** — bản thân văn bản nguồn mâu thuẫn/có lỗi;
+- **SOURCE DIVERGENCE** — các nguồn mô tả khác tầng contract, version hoặc
+  phạm vi; không được mặc định là tương đương/thay thế lẫn nhau.
 
-## Source register
+## Sổ đăng ký nguồn
 
-`Reviewed from supplied file` means the analysis used the PDF/XLSX supplied with the
-project conversation. It does not mean that every operational decision needed for a
-production rollout has been approved.
+`Đã rà soát từ file được cung cấp` nghĩa là phân tích dùng PDF/XLSX được cung cấp
+cùng nội dung trao đổi của dự án. Không có nghĩa là mọi quyết định vận hành cần
+thiết để triển khai chính thức đều đã được phê duyệt.
 
-| ID | Source/file | Role in project | Evidence status |
+| ID | Nguồn/file | Vai trò trong dự án | Trạng thái căn cứ |
 |---|---|---|---|
-| SRC-01 | [01-QĐ/BTCTU](qd01.md) | organization, functions, responsibilities, assignment responsibility | Reviewed from supplied PDF |
-| SRC-02 | [05-HD/TU](hd05.md) | work/product catalog, KPI, quarterly evaluation | Reviewed from supplied PDF; one worked-example arithmetic inconsistency recorded |
-| SRC-03 | [39-QĐ/TU](qd39.md) | classification, conditions, authority, workflow | Reviewed from supplied PDF |
-| SRC-04 | [342-QĐ/BTCTW](qd342.md) | architecture, identity, access, audit, data/security, AI | Reviewed from supplied PDF |
-| SRC-05 | [348-QĐ/BTCTW + 1638-CV/TU](qd348.md) | connection/sharing, local rollout context | Reviewed from supplied PDFs |
-| SRC-06 | [607-QĐ/BTCTW](qd607.md) | shared data + API contract | Reviewed from `A81-VBNB_2026-QĐ-0607-2026_dadongdau.pdf` |
-| SRC-07 | [308-QĐ/VPTW](qd308.md) | shared data dictionary, `MaNhiemVu`, `TenNhiemVu`, SOR | Reviewed from supplied PDF |
-| SRC-08 | [07-HD/VPTW](hd07.md) | LGSP integration/security/API lifecycle | Reviewed from supplied PDF |
-| SRC-09 | [NĐ85/2016](nd85.md) | HTTT security-level criteria | Reviewed from supplied PDF |
-| SRC-10 | [NĐ63/2026 + PL](nd63.md) | state-secret document handling | Reviewed from supplied PDF and appendix |
-| SRC-11 | [NĐ165/2025](nd165.md) | data governance/access/encryption/lifecycle | Reviewed from supplied PDF |
-| SRC-12 | [NĐ278/2025](nd278.md) | mandatory data-sharing governance | Reviewed from supplied PDF |
-| SRC-13 | [NQ11/TU](nq11.md) | strategic/digital-transformation context | Reviewed from supplied PDF |
-| SRC-14 | [Operational Excel files](excel-operational-data.md) | organization/task catalog seed/draft data | Both supplied workbooks inspected; operational evidence, not legal authority |
-| SRC-15 | [Recruitment/project context](project-context.md) | test/recruitment context | Triaged |
-| CROSS | [Security regulations summary](security-regulations.md) | cross-source security conclusions | Reconciled from SRC-09..12 |
+| SRC-01 | [01-QĐ/BTCTU](qd01.md) | tổ chức, chức năng, trách nhiệm, trách nhiệm phân công | Đã rà soát từ PDF được cung cấp |
+| SRC-02 | [05-HD/TU](hd05.md) | danh mục công việc/sản phẩm, KPI, đánh giá quý | Đã rà soát từ PDF được cung cấp; ghi nhận một sai khác số học trong ví dụ |
+| SRC-03 | [39-QĐ/TU](qd39.md) | xếp loại, điều kiện, thẩm quyền, quy trình | Đã rà soát từ PDF được cung cấp |
+| SRC-04 | [342-QĐ/BTCTW](qd342.md) | kiến trúc, định danh, truy cập, audit, dữ liệu/bảo mật, AI | Đã rà soát từ PDF được cung cấp |
+| SRC-05 | [348-QĐ/BTCTW + 1638-CV/TU](qd348.md) | kết nối/chia sẻ, bối cảnh triển khai tại địa phương | Đã rà soát từ các PDF được cung cấp |
+| SRC-06 | [607-QĐ/BTCTW](qd607.md) | dữ liệu chia sẻ + contract API | Đã rà soát từ `A81-VBNB_2026-QĐ-0607-2026_dadongdau.pdf` |
+| SRC-07 | [308-QĐ/VPTW](qd308.md) | từ điển dữ liệu dùng chung, `MaNhiemVu`, `TenNhiemVu`, SOR | Đã rà soát từ PDF được cung cấp |
+| SRC-08 | [07-HD/VPTW](hd07.md) | tích hợp LGSP/bảo mật/vòng đời API | Đã rà soát từ PDF được cung cấp |
+| SRC-09 | [NĐ85/2016](nd85.md) | tiêu chí cấp độ bảo đảm an toàn HTTT | Đã rà soát từ PDF được cung cấp |
+| SRC-10 | [NĐ63/2026 + PL](nd63.md) | xử lý tài liệu bí mật nhà nước | Đã rà soát từ PDF được cung cấp và phụ lục |
+| SRC-11 | [NĐ165/2025](nd165.md) | quản trị dữ liệu/truy cập/mã hóa/vòng đời | Đã rà soát từ PDF được cung cấp |
+| SRC-12 | [NĐ278/2025](nd278.md) | quản trị chia sẻ dữ liệu bắt buộc | Đã rà soát từ PDF được cung cấp |
+| SRC-13 | [NQ11/TU](nq11.md) | bối cảnh chiến lược/chuyển đổi số | Đã rà soát từ PDF được cung cấp |
+| SRC-14 | [File Excel vận hành](excel-operational-data.md) | dữ liệu seed/nháp cho tổ chức/danh mục công việc | Đã kiểm tra cả hai workbook được cung cấp; bằng chứng vận hành, không phải thẩm quyền pháp lý |
+| SRC-15 | [Bối cảnh dự án](project-context.md) | bối cảnh dự án và mục lục nguồn | Đã phân loại |
+| CROSS | [Tổng hợp quy định bảo mật](security-regulations.md) | kết luận bảo mật liên-nguồn | Đã đối soát từ SRC-09..12 |
 
-## Source authority rule
+## Quy tắc thẩm quyền nguồn
 
-Files provided with the assignment/workspace are the analysis basis. Do not substitute a search-engine summary or an unrelated web copy for the supplied source.
+Các file được cung cấp cùng bài kiểm tra/workspace là căn cứ phân tích. Không thay
+nguồn được cung cấp bằng bản tóm tắt của công cụ tìm kiếm hay bản sao web không
+liên quan.
 
-Original PDFs/XLSX are **not committed to this public repository by default** because their redistribution permission must be confirmed. The repo stores derived analysis and source identities/page references.
+Các PDF/XLSX gốc **không được commit vào kho công khai này theo mặc định** vì
+quyền phân phối lại phải được xác nhận. Kho lưu giữ phân tích phái sinh cùng định
+danh nguồn/tham chiếu trang.
 
-The status above is therefore about **review provenance**, not redistribution. A
-missing binary in Git must not be reported as “source unavailable” when the supplied
-file was reviewed outside the repository.
+Do đó trạng thái ở trên nói về **xuất xứ rà soát**, không phải quyền phân phối lại.
+Thiếu file nhị phân trong Git không được báo là “nguồn không có” khi file được
+cung cấp đã được rà soát ngoài kho.
 
-The stale-claim-to-current-result audit trail is maintained in
+Vết audit từ claim cũ tới kết quả hiện tại được duy trì trong
 [audit-reconciliation.md](audit-reconciliation.md).
 
-## Most important unresolved source issue
+## Vấn đề nguồn chưa giải quyết quan trọng nhất
 
-05-HD/TU worked example:
+Ví dụ trong 05-HD/TU:
 
 ```text
-30 + 82.3% × 70
+30 + 82,3% × 70
 ```
 
-is printed as `80.3`, while arithmetic yields `87.61`. This is recorded narrowly
-as a **worked-example arithmetic inconsistency**; it does not establish that the
-official formula is wrong.
+được in là `80,3`, trong khi số học cho `87,61`. Điều này được ghi nhận hẹp là
+**sai khác số học trong ví dụ**; nó không chứng minh công thức chính thức là sai.
 
-See [hd05.md](hd05.md). This remains a business clarification gate before claiming an official scoring implementation.
+Xem [hd05.md](hd05.md). Đây vẫn là cổng làm rõ nghiệp vụ trước khi tuyên bố một
+triển khai chấm điểm chính thức.

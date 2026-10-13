@@ -4,7 +4,7 @@ async function login(page: Page, name: string) {
   await page.getByRole("button", { name: new RegExp(name) }).click();
   await expect(page).toHaveURL(/dashboard/);
 }
-test("full demo slice persists across roles and reload, then locks and reopens", async ({
+test("full workflow persists across roles and reload, then locks and reopens", async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -12,12 +12,12 @@ test("full demo slice persists across roles and reload, then locks and reopens",
   await login(page, "Trần Minh Hòa");
   await page.goto("/periods");
   await page.getByRole("button", { name: "Tạo kỳ", exact: true }).click();
-  await page.getByLabel("Tên kỳ", { exact: true }).fill("Kỳ demo E2E");
+  await page.getByLabel("Tên kỳ", { exact: true }).fill("Kỳ kiểm thử E2E");
   await page.getByLabel("Từ ngày", { exact: true }).fill("2026-10-01");
   await page.getByLabel("Đến ngày", { exact: true }).fill("2026-12-31");
   await page.getByRole("button", { name: "Xác nhận", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Kỳ demo E2E", exact: true }),
+    page.getByRole("heading", { name: "Kỳ kiểm thử E2E", exact: true }),
   ).toBeVisible();
   await login(page, "Nguyễn Thị Lan");
   await page.goto("/tasks");
@@ -35,7 +35,7 @@ test("full demo slice persists across roles and reload, then locks and reopens",
     .selectOption("u-staff");
   await page
     .getByLabel("Kỳ nghiệp vụ", { exact: true })
-    .selectOption({ label: "Kỳ demo E2E" });
+    .selectOption({ label: "Kỳ kiểm thử E2E" });
   await page.getByLabel("Hạn hoàn thành", { exact: true }).fill("2026-12-25");
   await page
     .getByRole("button", { name: "Tạo và giao việc", exact: true })
@@ -54,16 +54,12 @@ test("full demo slice persists across roles and reload, then locks and reopens",
     .fill("Sản phẩm synthetic E2E");
   await page.getByLabel("Ngày hoàn thành", { exact: true }).fill("2026-12-20");
   await page.getByLabel(/Tôi xác nhận tệp/).check();
-  await page
-    .getByLabel(/Chọn tệp mẫu/)
-    .setInputFiles({
-      name: "evidence-synthetic.txt",
-      mimeType: "text/plain",
-      buffer: Buffer.from("SYNTHETIC ONLY"),
-    });
-  await expect(
-    page.getByText("evidence-synthetic.txt").first(),
-  ).toBeVisible();
+  await page.getByLabel(/Chọn tệp mẫu/).setInputFiles({
+    name: "evidence-synthetic.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from("SYNTHETIC ONLY"),
+  });
+  await expect(page.getByText("evidence-synthetic.txt").first()).toBeVisible();
   await page
     .getByRole("button", { name: "Nộp nghiệm thu", exact: true })
     .click();
@@ -85,7 +81,7 @@ test("full demo slice persists across roles and reload, then locks and reopens",
   await page.goto(taskUrl);
   await page
     .getByLabel("Diễn giải kết quả", { exact: true })
-    .fill("Đã bổ sung theo yêu cầu mock");
+    .fill("Đã bổ sung theo yêu cầu");
   await page
     .getByRole("button", { name: "Nộp nghiệm thu", exact: true })
     .click();
@@ -94,7 +90,7 @@ test("full demo slice persists across roles and reload, then locks and reopens",
   await page.getByRole("button", { name: "Nghiệm thu", exact: true }).click();
   await page
     .getByLabel("Nhận xét / lý do", { exact: true })
-    .fill("Sản phẩm đủ căn cứ thử nghiệm");
+    .fill("Sản phẩm đủ căn cứ nghiệm thu");
   await page.getByRole("button", { name: "Xác nhận", exact: true }).click();
   await expect(page.getByText("Đã nghiệm thu", { exact: true })).toBeVisible();
   await login(page, "Phạm Văn Đức");
@@ -102,7 +98,7 @@ test("full demo slice persists across roles and reload, then locks and reopens",
   await page.getByRole("button", { name: "Tạo hồ sơ", exact: true }).click();
   await page
     .getByLabel("Kỳ đang mở", { exact: true })
-    .selectOption({ label: "Kỳ demo E2E" });
+    .selectOption({ label: "Kỳ kiểm thử E2E" });
   await page
     .getByLabel("Đối tượng được đánh giá", { exact: true })
     .selectOption("u-staff");
@@ -121,14 +117,14 @@ test("full demo slice persists across roles and reload, then locks and reopens",
   await page.getByLabel(/Đủ điều kiện bắt buộc/).check();
   await page
     .getByLabel("Căn cứ xác nhận điều kiện", { exact: true })
-    .fill("Đã đối chiếu dữ liệu tổng hợp giả lập");
+    .fill("Đã đối chiếu dữ liệu tổng hợp");
   await page.getByRole("button", { name: "Lưu xác nhận", exact: true }).click();
   await page
     .getByRole("tab", { name: "Tự đánh giá / xử lý", exact: true })
     .click();
   await page
     .getByLabel("Nhận xét / căn cứ / lý do trả lại", { exact: true })
-    .fill("Đã hoàn thành nhiệm vụ trong kỳ demo");
+    .fill("Đã hoàn thành nhiệm vụ trong kỳ");
   await page
     .getByRole("button", { name: "Nộp tự đánh giá", exact: true })
     .click();
@@ -139,7 +135,7 @@ test("full demo slice persists across roles and reload, then locks and reopens",
     .click();
   await page
     .getByLabel("Nhận xét / căn cứ / lý do trả lại", { exact: true })
-    .fill("Thẩm định mock đã kiểm tra sản phẩm");
+    .fill("Thẩm định đã kiểm tra sản phẩm");
   await page
     .getByRole("button", { name: "Thẩm định và trình", exact: true })
     .click();
@@ -150,14 +146,14 @@ test("full demo slice persists across roles and reload, then locks and reopens",
     .click();
   await page
     .getByLabel("Nhận xét / căn cứ / lý do trả lại", { exact: true })
-    .fill("Quyết định mô phỏng theo hồ sơ và điều kiện");
+    .fill("Quyết định theo hồ sơ và điều kiện");
   await page
     .getByRole("button", { name: "Quyết định xếp loại", exact: true })
     .click();
   await expect(page.getByText("Đã quyết định", { exact: true })).toBeVisible();
   await page.goto("/periods");
   const periodCard = page
-    .getByRole("heading", { name: "Kỳ demo E2E", exact: true })
+    .getByRole("heading", { name: "Kỳ kiểm thử E2E", exact: true })
     .locator("..")
     .locator("..");
   await periodCard
@@ -172,15 +168,15 @@ test("full demo slice persists across roles and reload, then locks and reopens",
   await page.goto("/reports");
   await page
     .getByLabel("Kỳ báo cáo", { exact: true })
-    .selectOption({ label: "Kỳ demo E2E" });
+    .selectOption({ label: "Kỳ kiểm thử E2E" });
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "CSV đánh giá", exact: true }).click();
   expect((await download).suggestedFilename()).toMatch(
-    /BTCTU-demo-evaluations.*\.csv/,
+    /BTCTU-evaluations.*\.csv/,
   );
   await page.goto("/periods");
   await page
-    .getByRole("heading", { name: "Kỳ demo E2E", exact: true })
+    .getByRole("heading", { name: "Kỳ kiểm thử E2E", exact: true })
     .locator("..")
     .locator("..")
     .getByRole("button", { name: "Mở lại kỳ", exact: true })
@@ -218,8 +214,7 @@ test("all screens render; imports, integration retry and keyboard dialog work", 
     "/periods",
     "/reports",
     "/audit",
-    "/integration",
-    "/settings",
+    "/console",
     "/dashboard",
   ]) {
     await page.goto(path);
@@ -260,10 +255,11 @@ test("all screens render; imports, integration retry and keyboard dialog work", 
     .click();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await page.goto("/integration");
-  await page.getByLabel(/Giả lập lỗi timeout/).check();
+  await page.goto("/console");
+  await page.getByRole("tab", { name: "Kết nối dữ liệu", exact: true }).click();
+  await page.getByLabel(/Thử tình huống timeout/).check();
   await page
-    .getByRole("button", { name: "Chạy mô phỏng", exact: true })
+    .getByRole("button", { name: "Chạy kiểm tra", exact: true })
     .click();
   await expect(page.getByText("FAILED", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Thử lại", exact: true }).click();
@@ -306,7 +302,7 @@ test("mobile navigation and staff scope, including denied direct routes", async 
     "/evaluation",
     "/reports",
     "/periods",
-    "/settings",
+    "/console",
   ]) {
     await page.goto(path);
     await expect(page.locator("main#main-content")).toBeVisible();
@@ -324,7 +320,8 @@ test("mobile navigation and staff scope, including denied direct routes", async 
   await expect(
     page.getByText("Không thể mở hồ sơ", { exact: true }),
   ).toBeVisible();
-  await page.goto("/integration");
+  await page.goto("/console");
+  await page.getByRole("tab", { name: "Kết nối dữ liệu", exact: true }).click();
   await expect(
     page.getByText("Kết nối dữ liệu ngoài phạm vi của bạn", { exact: true }),
   ).toBeVisible();

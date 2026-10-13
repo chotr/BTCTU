@@ -1,35 +1,30 @@
 {
   "name": "@btctu/api",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
-    "types": "wrangler types",
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
-    "@hono/zod-validator": "^0.4.3",
+    "express": "^5.1.0",
+    "zod": "^3.25.76",
     "dotenv": "^18.0.7",
     "drizzle-orm": "^0.45.4",
-    "hono": "^4.9.7",
-    "pg": "^8.23.1",
-    "zod": "^3.25.76"
+    "pg": "^8.23.1"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.8.68",
+    "@types/express": "^5.0.0",
     "@types/node": "^22.15.0",
-    "@types/pg": "^8.23.1",
-    "drizzle-kit": "^0.31.11",
+    "@types/supertest": "^6.0.2",
+    "supertest": "^7.0.0",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.0",
     "vitest": "^3.2.4",
-    "wrangler": "^4.36.0"
-  },
-  "description": "Hono REST API chạy trên Cloudflare Workers. Đây là backend mock-first để nối dần với UI; dữ liệu hiện được khởi tạo lại theo từng request bằng fixture tổng hợp, chưa phải nguồn dữ liệu chính thức.",
-  "main": "index.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+    "@types/pg": "^8.23.1",
+    "drizzle-kit": "^0.31.11"
+  }
 }
