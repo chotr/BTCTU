@@ -8,3 +8,15 @@ export type CreateSessionInput = {
   refreshTokenHash: string;
   expiresAt: Date;
 };
+
+export type AccessTokenClaims = {
+  userId: string;
+  sessionId: string;
+};
+
+export type TokenServiceConfig = {
+  accessSecret: string;
+  issuer: string;
+  audience: string;
+  accessTtlSeconds: number;
+};
