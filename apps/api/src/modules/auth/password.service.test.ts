@@ -1,6 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { PasswordService } from "./password.service";
-import { beforeEach } from "node:test";
 
 describe("PasswordService", () => {
   let service: PasswordService;
