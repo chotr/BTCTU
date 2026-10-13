@@ -1,14 +1,20 @@
 import { and, eq, isNull } from "drizzle-orm";
-import { db, sessions } from "src/db";
+import { Session, sessions } from "src/db";
+import { CreateSessionInput } from "../types";
+import { Database } from "src/db/client";
 
 export class SessionRepository {
-  async create(data: CreateSessionInput) {
-    const [session] = await db.insert(sessions).values(data).returning();
+  constructor(private readonly db: Database) {}
+
+  async create(data: CreateSessionInput): Promise<Session> {
+    const [session] = await this.db.insert(sessions).values(data).returning();
     return session;
   }
 
-  async findByRefreshTokenHash(refreshTokenHash: string) {
-    const result = await db
+  async findByRefreshTokenHash(
+    refreshTokenHash: string,
+  ): Promise<Session | null> {
+    const result = await this.db
       .select()
       .from(sessions)
       .where(eq(sessions.refreshTokenHash, refreshTokenHash))
@@ -17,10 +23,8 @@ export class SessionRepository {
     return result[0] ?? null;
   }
 
-  async findById() {}
-
-  async revoke(sessionId: string) {
-    const [session] = await db
+  async revoke(sessionId: string): Promise<Session | null> {
+    const [session] = await this.db
       .update(sessions)
       .set({ revokedAt: new Date() })
       .where(and(eq(sessions.id, sessionId), isNull(sessions.revokedAt)))
@@ -30,11 +34,10 @@ export class SessionRepository {
   }
 
   async revokeAllForUser(userId: string) {
-    const result = await db
+    const result = await this.db
       .update(sessions)
       .set({ revokedAt: new Date() })
-      .where(eq(sessions.userId, userId));
+      .where(and(eq(sessions.userId, userId), isNull(sessions.revokedAt)));
     return result;
   }
-  async touch() {}
 }

@@ -1,10 +1,15 @@
 import { eq } from "drizzle-orm";
-import { db, users } from "src/db";
+import { User, users } from "src/db";
+import { CreateUserInput } from "../types";
+import { normalizeEmail } from "src/shared/function";
+import { Database } from "src/db/client";
 
 export class UserRepository {
-  async findByEmail(email: string) {
+  constructor(private readonly db: Database) {}
+
+  async findByEmail(email: string): Promise<User | null> {
     const normalizedEmail = normalizeEmail(email);
-    const result = await db
+    const result = await this.db
       .select()
       .from(users)
       .where(eq(users.email, normalizedEmail))
@@ -13,8 +18,8 @@ export class UserRepository {
     return result[0] ?? null;
   }
 
-  async findById(id: string) {
-    const result = await db
+  async findById(id: string): Promise<User | null> {
+    const result = await this.db
       .select()
       .from(users)
       .where(eq(users.id, id))
@@ -23,8 +28,8 @@ export class UserRepository {
     return result[0] ?? null;
   }
 
-  async create(input: CreateUserInput) {
-    const [user] = await db
+  async create(input: CreateUserInput): Promise<User> {
+    const [user] = await this.db
       .insert(users)
       .values({
         email: normalizeEmail(input.email),

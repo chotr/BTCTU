@@ -1,9 +1,9 @@
-type CreateUserInput = {
+export type CreateUserInput = {
   email: string;
   passwordHash: string;
 };
 
-type CreateSessionInput = {
+export type CreateSessionInput = {
   userId: string;
   refreshTokenHash: string;
   expiresAt: Date;
