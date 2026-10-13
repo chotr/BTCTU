@@ -1,7 +1,8 @@
 import { and, eq, isNull } from "drizzle-orm";
-import { Session, sessions } from "src/db";
-import { CreateSessionInput } from "../types";
-import { Database } from "src/db/client";
+import { sessions } from "@/db";
+import type { Database } from "@/db/client";
+import type { Session } from "@/db/schema";
+import type { CreateSessionInput } from "@/modules/auth/types";
 
 export class SessionRepository {
   constructor(private readonly db: Database) {}
@@ -33,11 +34,10 @@ export class SessionRepository {
     return session ?? null;
   }
 
-  async revokeAllForUser(userId: string) {
-    const result = await this.db
+  async revokeAllForUser(userId: string): Promise<void> {
+    await this.db
       .update(sessions)
       .set({ revokedAt: new Date() })
       .where(and(eq(sessions.userId, userId), isNull(sessions.revokedAt)));
-    return result;
   }
 }

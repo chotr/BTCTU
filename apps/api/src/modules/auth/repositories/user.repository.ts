@@ -1,8 +1,9 @@
 import { eq } from "drizzle-orm";
-import { User, users } from "src/db";
-import { CreateUserInput } from "../types";
-import { normalizeEmail } from "src/shared/function";
-import { Database } from "src/db/client";
+import { users } from "@/db";
+import type { Database } from "@/db/client";
+import type { User } from "@/db/schema";
+import type { CreateUserInput } from "@/modules/auth/types";
+import { normalizeEmail } from "@/shared/string";
 
 export class UserRepository {
   constructor(private readonly db: Database) {}
