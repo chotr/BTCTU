@@ -1,16 +1,15 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import { readEnv } from "../env";
 import * as schema from "./schema";
 
-const pool = new Pool({
-  connectionString: readEnv().databaseUrl,
-  max: 10,
-});
+export type Database = ReturnType<typeof createDatabase>;
 
-export const db = drizzle({
-  client: pool,
-  schema,
-});
-
-export type Database = typeof db;
+export function createDatabase(
+  connectionString: string,
+  options: { max?: number } = {},
+) {
+  return drizzle({
+    client: new Pool({ connectionString, max: options.max ?? 10 }),
+    schema,
+  });
+}

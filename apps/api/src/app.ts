@@ -4,21 +4,15 @@ import express, {
   type Response,
 } from "express";
 import { z, type ZodTypeAny } from "zod";
+import {
+  createAuthModule,
+  type AuthModuleOverrides,
+} from "./modules/auth/auth.module";
+import { createAuthRouter } from "./modules/auth/auth.routes";
 import { createMockState } from "./mock-state";
+import { formatIssues, problem } from "./shared/problem";
 import type { Env } from "./env";
 import type { Actor, MockState, Task } from "./types";
-
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace Express {
-    interface Request {
-      requestId: string;
-      state?: MockState;
-      actor?: Actor;
-      validated?: unknown;
-    }
-  }
-}
 
 const classificationSchema = z.enum([
   "XUAT_SAC",
@@ -87,6 +81,45 @@ const openapi = {
     },
   },
   paths: {
+    "/api/v1/auth/login": {
+      post: {
+        security: [],
+        responses: {
+          "200": { description: "Access token issued, refresh cookie set" },
+          "401": { description: "Invalid credentials" },
+          "403": { description: "Account disabled" },
+          "429": { description: "Too many failed attempts" },
+        },
+      },
+    },
+    "/api/v1/auth/refresh": {
+      post: {
+        security: [],
+        responses: {
+          "200": { description: "Tokens rotated" },
+          "401": {
+            description: "Refresh token missing, invalid, expired or reused",
+          },
+        },
+      },
+    },
+    "/api/v1/auth/logout": {
+      post: {
+        security: [],
+        responses: {
+          "204": { description: "Session revoked and cookie cleared" },
+        },
+      },
+    },
+    "/api/v1/auth/session": {
+      get: {
+        security: [{ accessJwt: [] }],
+        responses: {
+          "200": { description: "Authenticated account" },
+          "401": { description: "Missing, invalid or expired access token" },
+        },
+      },
+    },
     "/health": {
       get: {
         security: [],
@@ -152,31 +185,11 @@ const openapi = {
   },
 } as const;
 
-function problem(
-  req: Request,
-  res: Response,
-  status: number,
-  title: string,
-  detail: string,
-  code: string,
-) {
-  return res.status(status).json({
-    type: `https://btctu.local/problems/${code}`,
-    title,
-    status,
-    detail,
-    instance: req.path,
-    requestId: req.requestId,
-  });
-}
-
 function validate(schema: ZodTypeAny) {
   return (req: Request, res: Response, next: NextFunction) => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
-      const detail = result.error.issues
-        .map((issue) => `${issue.path.join(".") || "body"}: ${issue.message}`)
-        .join("; ");
+      const detail = formatIssues(result.error);
       problem(req, res, 422, "Validation failed", detail, "validation_failed");
       return;
     }
@@ -264,7 +277,10 @@ function nextStatusForTask(task: Task, submit: boolean): Task["status"] {
   return task.status === "ASSIGNED" ? "IN_PROGRESS" : task.status;
 }
 
-export function createApp(env: Env) {
+export type AppDependencies = AuthModuleOverrides;
+
+export function createApp(env: Env, dependencies: AppDependencies = {}) {
+  const { auth, throttle } = createAuthModule(env, dependencies);
   const app = express();
   app.disable("x-powered-by");
   app.use(express.json({ limit: "1mb" }));
@@ -304,6 +320,17 @@ export function createApp(env: Env) {
   app.get("/openapi.json", (_req, res) => res.json(openapi));
 
   const api = express.Router();
+
+  api.use(
+    "/auth",
+    createAuthRouter({
+      auth,
+      throttle,
+      allowedOrigins: [env.corsOrigin],
+      secureCookies: env.environment === "production",
+      refreshTtlSeconds: env.refreshTokenTtlSeconds,
+    }),
+  );
 
   api.use((req, res, next) => {
     const state = createMockState();

@@ -16,6 +16,35 @@ pnpm --filter @btctu/api dev
 
 Môi trường local dùng header `x-dev-user-id` (`u-leader`, `u-head`, `u-staff`) để chọn actor phát triển. Header này không được chấp nhận như cơ chế xác thực production.
 
+## Đăng nhập
+
+API xác thực bằng email/mật khẩu, cấp access token (JWT) và refresh token lưu trong cookie `HttpOnly`:
+
+| Method | Path | Mục đích |
+|---|---|---|
+| POST | `/api/v1/auth/login` | đổi email/mật khẩu lấy access token + cookie refresh |
+| POST | `/api/v1/auth/refresh` | xoay refresh token, cấp access token mới |
+| POST | `/api/v1/auth/logout` | thu hồi phiên và xoá cookie |
+| GET | `/api/v1/auth/session` | tài khoản của access token hiện tại |
+
+```bash
+curl -i -X POST http://localhost:8787/api/v1/auth/login \
+  -H "content-type: application/json" \
+  -d '{"email":"staff@btctu.local","password":"dev-only-changeme"}'
+
+curl http://localhost:8787/api/v1/auth/session \
+  -H "authorization: Bearer <accessToken>"
+```
+
+- access token hết hạn theo `JWT_ACCESS_TTL_SECONDS` (mặc định 900 giây);
+- refresh token là chuỗi ngẫu nhiên, chỉ lưu dạng hash SHA-256 trong bảng `sessions`, đặt trong cookie `HttpOnly` + `SameSite=Strict`, path `/api/v1/auth`;
+- mỗi lần refresh sẽ xoay token; token cũ bị dùng lại (đã xoay hoặc đã đăng xuất) bị coi là rò rỉ nên toàn bộ phiên của tài khoản bị thu hồi và trả về `refresh_token_reuse`;
+- `POST /login` bị giới hạn 10 lần sai trong 60 giây cho mỗi cặp email/IP, vượt hạn mức trả về 429;
+- request thay đổi trạng thái có `Origin` khác `CORS_ORIGIN` bị từ chối với `origin_not_allowed`;
+- lỗi trả về theo problem+json (`type`, `title`, `status`, `detail`, `instance`, `requestId`) như các route khác.
+
+Tài khoản phát triển (chạy `pnpm --filter @btctu/api db:migrate` trước, rồi `pnpm --filter @btctu/api db:seed`) dùng email `leader@btctu.local`, `head@btctu.local`, `staff@btctu.local`. Mật khẩu mặc định là `dev-only-changeme`; đặt `DEV_SEED_PASSWORD` để đổi. Tài khoản trong bảng `users` chưa gắn với danh mục nhân sự/vai trò (mốc P2), nên đăng nhập chưa cấp quyền cho các route nghiệp vụ hiện dùng `x-dev-user-id`.
+
 ## Endpoint chính
 
 | Method | Path | Mục đích |

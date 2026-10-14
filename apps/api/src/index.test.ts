@@ -8,6 +8,11 @@ const env: Env = {
   corsOrigin: "http://localhost:3000",
   port: 0,
   databaseUrl: "postgresql://test:test@localhost:5432/btctu_test",
+  jwtAccessSecret: "test-access-secret",
+  jwtAccessIssuer: "btctu-api",
+  jwtAccessAudience: "btctu-web",
+  jwtAccessTtlSeconds: 900,
+  refreshTokenTtlSeconds: 604800,
 };
 const app = createApp(env);
 
