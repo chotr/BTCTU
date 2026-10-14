@@ -9,7 +9,10 @@ import {
   type AuthModuleOverrides,
 } from "./modules/auth/auth.module";
 import { createAuthRouter } from "./modules/auth/auth.routes";
+import { accessTokenFromRequest } from "./middleware/authentication";
+import { createOriginGuard } from "./middleware/csrf";
 import { createMockState } from "./mock-state";
+import { ACCESS_COOKIE_NAME } from "./security/cookie";
 import { formatIssues, problem } from "./shared/problem";
 import type { Env } from "./env";
 import type { Actor, MockState, Task } from "./types";
@@ -76,7 +79,8 @@ const openapi = {
       accessJwt: {
         type: "http",
         scheme: "bearer",
-        description: "Production uses approved access-token verification",
+        description:
+          "Bearer header or the httpOnly cookie issued by /api/v1/auth/login",
       },
     },
   },
@@ -85,7 +89,9 @@ const openapi = {
       post: {
         security: [],
         responses: {
-          "200": { description: "Access token issued, refresh cookie set" },
+          "200": {
+            description: "Account returned, both tokens set as httpOnly cookies",
+          },
           "401": { description: "Invalid credentials" },
           "403": { description: "Account disabled" },
           "429": { description: "Too many failed attempts" },
@@ -96,9 +102,12 @@ const openapi = {
       post: {
         security: [],
         responses: {
-          "200": { description: "Tokens rotated" },
+          "200": { description: "Tokens rotated inside the same session" },
           "401": {
             description: "Refresh token missing, invalid, expired or reused",
+          },
+          "409": {
+            description: "A refresh with the same token is already in progress",
           },
         },
       },
@@ -107,7 +116,7 @@ const openapi = {
       post: {
         security: [],
         responses: {
-          "204": { description: "Session revoked and cookie cleared" },
+          "204": { description: "Session revoked and both cookies cleared" },
         },
       },
     },
@@ -295,6 +304,7 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
     const origin = req.header("origin");
     if (origin && origin === env.corsOrigin) {
       res.setHeader("access-control-allow-origin", origin);
+      res.setHeader("access-control-allow-credentials", "true");
       res.setHeader("vary", "Origin");
     }
     res.setHeader(
@@ -321,41 +331,85 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
 
   const api = express.Router();
 
+  // Tokens travel in cookies, so every writing request carries an origin check.
+  api.use(createOriginGuard([env.corsOrigin]));
+
   api.use(
     "/auth",
     createAuthRouter({
       auth,
       throttle,
       allowedOrigins: [env.corsOrigin],
+      accessTtlSeconds: env.jwtAccessTtlSeconds,
       secureCookies: env.environment === "production",
       refreshTtlSeconds: env.refreshTokenTtlSeconds,
     }),
   );
 
-  api.use((req, res, next) => {
+  api.use(async (req, res, next) => {
     const state = createMockState();
     req.state = state;
 
-    if (
-      env.environment === "production" &&
-      !req.header("cf-access-jwt-assertion")
-    ) {
-      problem(
-        req,
-        res,
-        401,
-        "Unauthorized",
-        "Production API requires an access JWT.",
-        "missing_access_identity",
-      );
+    if (env.environment === "production") {
+      const token = accessTokenFromRequest(req, ACCESS_COOKIE_NAME);
+      if (!token) {
+        problem(
+          req,
+          res,
+          401,
+          "Unauthorized",
+          "An access token is required.",
+          "missing_access_token",
+        );
+        return;
+      }
+
+      try {
+        req.principal = await auth.authenticate(token);
+      } catch {
+        problem(
+          req,
+          res,
+          401,
+          "Unauthorized",
+          "The access token is invalid or expired.",
+          "invalid_access_token",
+        );
+        return;
+      }
+
+      const user = await auth.currentUser(req.principal);
+      if (!user) {
+        problem(
+          req,
+          res,
+          401,
+          "Unauthorized",
+          "The account behind this session is no longer active.",
+          "inactive_account",
+        );
+        return;
+      }
+
+      const provisioned = actorFromHeader(user.id, state);
+      if (!provisioned) {
+        problem(
+          req,
+          res,
+          403,
+          "Forbidden",
+          "This account is not linked to a person in the directory.",
+          "actor_not_provisioned",
+        );
+        return;
+      }
+
+      req.actor = provisioned;
+      next();
       return;
     }
 
-    const actor = actorFromHeader(
-      req.header("x-dev-user-id") ??
-        (env.environment === "production" ? undefined : "u-leader"),
-      state,
-    );
+    const actor = actorFromHeader(req.header("x-dev-user-id") ?? "u-leader", state);
     if (!actor) {
       problem(
         req,

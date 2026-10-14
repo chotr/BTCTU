@@ -15,6 +15,13 @@
       "when": 1791873163427,
       "tag": "0001_odd_tag",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791959011140,
+      "tag": "0002_foamy_professor_monster",
+      "breakpoints": true
     }
   ]
 }

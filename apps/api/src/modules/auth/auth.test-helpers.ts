@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { Session, User } from "@/db/schema";
 import type { SessionStore, UserStore } from "./auth.types";
 import { PasswordService } from "./password.service";
-import type { CreateSessionInput } from "./types";
+import type { CreateSessionInput, RotateSessionInput } from "./types";
 
 export type InMemoryStores = {
   users: User[];
@@ -33,6 +33,7 @@ export function createInMemoryStores(
         id: randomUUID(),
         userId: data.userId,
         refreshTokenHash: data.refreshTokenHash,
+        previousTokenHash: null,
         expiresAt: data.expiresAt,
         revokedAt: null,
         createdAt: new Date(),
@@ -45,6 +46,29 @@ export function createInMemoryStores(
       return (
         sessions.find((row) => row.refreshTokenHash === refreshTokenHash) ?? null
       );
+    },
+    async findById(sessionId: string) {
+      return sessions.find((row) => row.id === sessionId) ?? null;
+    },
+    async findByPreviousTokenHash(previousTokenHash: string) {
+      return (
+        sessions.find((row) => row.previousTokenHash === previousTokenHash) ??
+        null
+      );
+    },
+    async rotate(input: RotateSessionInput) {
+      const session = sessions.find(
+        (row) =>
+          row.id === input.sessionId &&
+          row.refreshTokenHash === input.currentHash &&
+          row.revokedAt === null,
+      );
+      if (!session) return null;
+
+      session.previousTokenHash = input.currentHash;
+      session.refreshTokenHash = input.nextHash;
+      session.lastUsedAt = input.usedAt;
+      return session;
     },
     async revoke(sessionId: string) {
       const session = sessions.find(

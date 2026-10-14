@@ -2,7 +2,10 @@ import { and, eq, isNull } from "drizzle-orm";
 import { sessions } from "@/db";
 import type { Database } from "@/db/client";
 import type { Session } from "@/db/schema";
-import type { CreateSessionInput } from "@/modules/auth/types";
+import type {
+  CreateSessionInput,
+  RotateSessionInput,
+} from "@/modules/auth/types";
 
 export class SessionRepository {
   constructor(private readonly db: Database) {}
@@ -22,6 +25,48 @@ export class SessionRepository {
       .limit(1);
 
     return result[0] ?? null;
+  }
+
+  async findById(sessionId: string): Promise<Session | null> {
+    const result = await this.db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.id, sessionId))
+      .limit(1);
+
+    return result[0] ?? null;
+  }
+
+  async findByPreviousTokenHash(
+    previousTokenHash: string,
+  ): Promise<Session | null> {
+    const result = await this.db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.previousTokenHash, previousTokenHash))
+      .limit(1);
+
+    return result[0] ?? null;
+  }
+
+  async rotate(input: RotateSessionInput): Promise<Session | null> {
+    const [session] = await this.db
+      .update(sessions)
+      .set({
+        refreshTokenHash: input.nextHash,
+        previousTokenHash: input.currentHash,
+        lastUsedAt: input.usedAt,
+      })
+      .where(
+        and(
+          eq(sessions.id, input.sessionId),
+          eq(sessions.refreshTokenHash, input.currentHash),
+          isNull(sessions.revokedAt),
+        ),
+      )
+      .returning();
+
+    return session ?? null;
   }
 
   async revoke(sessionId: string): Promise<Session | null> {

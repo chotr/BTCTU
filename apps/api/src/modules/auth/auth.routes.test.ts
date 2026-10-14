@@ -2,8 +2,8 @@ import request from "supertest";
 import { describe, expect, it } from "vitest";
 import { createApp } from "@/app";
 import type { Env } from "@/env";
+import { ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME } from "@/security/cookie";
 import { AttemptThrottle } from "@/security/throttle";
-import { REFRESH_COOKIE_NAME } from "./auth.routes";
 import { AuthService } from "./auth.service";
 import { createInMemoryStores, createTestUser } from "./auth.test-helpers";
 import { PasswordService } from "./password.service";
@@ -25,7 +25,9 @@ const env: Env = {
   refreshTokenTtlSeconds: 604800,
 };
 
-async function createHarness(options: { maxAttempts?: number } = {}) {
+async function createHarness(
+  options: { maxAttempts?: number; now?: () => Date } = {},
+) {
   const stores = createInMemoryStores();
   const user = await createTestUser(stores, {
     email: EMAIL,
@@ -42,6 +44,7 @@ async function createHarness(options: { maxAttempts?: number } = {}) {
       accessTtlSeconds: env.jwtAccessTtlSeconds,
     }),
     refreshTtlSeconds: env.refreshTokenTtlSeconds,
+    now: options.now,
   });
   const throttle = new AttemptThrottle({
     maxAttempts: options.maxAttempts ?? 10,
@@ -58,12 +61,16 @@ function setCookieHeader(response: request.Response): string[] {
 }
 
 function refreshCookie(response: request.Response): string {
-  const cookie = setCookieHeader(response).find((row) =>
-    row.startsWith(`${REFRESH_COOKIE_NAME}=`),
-  );
-  if (!cookie) throw new Error("refresh cookie was not set");
+  return `${REFRESH_COOKIE_NAME}=${cookieValue(response, REFRESH_COOKIE_NAME)}`;
+}
 
-  return cookie.split(";")[0];
+function cookieValue(response: request.Response, name: string): string {
+  const cookie = setCookieHeader(response).find((row) =>
+    row.startsWith(`${name}=`),
+  );
+  if (!cookie) throw new Error(`${name} cookie was not set`);
+
+  return cookie.split(";")[0].slice(name.length + 1);
 }
 
 async function login(app: ReturnType<typeof createApp>) {
@@ -77,7 +84,7 @@ function problemShape(body: Record<string, unknown>) {
 }
 
 describe("POST /api/v1/auth/login", () => {
-  it("returns an access token and sets an httpOnly refresh cookie", async () => {
+  it("sets both tokens as httpOnly cookies and keeps them out of the body", async () => {
     const { app, user } = await createHarness();
 
     const response = await login(app);
@@ -89,27 +96,40 @@ describe("POST /api/v1/auth/login", () => {
       status: "ACTIVE",
     });
     expect(response.body.data.expiresIn).toBe(900);
-    expect(response.body.meta.tokenType).toBe("Bearer");
-    const cookie = refreshCookie(response);
-    expect(cookie).not.toBe(`${REFRESH_COOKIE_NAME}=`);
-    expect(String(response.headers["set-cookie"])).toContain("HttpOnly");
-    expect(String(response.headers["set-cookie"])).toContain(
-      "Path=/api/v1/auth",
-    );
     expect(response.body.data).not.toHaveProperty("refreshToken");
+    expect(response.body.data).not.toHaveProperty("accessToken");
+    expect(response.body.meta.tokenStorage).toBe("httpOnly-cookie");
+
+    const setCookie = String(response.headers["set-cookie"]);
+    expect(setCookie).toContain(`${ACCESS_COOKIE_NAME}=`);
+    expect(setCookie).toContain(`${REFRESH_COOKIE_NAME}=`);
+    expect(setCookie).toContain("HttpOnly");
+    expect(setCookie).toContain("Path=/api/v1");
   });
 
-  it("accepts the issued access token on the session endpoint", async () => {
+  it("accepts the access token cookie on the session endpoint", async () => {
     const { app, user } = await createHarness();
     const loginResponse = await login(app);
+    const token = cookieValue(loginResponse, ACCESS_COOKIE_NAME);
 
     const response = await request(app)
       .get("/api/v1/auth/session")
-      .set("authorization", `Bearer ${loginResponse.body.data.accessToken}`);
+      .set("cookie", `${ACCESS_COOKIE_NAME}=${token}`);
 
     expect(response.status).toBe(200);
     expect(response.body.data.user.id).toBe(user.id);
     expect(response.body.data.session.id).toEqual(expect.any(String));
+  });
+
+  it("accepts the access token as a bearer header", async () => {
+    const { app } = await createHarness();
+    const token = cookieValue(await login(app), ACCESS_COOKIE_NAME);
+
+    const response = await request(app)
+      .get("/api/v1/auth/session")
+      .set("authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
   });
 
   it("rejects a body that does not match the contract", async () => {
@@ -189,7 +209,7 @@ describe("POST /api/v1/auth/login", () => {
 });
 
 describe("POST /api/v1/auth/refresh", () => {
-  it("rotates the cookie and invalidates the previous token", async () => {
+  it("rotates the cookie and answers 409 when the same token is used twice", async () => {
     const { app } = await createHarness();
     const loginResponse = await login(app);
     const first = refreshCookie(loginResponse);
@@ -200,18 +220,48 @@ describe("POST /api/v1/auth/refresh", () => {
 
     expect(refreshed.status).toBe(200);
     const rotated = refreshCookie(refreshed);
+    const accessCookie = `${ACCESS_COOKIE_NAME}=${cookieValue(
+      refreshed,
+      ACCESS_COOKIE_NAME,
+    )}`;
     expect(rotated).not.toBe(first);
     await expect(
       request(app)
         .get("/api/v1/auth/session")
-        .set("authorization", `Bearer ${refreshed.body.data.accessToken}`),
+        .set("cookie", accessCookie),
     ).resolves.toMatchObject({ status: 200 });
+
+    const duplicate = await request(app)
+      .post("/api/v1/auth/refresh")
+      .set("cookie", first);
+    expect(duplicate.status).toBe(409);
+    expect(duplicate.body.type).toContain("refresh_in_progress");
+    expect(duplicate.headers["retry-after"]).toBe("1");
+
+    const withCurrentCookie = await request(app)
+      .post("/api/v1/auth/refresh")
+      .set("cookie", rotated);
+    expect(withCurrentCookie.status).toBe(200);
+  });
+
+  it("revokes every session when an old token comes back after the grace window", async () => {
+    let now = new Date("2026-10-14T00:00:00.000Z");
+    const { app, stores } = await createHarness({ now: () => now });
+    const loginResponse = await login(app);
+    const first = refreshCookie(loginResponse);
+    const refreshed = await request(app)
+      .post("/api/v1/auth/refresh")
+      .set("cookie", first);
+    const rotated = refreshCookie(refreshed);
+    now = new Date("2026-10-14T00:05:00.000Z");
 
     const replay = await request(app)
       .post("/api/v1/auth/refresh")
       .set("cookie", first);
+
     expect(replay.status).toBe(401);
     expect(replay.body.type).toContain("refresh_token_reuse");
+    expect(stores.sessions.every((row) => row.revokedAt !== null)).toBe(true);
 
     const afterReuse = await request(app)
       .post("/api/v1/auth/refresh")
@@ -222,14 +272,14 @@ describe("POST /api/v1/auth/refresh", () => {
   it("accepts the refresh token in the body for API clients", async () => {
     const { app } = await createHarness();
     const loginResponse = await login(app);
-    const rawToken = refreshCookie(loginResponse).split("=")[1];
+    const rawToken = cookieValue(loginResponse, REFRESH_COOKIE_NAME);
 
     const response = await request(app)
       .post("/api/v1/auth/refresh")
       .send({ refreshToken: decodeURIComponent(rawToken) });
 
     expect(response.status).toBe(200);
-    expect(response.body.data.accessToken).toEqual(expect.any(String));
+    expect(response.body.data.user).toEqual(expect.any(Object));
   });
 
   it("requires a refresh token", async () => {
@@ -260,8 +310,7 @@ describe("POST /api/v1/auth/logout", () => {
       .post("/api/v1/auth/refresh")
       .set("cookie", cookie);
     expect(afterLogout.status).toBe(401);
-    // The logged-out token counts as replayed, so the whole family is revoked.
-    expect(afterLogout.body.type).toContain("refresh_token_reuse");
+    expect(afterLogout.body.type).toContain("invalid_refresh_token");
   });
 });
 
@@ -281,6 +330,23 @@ describe("GET /api/v1/auth/session", () => {
     const response = await request(app)
       .get("/api/v1/auth/session")
       .set("authorization", "Bearer not-a-jwt");
+
+    expect(response.status).toBe(401);
+    expect(response.body.type).toContain("invalid_access_token");
+  });
+
+  it("denies the access token once its session was revoked", async () => {
+    const { app } = await createHarness();
+    const loginResponse = await login(app);
+    const token = cookieValue(loginResponse, ACCESS_COOKIE_NAME);
+
+    await request(app)
+      .post("/api/v1/auth/logout")
+      .set("cookie", refreshCookie(loginResponse));
+
+    const response = await request(app)
+      .get("/api/v1/auth/session")
+      .set("authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(401);
     expect(response.body.type).toContain("invalid_access_token");

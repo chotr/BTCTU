@@ -2,7 +2,11 @@ import { Router, type Request, type Response } from "express";
 import { createAccessTokenGuard } from "@/middleware/authentication";
 import { createOriginGuard } from "@/middleware/csrf";
 import {
+  ACCESS_COOKIE_NAME,
+  ACCESS_COOKIE_PATH,
   parseCookieHeader,
+  REFRESH_COOKIE_NAME,
+  REFRESH_COOKIE_PATH,
   serializeClearedCookie,
   serializeCookie,
   type CookieAttributes,
@@ -15,13 +19,11 @@ import {
   AccountDisabledError,
   InvalidCredentialsError,
   InvalidSessionError,
+  RotationInProgressError,
   SessionReuseError,
   type AuthPort,
   type AuthenticatedUser,
 } from "./auth.types";
-
-export const REFRESH_COOKIE_NAME = "btctu_refresh";
-export const REFRESH_COOKIE_PATH = "/api/v1/auth";
 
 const LOGIN_MAX_ATTEMPTS = 10;
 const LOGIN_WINDOW_MS = 60_000;
@@ -29,8 +31,11 @@ const LOGIN_WINDOW_MS = 60_000;
 export type AuthRouterOptions = {
   auth: AuthPort;
   allowedOrigins: string[];
+  accessTtlSeconds: number;
   refreshTtlSeconds: number;
   secureCookies?: boolean;
+  accessCookieName?: string;
+  accessCookiePath?: string;
   refreshCookieName?: string;
   refreshCookiePath?: string;
   throttle?: AttemptThrottle;
@@ -39,17 +44,25 @@ export type AuthRouterOptions = {
 type TokenResponse = {
   user: AuthenticatedUser;
   accessToken: string;
+  refreshToken: string;
   expiresIn: number;
-  refreshTokenExpiresAt: Date;
 };
 
 export function createAuthRouter(options: AuthRouterOptions): Router {
   const router = Router();
   const cookieName = options.refreshCookieName ?? REFRESH_COOKIE_NAME;
-  const cookieAttributes: CookieAttributes = {
+  const accessCookieName = options.accessCookieName ?? ACCESS_COOKIE_NAME;
+  const secure = options.secureCookies ?? false;
+  const accessCookie: CookieAttributes = {
+    path: options.accessCookiePath ?? ACCESS_COOKIE_PATH,
+    httpOnly: true,
+    secure,
+    sameSite: "Strict",
+  };
+  const refreshCookie: CookieAttributes = {
     path: options.refreshCookiePath ?? REFRESH_COOKIE_PATH,
     httpOnly: true,
-    secure: options.secureCookies ?? false,
+    secure,
     sameSite: "Strict",
   };
   const originGuard = createOriginGuard(options.allowedOrigins);
@@ -61,21 +74,24 @@ export function createAuthRouter(options: AuthRouterOptions): Router {
       windowMs: LOGIN_WINDOW_MS,
     });
 
-  function setRefreshCookie(res: Response, refreshToken: string): void {
-    res.setHeader(
-      "set-cookie",
-      serializeCookie(cookieName, refreshToken, {
-        ...cookieAttributes,
+  function setSessionCookies(res: Response, tokens: TokenResponse): void {
+    res.setHeader("set-cookie", [
+      serializeCookie(accessCookieName, tokens.accessToken, {
+        ...accessCookie,
+        maxAge: options.accessTtlSeconds,
+      }),
+      serializeCookie(cookieName, tokens.refreshToken, {
+        ...refreshCookie,
         maxAge: options.refreshTtlSeconds,
       }),
-    );
+    ]);
   }
 
-  function clearRefreshCookie(res: Response): void {
-    res.setHeader(
-      "set-cookie",
-      serializeClearedCookie(cookieName, cookieAttributes),
-    );
+  function clearSessionCookies(res: Response): void {
+    res.setHeader("set-cookie", [
+      serializeClearedCookie(accessCookieName, accessCookie),
+      serializeClearedCookie(cookieName, refreshCookie),
+    ]);
   }
 
   function readRefreshToken(
@@ -90,11 +106,13 @@ export function createAuthRouter(options: AuthRouterOptions): Router {
     res.json({
       data: {
         user: tokens.user,
-        accessToken: tokens.accessToken,
         expiresIn: tokens.expiresIn,
-        refreshTokenExpiresAt: tokens.refreshTokenExpiresAt.toISOString(),
       },
-      meta: { tokenType: "Bearer" },
+      meta: {
+        tokenStorage: "httpOnly-cookie",
+        accessTokenCookie: accessCookieName,
+        refreshTokenCookie: cookieName,
+      },
     });
   }
 
@@ -130,7 +148,7 @@ export function createAuthRouter(options: AuthRouterOptions): Router {
     try {
       const result = await options.auth.login(parsed.data);
       throttle.reset(attemptKey);
-      setRefreshCookie(res, result.refreshToken);
+      setSessionCookies(res, result);
       respondWithTokens(res, result);
     } catch (error) {
       if (error instanceof InvalidCredentialsError) {
@@ -177,7 +195,7 @@ export function createAuthRouter(options: AuthRouterOptions): Router {
 
     const refreshToken = readRefreshToken(req, parsed.data.refreshToken);
     if (!refreshToken) {
-      clearRefreshCookie(res);
+      clearSessionCookies(res);
       problem(
         req,
         res,
@@ -191,11 +209,23 @@ export function createAuthRouter(options: AuthRouterOptions): Router {
 
     try {
       const result = await options.auth.refresh(refreshToken);
-      setRefreshCookie(res, result.refreshToken);
+      setSessionCookies(res, result);
       respondWithTokens(res, result);
     } catch (error) {
+      if (error instanceof RotationInProgressError) {
+        res.setHeader("retry-after", "1");
+        problem(
+          req,
+          res,
+          409,
+          "Conflict",
+          "Another refresh with the same token is in progress. Retry with the current cookie.",
+          "refresh_in_progress",
+        );
+        return;
+      }
       if (error instanceof SessionReuseError) {
-        clearRefreshCookie(res);
+        clearSessionCookies(res);
         problem(
           req,
           res,
@@ -207,7 +237,7 @@ export function createAuthRouter(options: AuthRouterOptions): Router {
         return;
       }
       if (error instanceof InvalidSessionError) {
-        clearRefreshCookie(res);
+        clearSessionCookies(res);
         problem(
           req,
           res,
@@ -219,7 +249,7 @@ export function createAuthRouter(options: AuthRouterOptions): Router {
         return;
       }
       if (error instanceof AccountDisabledError) {
-        clearRefreshCookie(res);
+        clearSessionCookies(res);
         problem(
           req,
           res,
@@ -241,7 +271,7 @@ export function createAuthRouter(options: AuthRouterOptions): Router {
       parsed.success ? parsed.data.refreshToken : undefined,
     );
 
-    clearRefreshCookie(res);
+    clearSessionCookies(res);
     if (refreshToken) await options.auth.logout(refreshToken);
     res.status(204).end();
   });

@@ -130,11 +130,19 @@ export class AuthService implements AuthPort {
   }
 
   async authenticate(accessToken: string): Promise<AuthPrincipal> {
+    let claims: AuthPrincipal;
     try {
-      return await this.options.tokens.verifyAccessToken(accessToken);
+      claims = await this.options.tokens.verifyAccessToken(accessToken);
     } catch {
       throw new InvalidAccessTokenError();
     }
+
+    const session = await this.sessions.findActiveById(claims.sessionId);
+    if (!session || session.userId !== claims.userId) {
+      throw new InvalidSessionError("Session is not active");
+    }
+
+    return { userId: claims.userId, sessionId: claims.sessionId };
   }
 
   async currentUser(

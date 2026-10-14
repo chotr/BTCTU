@@ -1,5 +1,5 @@
 import type { Session, User } from "@/db/schema";
-import type { CreateSessionInput } from "./types";
+import type { CreateSessionInput, RotateSessionInput } from "./types";
 
 export type AuthPrincipal = {
   userId: string;
@@ -35,7 +35,10 @@ export type UserStore = {
 
 export type SessionStore = {
   create(data: CreateSessionInput): Promise<Session>;
+  findById(sessionId: string): Promise<Session | null>;
   findByRefreshTokenHash(refreshTokenHash: string): Promise<Session | null>;
+  findByPreviousTokenHash(previousTokenHash: string): Promise<Session | null>;
+  rotate(input: RotateSessionInput): Promise<Session | null>;
   revoke(sessionId: string): Promise<Session | null>;
   revokeAllForUser(userId: string): Promise<void>;
 };
@@ -87,6 +90,13 @@ export class SessionReuseError extends Error {
   ) {
     super("Refresh token reuse detected");
     this.name = "SessionReuseError";
+  }
+}
+
+export class RotationInProgressError extends Error {
+  constructor() {
+    super("Refresh token rotation is already in progress");
+    this.name = "RotationInProgressError";
   }
 }
 

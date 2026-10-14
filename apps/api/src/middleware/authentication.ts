@@ -1,5 +1,9 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import type { AuthPort } from "@/modules/auth/auth.types";
+import {
+  ACCESS_COOKIE_NAME,
+  parseCookieHeader,
+} from "@/security/cookie";
 import { problem } from "@/shared/problem";
 
 export function parseBearerToken(header: string | undefined): string | null {
@@ -12,9 +16,19 @@ export function parseBearerToken(header: string | undefined): string | null {
   return token.length > 0 ? token : null;
 }
 
+export function accessTokenFromRequest(
+  req: Request,
+  cookieName = ACCESS_COOKIE_NAME,
+): string | null {
+  const bearer = parseBearerToken(req.header("authorization"));
+  if (bearer) return bearer;
+
+  return parseCookieHeader(req.header("cookie"))[cookieName] ?? null;
+}
+
 export function createAccessTokenGuard(auth: AuthPort): RequestHandler {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const token = parseBearerToken(req.header("authorization"));
+    const token = accessTokenFromRequest(req);
     if (!token) {
       problem(
         req,

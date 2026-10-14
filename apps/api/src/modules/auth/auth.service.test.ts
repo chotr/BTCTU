@@ -5,6 +5,8 @@ import {
   AccountDisabledError,
   InvalidAccessTokenError,
   InvalidCredentialsError,
+  InvalidSessionError,
+  RotationInProgressError,
   SessionReuseError,
   type AuthEvent,
 } from "./auth.types";
@@ -20,7 +22,7 @@ const tokens = new TokenService({
 });
 
 async function createSubject(
-  options: { onEvent?: (event: AuthEvent) => void } = {},
+  options: { now?: () => Date; onEvent?: (event: AuthEvent) => void } = {},
 ) {
   const stores = createInMemoryStores();
   const user = await createTestUser(stores, {
@@ -135,18 +137,36 @@ describe("AuthService session lifecycle", () => {
     ).resolves.toBeNull();
   });
 
-  it("rotates the refresh token on refresh and keeps the account", async () => {
+  it("keeps the same session when the refresh token is rotated", async () => {
     const { events, service, user } = await createSubject();
     const login = await service.login({ email: user.email, password: PASSWORD });
+    const before = await service.authenticate(login.accessToken);
 
     const refreshed = await service.refresh(login.refreshToken);
+    const after = await service.authenticate(refreshed.accessToken);
 
     expect(refreshed.user.id).toBe(user.id);
     expect(refreshed.refreshToken).not.toBe(login.refreshToken);
-    await expect(
-      service.authenticate(refreshed.accessToken),
-    ).resolves.toMatchObject({ userId: user.id });
+    expect(after.sessionId).toBe(before.sessionId);
     expect(events.some((event) => event.type === "session_refreshed")).toBe(true);
+  });
+
+  it("treats a duplicate refresh inside the grace window as a race", async () => {
+    const { service, user } = await createSubject();
+    const login = await service.login({ email: user.email, password: PASSWORD });
+    await service.refresh(login.refreshToken);
+
+    await expect(service.refresh(login.refreshToken)).rejects.toBeInstanceOf(
+      RotationInProgressError,
+    );
+  });
+
+  it("treats a token replayed past the grace window as a leak", async () => {
+    let now = new Date("2026-10-14T00:00:00.000Z");
+    const { events, service, user } = await createSubject({ now: () => now });
+    const login = await service.login({ email: user.email, password: PASSWORD });
+    await service.refresh(login.refreshToken);
+    now = new Date("2026-10-14T00:05:00.000Z");
 
     await expect(service.refresh(login.refreshToken)).rejects.toBeInstanceOf(
       SessionReuseError,
@@ -158,6 +178,20 @@ describe("AuthService session lifecycle", () => {
     });
   });
 
+  it("stops accepting the access token once the session is revoked", async () => {
+    const { service, user } = await createSubject();
+    const login = await service.login({ email: user.email, password: PASSWORD });
+    await expect(service.authenticate(login.accessToken)).resolves.toMatchObject(
+      { userId: user.id },
+    );
+
+    await service.logout(login.refreshToken);
+
+    await expect(service.authenticate(login.accessToken)).rejects.toBeInstanceOf(
+      InvalidSessionError,
+    );
+  });
+
   it("stops refreshing after logout", async () => {
     const { events, service, user } = await createSubject();
     const login = await service.login({ email: user.email, password: PASSWORD });
@@ -165,7 +199,7 @@ describe("AuthService session lifecycle", () => {
     await service.logout(login.refreshToken);
 
     await expect(service.refresh(login.refreshToken)).rejects.toBeInstanceOf(
-      SessionReuseError,
+      InvalidSessionError,
     );
     expect(events.some((event) => event.type === "logout")).toBe(true);
   });

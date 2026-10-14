@@ -25,6 +25,8 @@ export const sessions = pgTable(
       .notNull()
       .unique(),
 
+    previousTokenHash: text("previous_token_hash"),
+
     expiresAt: timestamp("expires_at", {
       withTimezone: true,
     }).notNull(),
@@ -48,6 +50,7 @@ export const sessions = pgTable(
   (table) => [
     index("sessions_user_id_idx").on(table.userId),
     index("sessions_expires_at_idx").on(table.expiresAt),
+    index("sessions_previous_token_hash_idx").on(table.previousTokenHash),
   ],
 );
 
