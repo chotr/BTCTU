@@ -1,14 +1,7 @@
+import type { TaskStatus } from "@btctu/shared";
 import type { CatalogItem } from "./catalog";
 
-export type TaskStatus =
-  | "ASSIGNED"
-  | "IN_PROGRESS"
-  | "SUBMITTED"
-  | "RETURNED"
-  | "REVIEWED"
-  | "ACCEPTED"
-  | "LOCKED"
-  | "CANCELLED";
+export type { TaskStatus };
 
 export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
   ASSIGNED: "Đã giao",

@@ -1,10 +1,13 @@
-export const ROLES = {
-  lanhDao: "lanh_dao",
-  truongPhong: "truong_phong",
-  congChuc: "cong_chuc",
-} as const;
+import { ROLES } from "@btctu/shared";
+import type {
+  Classification,
+  EvaluationStatus,
+  Role,
+  TaskStatus,
+} from "@btctu/shared";
 
-export type Role = (typeof ROLES)[keyof typeof ROLES];
+export { ROLES };
+export type { Classification, EvaluationStatus, Role, TaskStatus };
 
 export type Actor = {
   id: string;
@@ -41,9 +44,6 @@ export type CatalogItem = {
   sourceClass: "FACT" | "INFERENCE" | "TBD";
 };
 
-export type TaskStatus =
-  "ASSIGNED" | "IN_PROGRESS" | "SUBMITTED" | "RETURNED" | "ACCEPTED";
-
 export type TaskResult = {
   quantity: number;
   product: string;
@@ -65,11 +65,6 @@ export type Task = {
   progress: number;
   result: TaskResult | null;
 };
-
-export type EvaluationStatus =
-  "DRAFT" | "SUBMITTED" | "REVIEWED" | "APPROVED" | "LOCKED";
-export type Classification =
-  "XUAT_SAC" | "TOT" | "HOAN_THANH" | "KHONG_HOAN_THANH";
 
 export type Evaluation = {
   id: string;

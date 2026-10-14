@@ -1,3 +1,4 @@
+import type { ApiEnvelope, ProblemResponse } from "@btctu/shared";
 import { runtimeConfig } from "./runtime-config";
 
 export class ApiError extends Error {
@@ -11,16 +12,8 @@ export class ApiError extends Error {
   }
 }
 
-type ApiEnvelope<T> = {
-  data: T;
-  meta?: Record<string, unknown>;
-};
-
-type ProblemDetails = {
-  title?: string;
-  detail?: string;
-  requestId?: string;
-};
+/** Body lỗi có thể thiếu trường, nên chỉ đọc phần có mặt. */
+type ProblemBody = Partial<ProblemResponse>;
 
 export async function apiRequest<T>(
   path: string,
@@ -42,9 +35,7 @@ export async function apiRequest<T>(
     const requestId = response.headers.get("x-request-id");
 
     if (!response.ok) {
-      const problem = (await response
-        .json()
-        .catch(() => ({}))) as ProblemDetails;
+      const problem = (await response.json().catch(() => ({}))) as ProblemBody;
       throw new ApiError(
         problem.detail ?? problem.title ?? "Yêu cầu không thành công",
         response.status,

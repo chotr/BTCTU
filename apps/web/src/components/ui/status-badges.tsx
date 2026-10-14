@@ -3,7 +3,7 @@ import {
   EVAL_STATUS_LABELS,
   TASK_STATUS_LABELS,
   type Classification,
-  type EvalStatus,
+  type EvaluationStatus,
   type TaskStatus,
 } from "@/lib/types";
 import { Badge } from "./badge";
@@ -35,8 +35,8 @@ export function ClassificationBadge({ value }: { value: Classification }) {
   return <Badge tone={tone[value]}>{CLASS_LABELS[value]}</Badge>;
 }
 
-export function EvalStatusBadge({ status }: { status: EvalStatus }) {
-  const tone: Record<EvalStatus, "neutral" | "accent" | "ok" | "warn"> = {
+export function EvalStatusBadge({ status }: { status: EvaluationStatus }) {
+  const tone: Record<EvaluationStatus, "neutral" | "accent" | "ok" | "warn"> = {
     DRAFT: "neutral",
     SUBMITTED: "warn",
     REVIEWED: "accent",

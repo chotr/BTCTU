@@ -1,3 +1,4 @@
+import type { AuthenticatedUser, LoginRequest } from "@btctu/shared";
 import type { Session, User } from "@/db/schema";
 import type { CreateSessionInput, RotateSessionInput } from "./types";
 
@@ -6,11 +7,7 @@ export type AuthPrincipal = {
   sessionId: string;
 };
 
-export type AuthenticatedUser = {
-  id: string;
-  email: string;
-  status: User["status"];
-};
+export type { AuthenticatedUser };
 
 export type SessionTokens = {
   accessToken: string;
@@ -19,10 +16,7 @@ export type SessionTokens = {
   refreshTokenExpiresAt: Date;
 };
 
-export type LoginInput = {
-  email: string;
-  password: string;
-};
+export type LoginInput = LoginRequest;
 
 export type LoginResult = SessionTokens & { user: AuthenticatedUser };
 

@@ -1,10 +1,6 @@
-export const ROLES = {
-  lanhDao: "lanh_dao",
-  truongPhong: "truong_phong",
-  congChuc: "cong_chuc",
-} as const;
+import type { Role } from "@btctu/shared";
 
-export type Role = (typeof ROLES)[keyof typeof ROLES];
+export { ROLES, type Role } from "@btctu/shared";
 
 export interface AppUser {
   id: string;

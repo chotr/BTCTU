@@ -1,14 +1,7 @@
+import type { AuthorizationAction } from "@btctu/shared";
 import { ROLES, type Actor } from "@/types";
 
-export type AuthorizationAction =
-  | "task.create"
-  | "task.accept"
-  | "task.return"
-  | "evaluation.self"
-  | "evaluation.review"
-  | "evaluation.decide"
-  | "period.lock"
-  | "audit.read";
+export type { AuthorizationAction };
 
 export type AuthorizationResource = {
   departmentId?: string | null;

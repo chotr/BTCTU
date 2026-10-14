@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   output: "standalone",
+  transpilePackages: ["@btctu/shared"],
   async headers() {
     return [
       {

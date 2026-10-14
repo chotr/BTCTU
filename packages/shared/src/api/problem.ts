@@ -1,0 +1,8 @@
+export type ProblemResponse = {
+  type: string;
+  title: string;
+  status: number;
+  detail: string;
+  instance: string;
+  requestId: string;
+};

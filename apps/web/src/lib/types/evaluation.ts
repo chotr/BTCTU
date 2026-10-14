@@ -1,7 +1,7 @@
+import type { Classification, EvaluationStatus } from "@btctu/shared";
 import type { HistoryEntry } from "./task";
 
-export type Classification =
-  "XUAT_SAC" | "TOT" | "HOAN_THANH" | "KHONG_HOAN_THANH";
+export type { Classification, EvaluationStatus };
 
 export const CLASS_LABELS: Record<Classification, string> = {
   XUAT_SAC: "Hoàn thành xuất sắc nhiệm vụ",
@@ -61,10 +61,7 @@ export interface CalculationRun {
   reason: string;
 }
 
-export type EvalStatus =
-  "DRAFT" | "SUBMITTED" | "REVIEWED" | "APPROVED" | "LOCKED";
-
-export const EVAL_STATUS_LABELS: Record<EvalStatus, string> = {
+export const EVAL_STATUS_LABELS: Record<EvaluationStatus, string> = {
   DRAFT: "Bản nháp",
   SUBMITTED: "Đã tự đánh giá",
   REVIEWED: "Đã thẩm định, đề xuất",
@@ -78,7 +75,7 @@ export interface Evaluation {
   subjectId: string;
   subjectType: "PERSON" | "DEPARTMENT";
   departmentId: string;
-  status: EvalStatus;
+  status: EvaluationStatus;
   isLeader: boolean;
   generalScore: number;
   generalMax: number;

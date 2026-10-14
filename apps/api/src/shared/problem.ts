@@ -1,16 +1,11 @@
+import type { ProblemResponse } from "@btctu/shared";
 import type { Request, Response } from "express";
 import type { ZodError } from "zod";
 
-/** Probe comment added to test whether an external process strips comments. */
-export type ProblemDetails = {
-  type: string;
-  title: string;
-  status: number;
-  detail: string;
-  instance: string;
-  requestId: string;
-};
-
+/**
+ * RFC 9457 style problem response shared by every route. `code` is the stable
+ * machine-readable identifier clients switch on.
+ */
 export function problem(
   req: Request,
   res: Response,
@@ -19,7 +14,7 @@ export function problem(
   detail: string,
   code: string,
 ): Response {
-  const body: ProblemDetails = {
+  const body: ProblemResponse = {
     type: `https://btctu.local/problems/${code}`,
     title,
     status,

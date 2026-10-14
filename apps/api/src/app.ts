@@ -3,6 +3,7 @@ import express, {
   type Request,
   type Response,
 } from "express";
+import { CLASSIFICATIONS } from "@btctu/shared";
 import { z, type ZodTypeAny } from "zod";
 import {
   createAuthModule,
@@ -24,12 +25,7 @@ import { formatIssues, problem } from "./shared/problem";
 import type { Env } from "./env";
 import type { Task } from "./types";
 
-const classificationSchema = z.enum([
-  "XUAT_SAC",
-  "TOT",
-  "HOAN_THANH",
-  "KHONG_HOAN_THANH",
-]);
+const classificationSchema = z.enum(CLASSIFICATIONS);
 
 const createTaskSchema = z.object({
   catalogItemId: z.string().min(1),

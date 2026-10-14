@@ -1,4 +1,4 @@
-import type { EvalStatus, TaskStatus } from "@/lib/types";
+import type { EvaluationStatus, TaskStatus } from "@/lib/types";
 
 /**
  * Nguồn chân lý duy nhất cho các nhóm trạng thái vòng đời. Khi thêm một trạng
@@ -28,19 +28,19 @@ export const TASK_DONE = [
 export const EVAL_EDITABLE = [
   "DRAFT",
   "SUBMITTED",
-] as const satisfies readonly EvalStatus[];
+] as const satisfies readonly EvaluationStatus[];
 
 /** Trạng thái hồ sơ đánh giá đang chờ thẩm định. */
 export const EVAL_IN_REVIEW = [
   "SUBMITTED",
   "REVIEWED",
-] as const satisfies readonly EvalStatus[];
+] as const satisfies readonly EvaluationStatus[];
 
 /** Trạng thái hồ sơ đánh giá đã quyết định/chốt (chỉ đọc). */
 export const EVAL_FINAL = [
   "APPROVED",
   "LOCKED",
-] as const satisfies readonly EvalStatus[];
+] as const satisfies readonly EvaluationStatus[];
 
 export const inGroup = (group: readonly string[], value: string): boolean =>
   group.includes(value);

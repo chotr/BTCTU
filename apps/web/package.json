@@ -12,6 +12,7 @@
     "format": "prettier --write src tests *.config.ts"
   },
   "dependencies": {
+    "@btctu/shared": "workspace:*",
     "@phosphor-icons/react": "^2.1.7",
     "next": "^16.0.0",
     "react": "^19.1.0",

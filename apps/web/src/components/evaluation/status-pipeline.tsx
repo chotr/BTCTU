@@ -1,10 +1,10 @@
 "use client";
 
 import { Card } from "@/components/ui";
-import { EVAL_STATUS_LABELS, type EvalStatus } from "@/lib/types";
+import { EVAL_STATUS_LABELS, type EvaluationStatus } from "@/lib/types";
 
 /** Bước tiến trình ngang của các trạng thái vòng đời đánh giá. */
-export function StatusPipeline({ status }: { status: EvalStatus }) {
+export function StatusPipeline({ status }: { status: EvaluationStatus }) {
   return (
     <Card className="p-4">
       <ol className="flex flex-wrap gap-x-5 gap-y-3 text-xs">

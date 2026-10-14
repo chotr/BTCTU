@@ -14,6 +14,7 @@ Bộ tài liệu chuẩn cho hệ thống quản lý nhiệm vụ, KPI, đánh g
 | 03 | Truy vết | [03-business/traceability-matrix.md](03-business/traceability-matrix.md) | Nguồn cho từng capability |
 | 04 | Thiết kế hệ thống | [04-system-design/context.md](04-system-design/context.md) | C4, domain, ERD, quyền, audit, tích hợp, bảo mật |
 | 04 | Hợp đồng API đăng nhập | [04-system-design/auth-api.md](04-system-design/auth-api.md) | Bốn endpoint auth, cookie, mã lỗi, cấu hình |
+| 04 | Gói hợp đồng dùng chung | [04-system-design/shared-package.md](04-system-design/shared-package.md) | Ranh giới shared giữa web và API, chênh lệch trạng thái |
 | 05 | ADR | [05-adr/README.md](05-adr/README.md) | Quyết định kiến trúc |
 | 06 | Triển khai | [06-plan/development-readiness.md](06-plan/development-readiness.md) | Cách chạy và điều kiện chuyển môi trường |
 | 07 | Nghiệm thu | [07-acceptance/acceptance-runbook.md](07-acceptance/acceptance-runbook.md) | Kịch bản kiểm tra xuyên suốt |
