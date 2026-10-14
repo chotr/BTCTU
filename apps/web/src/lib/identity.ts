@@ -1,5 +1,5 @@
 import { USERS } from "./mock";
-import type { AppUser, Department, Person } from "./types";
+import { ROLES, type AppUser, type Department, type Person } from "./types";
 
 type IdentityState = {
   people: Person[];
@@ -19,7 +19,9 @@ export function resolveAppUser(
     ? state.departments.find((row) => row.id === departmentId)
     : undefined;
   const derivedRole =
-    person && department?.headId === person.id ? "truong_phong" : "cong_chuc";
+    person && department?.headId === person.id
+      ? ROLES.truongPhong
+      : ROLES.congChuc;
   return {
     id: userId,
     name: person?.name ?? preset?.name ?? userId,

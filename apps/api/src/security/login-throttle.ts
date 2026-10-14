@@ -3,27 +3,33 @@ export type ThrottleDecision = {
   retryAfterSeconds: number;
 };
 
+export type LoginThrottle = {
+  check(key: string): Promise<ThrottleDecision>;
+  recordFailure(key: string): Promise<void>;
+  reset(key: string): Promise<void>;
+};
+
 type Bucket = {
   failures: number;
   windowStartedAt: number;
 };
 
-export type AttemptThrottleOptions = {
+export type MemoryLoginThrottleOptions = {
   maxAttempts: number;
   windowMs: number;
   now?: () => Date;
   maxKeys?: number;
 };
 
-export class AttemptThrottle {
+export class MemoryLoginThrottle implements LoginThrottle {
   private readonly buckets = new Map<string, Bucket>();
   private readonly now: () => Date;
 
-  constructor(private readonly options: AttemptThrottleOptions) {
+  constructor(private readonly options: MemoryLoginThrottleOptions) {
     this.now = options.now ?? (() => new Date());
   }
 
-  check(key: string): ThrottleDecision {
+  async check(key: string): Promise<ThrottleDecision> {
     const bucket = this.buckets.get(key);
     if (!bucket) return { allowed: true, retryAfterSeconds: 0 };
 
@@ -46,7 +52,7 @@ export class AttemptThrottle {
     };
   }
 
-  recordFailure(key: string): void {
+  async recordFailure(key: string): Promise<void> {
     const startedAt = this.now().getTime();
     const bucket = this.buckets.get(key);
 
@@ -59,7 +65,7 @@ export class AttemptThrottle {
     bucket.failures += 1;
   }
 
-  reset(key: string): void {
+  async reset(key: string): Promise<void> {
     this.buckets.delete(key);
   }
 

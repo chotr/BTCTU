@@ -1,5 +1,7 @@
 import argon2 from "argon2";
 
+const DECOY_PASSWORD = "invalid-password-placeholder";
+
 export class PasswordService {
   private decoyHash: string | null = null;
 
@@ -13,7 +15,7 @@ export class PasswordService {
     return argon2.verify(passwordHash, password);
   }
   async verifyDecoy(password: string): Promise<false> {
-    this.decoyHash ??= await this.hash("btctu-decoy-password");
+    this.decoyHash ??= await this.hash(DECOY_PASSWORD);
     await this.verify(this.decoyHash, password).catch(() => false);
     return false;
   }

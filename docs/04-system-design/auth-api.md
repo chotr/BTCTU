@@ -31,17 +31,37 @@ Cả bốn endpoint nằm dưới `/api/v1/auth`:
 | `modules/auth/auth.routes.ts` | bốn route, ghi/xoá cookie, ánh xạ lỗi sang HTTP |
 | `modules/auth/auth.service.ts` | xác minh mật khẩu, cấp phiên, xác minh access token |
 | `modules/auth/session.service.ts` | cấp phiên, xoay token tại chỗ, phát hiện dùng lại |
-| `modules/auth/token.service.ts` | ký và kiểm JWT, sinh và băm refresh token |
+| `modules/auth/access-token.service.ts` | cổng `AccessTokenService` và bản HMAC-JWT |
+| `modules/auth/refresh-token.service.ts` | sinh và băm refresh token |
 | `modules/auth/password.service.ts` | băm và kiểm mật khẩu bằng argon2id |
+| `modules/auth/auth.policy.ts` | hằng số chính sách mật khẩu và email |
 | `modules/auth/repositories/user.repository.ts` | đọc và tạo bản ghi `users` |
 | `modules/auth/repositories/session.repository.ts` | tạo, tra, xoay và thu hồi `sessions` |
 | `modules/auth/auth.module.ts` | ghép nối từ biến môi trường, mở pool ở request đầu tiên |
 | `modules/auth/auth.types.ts` | cổng `AuthPort`, `SessionStore` và các lỗi miền |
+| `modules/identity/actor-resolver.ts` | cổng `ActorResolver` và hai adapter |
 | `middleware/authentication.ts` | guard Bearer/cookie cho route cần token |
+| `middleware/authorization.ts` | bảng quy tắc uỷ quyền theo hành động |
 | `middleware/csrf.ts`, `security/origin.ts` | kiểm `Origin` cho request đổi trạng thái |
 | `security/cookie.ts` | tên cookie, ghi và đọc cookie, không phụ thuộc thư viện ngoài |
-| `security/throttle.ts` | hạn mức số lần đăng nhập sai |
+| `security/login-throttle.ts` | cổng `LoginThrottle` và adapter trong bộ nhớ |
 | `shared/problem.ts` | khuôn lỗi problem+json dùng chung với các route khác |
+
+## Cổng và adapter
+
+Bốn chỗ thay đổi theo môi trường đều là cổng, không phải biến cấu hình cho thuật
+toán:
+
+| Cổng | Bản đang dùng | Thay thế dự kiến |
+|---|---|---|
+| `AccessTokenService` | `HmacJwtTokenService` (HS256, khoá đối xứng) | verifier OIDC/JWKS khi dùng IdP ngoài |
+| `ActorResolver` | `MockActorResolver` (danh mục trong bộ nhớ) | resolver truy vấn bảng nhân sự ở mốc P2 |
+| `LoginThrottle` | `MemoryLoginThrottle` (một tiến trình) | adapter dùng kho chia sẻ |
+| `AuthPort` | `AuthService` | hiện thực khác cho SSO nếu cần |
+
+Algorithm không đưa thành chuỗi cấu hình vì HS256 và RS256 không dùng chung mô
+hình khoá. Đổi nhà cung cấp định danh là thêm một hiện thực của
+`AccessTokenService`.
 
 ## Cấu hình
 
@@ -56,9 +76,20 @@ giá trị `NaN` hay chuỗi rỗng.
 | `JWT_ACCESS_AUDIENCE` | `btctu-web` | |
 | `JWT_ACCESS_TTL_SECONDS` | 900 | số nguyên 60..86400 |
 | `REFRESH_TOKEN_TTL_SECONDS` | 604800 | số nguyên 300..31536000 và lớn hơn `JWT_ACCESS_TTL_SECONDS` |
-| `CORS_ORIGIN` | `http://localhost:3000` | URL tuyệt đối, scheme `http`/`https` |
+| `CORS_ORIGINS` | `http://localhost:3000` | danh sách phân tách bằng dấu phẩy, mỗi mục là URL tuyệt đối http(s); `CORS_ORIGIN` vẫn dùng được như bí danh một mục |
 | `PORT` | 8787 | số nguyên 1..65535 |
-| `ENVIRONMENT` | `local` | đặt `production` để bật cờ `Secure` và tắt header phát triển |
+| `PUBLIC_BASE_URL` | `http://localhost:${PORT}` | URL tuyệt đối, dùng cho mục `servers` của OpenAPI |
+| `REQUEST_BODY_LIMIT` | `1mb` | chuỗi giới hạn body của `express.json` |
+| `ENVIRONMENT` | `local` | `production` bật `Secure` cho cookie và tắt header phát triển |
+| `AUTH_COOKIE_SECURE` | theo `ENVIRONMENT` | `true`/`false`; production mặc định `true` |
+| `AUTH_COOKIE_SAME_SITE` | `Strict` | `Strict`, `Lax` hoặc `None`; `None` đòi `AUTH_COOKIE_SECURE=true` |
+| `AUTH_LOGIN_MAX_ATTEMPTS` | 10 | số nguyên 1..1000 |
+| `AUTH_LOGIN_WINDOW_SECONDS` | 60 | số nguyên 1..86400 |
+| `AUTH_REFRESH_ROTATION_GRACE_SECONDS` | 30 | số nguyên 0..3600 |
+
+Ba biến `AUTH_LOGIN_*` và `AUTH_REFRESH_ROTATION_GRACE_SECONDS` được gom thành
+`Env.auth` và truyền từ `auth.module.ts`; trước đây cùng một chính sách bị khai
+báo lại ở cả module lẫn router.
 
 ## Cookie
 
@@ -67,8 +98,12 @@ giá trị `NaN` hay chuỗi rỗng.
 | `btctu_access` | JWT access token | `/api/v1` | `JWT_ACCESS_TTL_SECONDS` | `HttpOnly`, `SameSite=Strict` |
 | `btctu_refresh` | refresh token thô | `/api/v1/auth` | `REFRESH_TOKEN_TTL_SECONDS` | `HttpOnly`, `SameSite=Strict` |
 
-Cả hai đặt `Secure` khi `ENVIRONMENT=production`. Access token đi kèm mọi route
-`/api/v1` vì guard đọc nó; refresh token chỉ đi tới các endpoint auth.
+Cờ `Secure` và `SameSite` không viết cứng trong route mà suy ra từ hồ sơ triển
+khai: `cookiePolicyForProfile` bật `Secure` khi `ENVIRONMENT=production` và mặc
+định `SameSite=Strict`. Hai biến `AUTH_COOKIE_SECURE` và
+`AUTH_COOKIE_SAME_SITE` cho phép ghi đè, và cấu hình `None` mà không bật `Secure`
+bị từ chối ngay lúc khởi động. Access token đi kèm mọi route `/api/v1` vì guard
+đọc nó; refresh token chỉ đi tới các endpoint auth.
 
 Access token có các claim: `sub` là id tài khoản, `sid` là id phiên, `iss`,
 `aud`, `iat`, `exp`; header dùng `alg: HS256`, `typ: JWT`. Refresh token là
@@ -76,9 +111,10 @@ chuỗi ngẫu nhiên 32 byte mã hoá base64url; cơ sở dữ liệu chỉ lư
 
 Vì token nằm trong cookie, ứng dụng web gọi API bằng `fetch` với
 `credentials: "include"` và API trả `access-control-allow-credentials: true` cho
-đúng `CORS_ORIGIN`. `SameSite=Strict` phù hợp khi web và API cùng site; nếu triển
-khai tách site thật thì phải đổi sang `SameSite=None; Secure` và thêm CSRF token
-riêng — chưa làm vì chưa chốt hạ tầng. [TBD]
+những origin trong `CORS_ORIGINS`. `SameSite=Strict` phù hợp khi web và API cùng
+site; triển khai tách site thật thì đổi `AUTH_COOKIE_SAME_SITE=None` kèm
+`AUTH_COOKIE_SECURE=true` và thêm CSRF token riêng — phần CSRF token chưa làm vì
+chưa chốt hạ tầng. [TBD]
 
 ## POST /api/v1/auth/login
 
@@ -284,6 +320,9 @@ flowchart TD
 | Route cần token thì mặc định từ chối | guard trả 401 trước khi vào handler |
 | Production không nhận danh tính từ header | `x-dev-user-id` chỉ dùng khi `ENVIRONMENT` khác `production` |
 | Ghi vết | mỗi lần đăng nhập, làm mới, đăng xuất, phát hiện dùng lại đều phát một dòng log có `scope: auth` |
+| Uỷ quyền tập trung | mọi kiểm tra quyền đi qua bảng quy tắc ở `middleware/authorization.ts`, route không còn so sánh `role === ...` |
+| Danh tính tách khỏi dữ liệu | route chỉ biết `ActorResolver`; danh mục đến từ fixture hay cơ sở dữ liệu là chi tiết của adapter |
+| Danh tính không đến từ header ở production | `x-dev-user-id` chỉ dùng khi `ENVIRONMENT` khác `production`, và ở local header là bắt buộc thay vì mặc định một tài khoản |
 
 Không ghi mật khẩu, access token hoặc refresh token vào log.
 
@@ -308,27 +347,36 @@ curl -i -c cookies.txt -X POST http://localhost:8787/api/v1/auth/login \
 curl -b cookies.txt http://localhost:8787/api/v1/auth/session
 ```
 
-Kiểm thử tự động: `pnpm --filter @btctu/api test`. Bộ test HTTP của luồng này nằm
-ở `modules/auth/auth.routes.test.ts` (gồm cả nhánh 409 và thu hồi khi token cũ
-quay lại), phần vòng xoay và cửa sổ ân hạn nằm ở `session.service.test.ts`, còn
-`env.test.ts` kiểm các ràng buộc cấu hình. Tất cả chạy với kho in-memory nên không
-cần PostgreSQL.
+Kiểm thử tự động: `pnpm --filter @btctu/api test` (11 file, 84 test). Bộ test HTTP
+của luồng này nằm ở `modules/auth/auth.routes.test.ts` (gồm cả nhánh 409 và thu
+hồi khi token cũ quay lại), vòng xoay và cửa sổ ân hạn ở
+`session.service.test.ts`, token ở `access-token.service.test.ts` và
+`refresh-token.service.test.ts`, chính sách ở `middleware/authorization.test.ts`,
+hạn mức ở `security/login-throttle.test.ts`, cấu hình ở `env.test.ts`. Tất cả chạy
+với kho in-memory nên không cần PostgreSQL.
 
 ## Giới hạn còn lại
 
 - Bảng `users` chưa có vai trò và đơn vị, nên ở production tài khoản đăng nhập
-  được nhưng chưa thành actor của các route nhiệm vụ: API trả 403
-  `actor_not_provisioned`. Việc gắn tài khoản với danh mục nhân sự thuộc mốc P2. [TBD]
+  được nhưng chưa thành actor của các route nhiệm vụ: `UnprovisionedActorResolver`
+  trả null và API trả 403 `actor_not_provisioned`. Việc dựng bảng nhân sự,
+  membership và vai trò rồi thay adapter là hạng mục lớn nhất còn lại, thuộc mốc
+  P2. [TBD]
+- Bảng quy tắc uỷ quyền hiện giữ nguyên hành vi cũ theo vai trò. QĐ39 không nói
+  mọi `lanh_dao` đều là cấp có thẩm quyền, nên quy tắc thật cần nghiệp vụ xác
+  nhận trước khi coi là chính thức. [TBD]
 - Chỉ hash của token ngay trước được lưu. Token cũ hơn nữa quay lại sẽ bị coi là
   token lạ và trả 401, không kích hoạt thu hồi họ phiên. Muốn đủ thì cần token
   family hoặc bảng lịch sử xoay. [TBD]
 - Kiểm phiên ở mỗi request thêm một truy vấn `sessions`; khi tải cao nên cache
   ngắn hạn hoặc chọn chỉ kiểm ở các thao tác nhạy cảm. [TBD]
-- Cửa sổ ân hạn 30 giây là hằng số trong mã, chưa cấu hình theo môi trường.
 - Hạn mức đăng nhập sai nằm trong bộ nhớ tiến trình. Chạy nhiều instance thì cần
-  kho chia sẻ. [TBD]
+  adapter `LoginThrottle` dùng kho chia sẻ; cổng đã sẵn sàng, hiện thực thì chưa. [TBD]
+- Cổng `AccessTokenService` đã tách khỏi HMAC-JWT nhưng chưa có verifier OIDC/JWKS
+  để thay khi chuyển sang IdP ngoài. [TBD]
 - Chưa có MFA cho tài khoản đặc quyền, trong khi QĐ342 yêu cầu khi lên production. [TBD]
-- `SameSite=Strict` chỉ đúng khi web và API cùng site. [TBD]
+- Chưa có CSRF token riêng cho trường hợp `AUTH_COOKIE_SAME_SITE=None`; khi đó
+  `Secure` là điều kiện bắt buộc và đã được kiểm lúc khởi động. [TBD]
 - Web app hiện dùng dữ liệu mock, chưa gọi các endpoint này.
 - `instance` trong phản hồi lỗi đang là path tương đối so với router được mount,
   ví dụ `/login`; riêng lỗi 500 của handler toàn cục dùng path đầy đủ. Cần thống

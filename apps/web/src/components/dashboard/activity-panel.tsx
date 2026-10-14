@@ -2,7 +2,7 @@
 
 import { Badge, Card } from "@/components/ui";
 import { fmtDateTime } from "@/lib/format";
-import type { AuditEvent, Role } from "@/lib/types";
+import { ROLES, type AuditEvent, type Role } from "@/lib/types";
 
 /** Hoạt động gần đây cho quản lý, hoặc luồng công việc cá nhân cho nhân viên. */
 export function ActivityPanel({
@@ -15,9 +15,9 @@ export function ActivityPanel({
   return (
     <Card className="p-5">
       <h2 className="mb-4 text-sm font-semibold">
-        {role === "cong_chuc" ? "Lộ trình" : "Hoạt động gần đây"}
+        {role === ROLES.congChuc ? "Lộ trình" : "Hoạt động gần đây"}
       </h2>
-      {role === "cong_chuc" ? (
+      {role === ROLES.congChuc ? (
         <ol className="space-y-3 text-xs text-ink-2">
           <li>1. Mở nhiệm vụ và nhập kết quả / minh chứng.</li>
           <li>2. Nộp nghiệm thu, chờ trưởng phòng xử lý.</li>

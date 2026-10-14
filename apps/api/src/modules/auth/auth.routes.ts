@@ -4,6 +4,7 @@ import { createOriginGuard } from "@/middleware/csrf";
 import {
   ACCESS_COOKIE_NAME,
   ACCESS_COOKIE_PATH,
+  type CookiePolicy,
   parseCookieHeader,
   REFRESH_COOKIE_NAME,
   REFRESH_COOKIE_PATH,
@@ -11,7 +12,7 @@ import {
   serializeCookie,
   type CookieAttributes,
 } from "@/security/cookie";
-import { AttemptThrottle } from "@/security/throttle";
+import type { LoginThrottle } from "@/security/login-throttle";
 import { formatIssues, problem } from "@/shared/problem";
 import { normalizeEmail } from "@/shared/string";
 import { loginRequestSchema, refreshRequestSchema } from "./auth.schema";
@@ -25,20 +26,17 @@ import {
   type AuthenticatedUser,
 } from "./auth.types";
 
-const LOGIN_MAX_ATTEMPTS = 10;
-const LOGIN_WINDOW_MS = 60_000;
-
 export type AuthRouterOptions = {
   auth: AuthPort;
   allowedOrigins: string[];
   accessTtlSeconds: number;
   refreshTtlSeconds: number;
-  secureCookies?: boolean;
+  cookiePolicy: CookiePolicy;
+  throttle: LoginThrottle;
   accessCookieName?: string;
   accessCookiePath?: string;
   refreshCookieName?: string;
   refreshCookiePath?: string;
-  throttle?: AttemptThrottle;
 };
 
 type TokenResponse = {
@@ -52,27 +50,21 @@ export function createAuthRouter(options: AuthRouterOptions): Router {
   const router = Router();
   const cookieName = options.refreshCookieName ?? REFRESH_COOKIE_NAME;
   const accessCookieName = options.accessCookieName ?? ACCESS_COOKIE_NAME;
-  const secure = options.secureCookies ?? false;
   const accessCookie: CookieAttributes = {
     path: options.accessCookiePath ?? ACCESS_COOKIE_PATH,
     httpOnly: true,
-    secure,
-    sameSite: "Strict",
+    secure: options.cookiePolicy.secure,
+    sameSite: options.cookiePolicy.sameSite,
   };
   const refreshCookie: CookieAttributes = {
     path: options.refreshCookiePath ?? REFRESH_COOKIE_PATH,
     httpOnly: true,
-    secure,
-    sameSite: "Strict",
+    secure: options.cookiePolicy.secure,
+    sameSite: options.cookiePolicy.sameSite,
   };
   const originGuard = createOriginGuard(options.allowedOrigins);
   const requireAccessToken = createAccessTokenGuard(options.auth);
-  const throttle =
-    options.throttle ??
-    new AttemptThrottle({
-      maxAttempts: LOGIN_MAX_ATTEMPTS,
-      windowMs: LOGIN_WINDOW_MS,
-    });
+  const throttle = options.throttle;
 
   function setSessionCookies(res: Response, tokens: TokenResponse): void {
     res.setHeader("set-cookie", [
@@ -131,7 +123,7 @@ export function createAuthRouter(options: AuthRouterOptions): Router {
     }
 
     const attemptKey = `${normalizeEmail(parsed.data.email)}|${req.ip ?? "unknown"}`;
-    const decision = throttle.check(attemptKey);
+    const decision = await throttle.check(attemptKey);
     if (!decision.allowed) {
       res.setHeader("retry-after", String(decision.retryAfterSeconds));
       problem(
@@ -147,12 +139,12 @@ export function createAuthRouter(options: AuthRouterOptions): Router {
 
     try {
       const result = await options.auth.login(parsed.data);
-      throttle.reset(attemptKey);
+      await throttle.reset(attemptKey);
       setSessionCookies(res, result);
       respondWithTokens(res, result);
     } catch (error) {
       if (error instanceof InvalidCredentialsError) {
-        throttle.recordFailure(attemptKey);
+        await throttle.recordFailure(attemptKey);
         problem(
           req,
           res,
@@ -164,7 +156,7 @@ export function createAuthRouter(options: AuthRouterOptions): Router {
         return;
       }
       if (error instanceof AccountDisabledError) {
-        throttle.recordFailure(attemptKey);
+        await throttle.recordFailure(attemptKey);
         problem(
           req,
           res,

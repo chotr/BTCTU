@@ -5,7 +5,7 @@ import { useBusy } from "@/components/use-busy";
 import { Button, Field, Modal, Select } from "@/components/ui";
 import { api } from "@/lib/api";
 import type { AppState } from "@/lib/store";
-import type { Role } from "@/lib/types";
+import { ROLES, type Role } from "@/lib/types";
 
 /** Modal tạo hồ sơ đánh giá cá nhân hoặc tập thể cho một kỳ đang mở. */
 export function CreateEvaluationModal({
@@ -77,7 +77,7 @@ export function CreateEvaluationModal({
             }}
           >
             <option value="PERSON">Cá nhân</option>
-            {userRole !== "cong_chuc" && (
+            {userRole !== ROLES.congChuc && (
               <option value="DEPARTMENT">Tập thể phòng</option>
             )}
           </Select>

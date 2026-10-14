@@ -11,7 +11,7 @@ import { evaluationLabel } from "@/lib/api";
 import { personName } from "@/lib/shared/names";
 import { fmtDate } from "@/lib/format";
 import type { AppState } from "@/lib/store";
-import type { Evaluation, Role, Task } from "@/lib/types";
+import { ROLES, type Evaluation, type Role, type Task } from "@/lib/types";
 
 /** Thẻ "Việc cần xử lý": nhiệm vụ và hồ sơ đánh giá đang chờ theo vai trò hiện tại. */
 export function TodoList({
@@ -30,7 +30,7 @@ export function TodoList({
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-sm font-semibold">Việc cần xử lý</h2>
         <Link
-          href={role === "cong_chuc" ? "/tasks" : "/approvals"}
+          href={role === ROLES.congChuc ? "/tasks" : "/approvals"}
           className="text-xs font-medium text-accent-700"
         >
           Xem tất cả

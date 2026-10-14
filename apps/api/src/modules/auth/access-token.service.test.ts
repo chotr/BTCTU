@@ -1,17 +1,17 @@
 import { decodeJwt, SignJWT } from "jose";
 import { describe, expect, it } from "vitest";
-import { TokenService } from "./token.service";
+import { HmacJwtTokenService } from "./access-token.service";
 
 const config = {
-  accessSecret: "unit-test-access-secret",
+  secret: "unit-test-access-secret",
   issuer: "btctu-api",
   audience: "btctu-web",
   accessTtlSeconds: 900,
 };
 
-describe("TokenService", () => {
-  it("issues an access token that verifies back to its principal", async () => {
-    const service = new TokenService(config);
+describe("HmacJwtTokenService", () => {
+  it("issues a token that verifies back to its principal", async () => {
+    const service = new HmacJwtTokenService(config);
 
     const token = await service.issueAccessToken("user-1", "session-1");
 
@@ -23,36 +23,39 @@ describe("TokenService", () => {
   });
 
   it("encodes the configured lifetime as an expiry", async () => {
-    const service = new TokenService(config);
+    const service = new HmacJwtTokenService(config);
 
     const claims = decodeJwt(await service.issueAccessToken("user-1", "s-1"));
 
     expect(Number(claims.exp) - Number(claims.iat)).toBe(900);
   });
 
-  it("rejects a token signed with a different secret", async () => {
-    const foreign = new TokenService({
+  it("rejects a token signed with another secret", async () => {
+    const foreign = new HmacJwtTokenService({
       ...config,
-      accessSecret: "another-secret",
+      secret: "another-secret",
     });
     const token = await foreign.issueAccessToken("user-1", "session-1");
 
     await expect(
-      new TokenService(config).verifyAccessToken(token),
+      new HmacJwtTokenService(config).verifyAccessToken(token),
     ).rejects.toThrow();
   });
 
   it("rejects a token minted for another audience", async () => {
-    const foreign = new TokenService({ ...config, audience: "another-web" });
+    const foreign = new HmacJwtTokenService({
+      ...config,
+      audience: "other-web",
+    });
     const token = await foreign.issueAccessToken("user-1", "session-1");
 
     await expect(
-      new TokenService(config).verifyAccessToken(token),
+      new HmacJwtTokenService(config).verifyAccessToken(token),
     ).rejects.toThrow();
   });
 
   it("rejects an expired token", async () => {
-    const key = new TextEncoder().encode(config.accessSecret);
+    const key = new TextEncoder().encode(config.secret);
     const expired = await new SignJWT({ sid: "session-1" })
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
       .setSubject("user-1")
@@ -63,22 +66,7 @@ describe("TokenService", () => {
       .sign(key);
 
     await expect(
-      new TokenService(config).verifyAccessToken(expired),
+      new HmacJwtTokenService(config).verifyAccessToken(expired),
     ).rejects.toThrow();
-  });
-
-  it("stores refresh tokens only as deterministic hashes", () => {
-    const service = new TokenService(config);
-    const first = service.generateRefreshToken();
-    const second = service.generateRefreshToken();
-
-    expect(first).not.toBe(second);
-    expect(service.hashRefreshToken(first)).toBe(
-      service.hashRefreshToken(first),
-    );
-    expect(service.hashRefreshToken(first)).not.toBe(first);
-    expect(service.hashRefreshToken(first)).not.toBe(
-      service.hashRefreshToken(second),
-    );
   });
 });

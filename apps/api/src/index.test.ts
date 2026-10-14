@@ -1,20 +1,9 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
 import { createApp } from "./app";
-import type { Env } from "./env";
+import { createTestEnv } from "./env.test-helpers";
 
-const env: Env = {
-  environment: "test",
-  corsOrigin: "http://localhost:3000",
-  port: 0,
-  databaseUrl: "postgresql://test:test@localhost:5432/btctu_test",
-  jwtAccessSecret: "test-access-secret",
-  jwtAccessIssuer: "btctu-api",
-  jwtAccessAudience: "btctu-web",
-  jwtAccessTtlSeconds: 900,
-  refreshTokenTtlSeconds: 604800,
-};
-const app = createApp(env);
+const app = createApp(createTestEnv());
 
 describe("BTCTU API", () => {
   it("returns health metadata", async () => {
@@ -23,8 +12,18 @@ describe("BTCTU API", () => {
     expect(response.body.status).toBe("ok");
   });
 
-  it("requires an actor for API routes", async () => {
+  it("requires a development identity for API routes", async () => {
     const response = await request(app).get("/api/v1/me");
+
+    expect(response.status).toBe(401);
+    expect(response.body.type).toContain("unknown_actor");
+  });
+
+  it("returns the actor named by the development header", async () => {
+    const response = await request(app)
+      .get("/api/v1/me")
+      .set("x-dev-user-id", "u-leader");
+
     expect(response.status).toBe(200);
     expect(response.body.data.id).toBe("u-leader");
   });

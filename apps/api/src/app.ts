@@ -10,12 +10,19 @@ import {
 } from "./modules/auth/auth.module";
 import { createAuthRouter } from "./modules/auth/auth.routes";
 import { accessTokenFromRequest } from "./middleware/authentication";
+import { can } from "./middleware/authorization";
 import { createOriginGuard } from "./middleware/csrf";
 import { createMockState } from "./mock-state";
+import {
+  MockActorResolver,
+  UnprovisionedActorResolver,
+  type ActorResolver,
+} from "./modules/identity/actor-resolver";
 import { ACCESS_COOKIE_NAME } from "./security/cookie";
+import { normalizeOrigin } from "./security/origin";
 import { formatIssues, problem } from "./shared/problem";
 import type { Env } from "./env";
-import type { Actor, MockState, Task } from "./types";
+import type { Task } from "./types";
 
 const classificationSchema = z.enum([
   "XUAT_SAC",
@@ -212,39 +219,6 @@ function query(req: Request, key: string): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
-function actorFromHeader(
-  id: string | undefined,
-  state: MockState,
-): Actor | null {
-  const person = state.people.find((candidate) => candidate.id === id);
-  if (!person) return null;
-  return {
-    id: person.id,
-    name: person.name,
-    role: person.role,
-    departmentId: person.departmentId,
-  };
-}
-
-function canAssign(actor: Actor, assigneeDepartmentId: string): boolean {
-  return (
-    actor.role === "lanh_dao" ||
-    (actor.role === "truong_phong" &&
-      actor.departmentId === assigneeDepartmentId)
-  );
-}
-
-function canReviewDepartment(actor: Actor, departmentId: string): boolean {
-  return (
-    actor.role === "lanh_dao" ||
-    (actor.role === "truong_phong" && actor.departmentId === departmentId)
-  );
-}
-
-function canDecide(actor: Actor): boolean {
-  return actor.role === "lanh_dao";
-}
-
 function addAudit(
   req: Request,
   action: string,
@@ -286,13 +260,21 @@ function nextStatusForTask(task: Task, submit: boolean): Task["status"] {
   return task.status === "ASSIGNED" ? "IN_PROGRESS" : task.status;
 }
 
-export type AppDependencies = AuthModuleOverrides;
+export type AppDependencies = AuthModuleOverrides & {
+  actorResolver?: ActorResolver;
+};
 
 export function createApp(env: Env, dependencies: AppDependencies = {}) {
   const { auth, throttle } = createAuthModule(env, dependencies);
+  const actorResolver =
+    dependencies.actorResolver ??
+    (env.environment === "production"
+      ? new UnprovisionedActorResolver()
+      : new MockActorResolver(createMockState().people));
+  const allowedOrigins = new Set(env.corsOrigins.map(normalizeOrigin));
   const app = express();
   app.disable("x-powered-by");
-  app.use(express.json({ limit: "1mb" }));
+  app.use(express.json({ limit: env.requestBodyLimit }));
 
   app.use((req, res, next) => {
     const requestId = req.header("x-request-id") ?? crypto.randomUUID();
@@ -302,7 +284,7 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
     res.setHeader("referrer-policy", "no-referrer");
 
     const origin = req.header("origin");
-    if (origin && origin === env.corsOrigin) {
+    if (origin && allowedOrigins.has(normalizeOrigin(origin))) {
       res.setHeader("access-control-allow-origin", origin);
       res.setHeader("access-control-allow-credentials", "true");
       res.setHeader("vary", "Origin");
@@ -327,21 +309,26 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
       now: new Date().toISOString(),
     }),
   );
-  app.get("/openapi.json", (_req, res) => res.json(openapi));
+  app.get("/openapi.json", (_req, res) =>
+    res.json({
+      ...openapi,
+      servers: [{ url: env.publicBaseUrl, description: env.environment }],
+    }),
+  );
 
   const api = express.Router();
 
   // Tokens travel in cookies, so every writing request carries an origin check.
-  api.use(createOriginGuard([env.corsOrigin]));
+  api.use(createOriginGuard(env.corsOrigins));
 
   api.use(
     "/auth",
     createAuthRouter({
       auth,
       throttle,
-      allowedOrigins: [env.corsOrigin],
+      allowedOrigins: env.corsOrigins,
       accessTtlSeconds: env.jwtAccessTtlSeconds,
-      secureCookies: env.environment === "production",
+      cookiePolicy: env.cookiePolicy,
       refreshTtlSeconds: env.refreshTokenTtlSeconds,
     }),
   );
@@ -349,6 +336,8 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
   api.use(async (req, res, next) => {
     const state = createMockState();
     req.state = state;
+
+    let userId: string;
 
     if (env.environment === "production") {
       const token = accessTokenFromRequest(req, ACCESS_COOKIE_NAME);
@@ -391,8 +380,27 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
         return;
       }
 
-      const provisioned = actorFromHeader(user.id, state);
-      if (!provisioned) {
+      userId = user.id;
+    } else {
+      const header = req.header("x-dev-user-id");
+      if (!header) {
+        problem(
+          req,
+          res,
+          401,
+          "Unauthorized",
+          "A development identity header is required.",
+          "unknown_actor",
+        );
+        return;
+      }
+
+      userId = header;
+    }
+
+    const actor = await actorResolver.resolve(userId);
+    if (!actor) {
+      if (env.environment === "production") {
         problem(
           req,
           res,
@@ -401,26 +409,19 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
           "This account is not linked to a person in the directory.",
           "actor_not_provisioned",
         );
-        return;
+      } else {
+        problem(
+          req,
+          res,
+          401,
+          "Unauthorized",
+          "Unknown or missing actor identity.",
+          "unknown_actor",
+        );
       }
-
-      req.actor = provisioned;
-      next();
       return;
     }
 
-    const actor = actorFromHeader(req.header("x-dev-user-id") ?? "u-leader", state);
-    if (!actor) {
-      problem(
-        req,
-        res,
-        401,
-        "Unauthorized",
-        "Unknown or missing actor identity.",
-        "unknown_actor",
-      );
-      return;
-    }
     req.actor = actor;
     next();
   });
@@ -493,7 +494,12 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
       );
       return;
     }
-    if (!canAssign(actor, assignee.departmentId)) {
+    if (
+      !can(actor, {
+        action: "task.create",
+        resource: { departmentId: assignee.departmentId },
+      })
+    ) {
       denied(
         req,
         res,
@@ -601,7 +607,12 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
       );
       return;
     }
-    if (!canReviewDepartment(actor, task.departmentId)) {
+    if (
+      !can(actor, {
+        action: "task.accept",
+        resource: { departmentId: task.departmentId },
+      })
+    ) {
       denied(
         req,
         res,
@@ -632,7 +643,12 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
       );
       return;
     }
-    if (!canReviewDepartment(actor, task.departmentId)) {
+    if (
+      !can(actor, {
+        action: "task.return",
+        resource: { departmentId: task.departmentId },
+      })
+    ) {
       denied(
         req,
         res,
@@ -702,7 +718,12 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
         );
         return;
       }
-      if (evaluation.subjectId !== actor.id) {
+      if (
+        !can(actor, {
+          action: "evaluation.self",
+          resource: { subjectId: evaluation.subjectId },
+        })
+      ) {
         denied(
           req,
           res,
@@ -737,7 +758,12 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
       );
       return;
     }
-    if (!canReviewDepartment(actor, evaluation.departmentId)) {
+    if (
+      !can(actor, {
+        action: "evaluation.review",
+        resource: { departmentId: evaluation.departmentId },
+      })
+    ) {
       denied(
         req,
         res,
@@ -780,7 +806,7 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
         );
         return;
       }
-      if (!canDecide(actor)) {
+      if (!can(actor, { action: "evaluation.decide" })) {
         denied(
           req,
           res,
@@ -816,7 +842,7 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
       );
       return;
     }
-    if (!canDecide(actor)) {
+      if (!can(actor, { action: "period.lock" })) {
       denied(
         req,
         res,
@@ -838,7 +864,7 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
   });
 
   api.get("/audit", (req, res) => {
-    if (req.actor!.role === "cong_chuc") {
+    if (!can(req.actor!, { action: "audit.read" })) {
       denied(
         req,
         res,

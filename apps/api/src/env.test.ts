@@ -10,13 +10,48 @@ describe("readEnv", () => {
   it("applies defaults for optional values", () => {
     expect(readEnv({ ...base })).toMatchObject({
       environment: "local",
-      corsOrigin: "http://localhost:3000",
+      corsOrigins: ["http://localhost:3000"],
       port: 8787,
+      publicBaseUrl: "http://localhost:8787",
+      requestBodyLimit: "1mb",
       jwtAccessIssuer: "btctu-api",
       jwtAccessAudience: "btctu-web",
       jwtAccessTtlSeconds: 900,
       refreshTokenTtlSeconds: 604800,
+      cookiePolicy: { secure: false, sameSite: "Strict" },
+      auth: {
+        loginMaxAttempts: 10,
+        loginWindowSeconds: 60,
+        rotationGraceSeconds: 30,
+      },
     });
+  });
+
+  it("splits a comma separated origin list", () => {
+    const env = readEnv({
+      ...base,
+      CORS_ORIGINS: "https://app.example.vn, https://admin.example.vn",
+    });
+
+    expect(env.corsOrigins).toEqual([
+      "https://app.example.vn",
+      "https://admin.example.vn",
+    ]);
+  });
+
+  it("still accepts the single origin alias", () => {
+    const env = readEnv({ ...base, CORS_ORIGIN: "https://app.example.vn" });
+
+    expect(env.corsOrigins).toEqual(["https://app.example.vn"]);
+  });
+
+  it("rejects an origin that is not absolute", () => {
+    expect(() =>
+      readEnv({
+        ...base,
+        CORS_ORIGINS: "https://app.example.vn,localhost:3000",
+      }),
+    ).toThrow(/absolute/);
   });
 
   it("rejects a database url that is not postgres", () => {
@@ -49,24 +84,65 @@ describe("readEnv", () => {
       }),
     ).toThrow(/at least 32/);
 
-    expect(
-      readEnv({
-        ...base,
-        ENVIRONMENT: "production",
-        JWT_ACCESS_SECRET: "a".repeat(32),
-      }).environment,
-    ).toBe("production");
+    const env = readEnv({
+      ...base,
+      ENVIRONMENT: "production",
+      JWT_ACCESS_SECRET: "a".repeat(32),
+    });
+    expect(env.cookiePolicy).toEqual({ secure: true, sameSite: "Strict" });
   });
 
   it("requires the refresh lifetime to exceed the access lifetime", () => {
     expect(() =>
-      readEnv({ ...base, JWT_ACCESS_TTL_SECONDS: "900", REFRESH_TOKEN_TTL_SECONDS: "600" }),
+      readEnv({
+        ...base,
+        JWT_ACCESS_TTL_SECONDS: "900",
+        REFRESH_TOKEN_TTL_SECONDS: "600",
+      }),
     ).toThrow(/greater than/);
   });
 
-  it("rejects a relative cors origin", () => {
-    expect(() => readEnv({ ...base, CORS_ORIGIN: "localhost:3000" })).toThrow(
-      /absolute/,
+  it("lets a deployment opt into cross-site cookies only with Secure", () => {
+    expect(() =>
+      readEnv({
+        ...base,
+        AUTH_COOKIE_SAME_SITE: "None",
+        AUTH_COOKIE_SECURE: "false",
+      }),
+    ).toThrow(/requires AUTH_COOKIE_SECURE=true/);
+
+    const env = readEnv({
+      ...base,
+      AUTH_COOKIE_SAME_SITE: "None",
+      AUTH_COOKIE_SECURE: "true",
+    });
+    expect(env.cookiePolicy).toEqual({ secure: true, sameSite: "None" });
+  });
+
+  it("rejects an unknown SameSite value", () => {
+    expect(() =>
+      readEnv({ ...base, AUTH_COOKIE_SAME_SITE: "sometimes" }),
+    ).toThrow(/AUTH_COOKIE_SAME_SITE/);
+  });
+
+  it("reads the auth policy overrides", () => {
+    const env = readEnv({
+      ...base,
+      AUTH_LOGIN_MAX_ATTEMPTS: "3",
+      AUTH_LOGIN_WINDOW_SECONDS: "120",
+      AUTH_REFRESH_ROTATION_GRACE_SECONDS: "0",
+    });
+
+    expect(env.auth).toEqual({
+      loginMaxAttempts: 3,
+      loginWindowSeconds: 120,
+      rotationGraceSeconds: 0,
+    });
+  });
+
+  it("rejects an attempt limit below one", () => {
+    expect(() => readEnv({ ...base, AUTH_LOGIN_MAX_ATTEMPTS: "0" })).toThrow(
+      /AUTH_LOGIN_MAX_ATTEMPTS/,
     );
   });
 });

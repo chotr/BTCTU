@@ -1,25 +1,26 @@
 import { createDatabase } from "@/db/client";
 import type { Env } from "@/env";
-import { AttemptThrottle } from "@/security/throttle";
+import {
+  MemoryLoginThrottle,
+  type LoginThrottle,
+} from "@/security/login-throttle";
+import { HmacJwtTokenService } from "./access-token.service";
 import { AuthService } from "./auth.service";
 import type { AuthPort } from "./auth.types";
 import { PasswordService } from "./password.service";
+import { RefreshTokenService } from "./refresh-token.service";
 import { SessionRepository } from "./repositories/session.repository";
 import { UserRepository } from "./repositories/user.repository";
-import { TokenService } from "./token.service";
 
 export type AuthModule = {
   auth: AuthPort;
-  throttle: AttemptThrottle;
+  throttle: LoginThrottle;
 };
 
 export type AuthModuleOverrides = {
   auth?: AuthPort;
-  throttle?: AttemptThrottle;
+  throttle?: LoginThrottle;
 };
-
-const LOGIN_MAX_ATTEMPTS = 10;
-const LOGIN_WINDOW_SECONDS = 60;
 
 export function createAuthModule(
   env: Env,
@@ -34,13 +35,15 @@ export function createAuthModule(
         users: new UserRepository(db),
         sessions: new SessionRepository(db),
         passwords: new PasswordService(),
-        tokens: new TokenService({
-          accessSecret: env.jwtAccessSecret,
+        accessTokens: new HmacJwtTokenService({
+          secret: env.jwtAccessSecret,
           issuer: env.jwtAccessIssuer,
           audience: env.jwtAccessAudience,
           accessTtlSeconds: env.jwtAccessTtlSeconds,
         }),
+        refreshTokens: new RefreshTokenService(),
         refreshTtlSeconds: env.refreshTokenTtlSeconds,
+        rotationGraceSeconds: env.auth.rotationGraceSeconds,
         onEvent: (event) =>
           console.info(JSON.stringify({ scope: "auth", ...event })),
       });
@@ -60,9 +63,9 @@ export function createAuthModule(
     auth,
     throttle:
       overrides.throttle ??
-      new AttemptThrottle({
-        maxAttempts: LOGIN_MAX_ATTEMPTS,
-        windowMs: LOGIN_WINDOW_SECONDS * 1000,
+      new MemoryLoginThrottle({
+        maxAttempts: env.auth.loginMaxAttempts,
+        windowMs: env.auth.loginWindowSeconds * 1000,
       }),
   };
 }

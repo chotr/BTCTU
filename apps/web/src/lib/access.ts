@@ -5,6 +5,7 @@ import {
   canViewEvaluation,
   canViewTask,
 } from "./policy";
+import { ROLES } from "@/lib/types";
 
 /** Records the signed-in role is allowed to see. Export and screens share this. */
 export function scopedData(s: AppState) {
@@ -13,7 +14,7 @@ export function scopedData(s: AppState) {
     evaluations: s.evaluations.filter((e) => canViewEvaluation(s.user, e)),
     departments: s.departments.filter((d) => canViewDepartment(s.user, d.id)),
     people: s.people.filter((p) =>
-      s.user?.role === "cong_chuc"
+      s.user?.role === ROLES.congChuc
         ? p.id === s.user.id
         : canViewDepartment(s.user, p.departmentId),
     ),

@@ -24,6 +24,7 @@ import {
   DepartmentProgress,
   TodoList,
 } from "@/components/dashboard";
+import { ROLES } from "@/lib/types";
 
 export default function DashboardPage() {
   const state = useApp();
@@ -43,14 +44,14 @@ export default function DashboardPage() {
   const todoTasks = tasks.filter((t) =>
     t.assigneeId === user?.id
       ? inGroup(TASK_EDITABLE, t.status)
-      : user?.role !== "cong_chuc" && inGroup(TASK_IN_REVIEW, t.status),
+      : user?.role !== ROLES.congChuc && inGroup(TASK_IN_REVIEW, t.status),
   );
   const todoEvals = evs.filter((e) =>
     e.subjectId === user?.id
       ? e.status === "DRAFT"
-      : user?.role === "lanh_dao"
+      : user?.role === ROLES.lanhDao
         ? inGroup(EVAL_IN_REVIEW, e.status)
-        : user?.role === "truong_phong" &&
+        : user?.role === ROLES.truongPhong &&
           e.subjectType === "PERSON" &&
           e.status === "SUBMITTED",
   );

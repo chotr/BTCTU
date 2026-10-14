@@ -1,10 +1,10 @@
-import type { AppUser } from "@/lib/types";
+import { ROLES, type AppUser } from "@/lib/types";
 
 export const USERS: AppUser[] = [
   {
     id: "u-leader",
     name: "Trần Minh Hòa",
-    role: "lanh_dao",
+    role: ROLES.lanhDao,
     title: "Lãnh đạo Ban",
     departmentId: null,
     departmentName: null,
@@ -12,7 +12,7 @@ export const USERS: AppUser[] = [
   {
     id: "u-head",
     name: "Nguyễn Thị Lan",
-    role: "truong_phong",
+    role: ROLES.truongPhong,
     title: "Trưởng phòng",
     departmentId: "d2",
     departmentName: "Phòng Tổ chức cán bộ",
@@ -20,7 +20,7 @@ export const USERS: AppUser[] = [
   {
     id: "u-staff",
     name: "Phạm Văn Đức",
-    role: "cong_chuc",
+    role: ROLES.congChuc,
     title: "Công chức",
     departmentId: "d2",
     departmentName: "Phòng Tổ chức cán bộ",

@@ -1,4 +1,10 @@
-export type Role = "lanh_dao" | "truong_phong" | "cong_chuc";
+export const ROLES = {
+  lanhDao: "lanh_dao",
+  truongPhong: "truong_phong",
+  congChuc: "cong_chuc",
+} as const;
+
+export type Role = (typeof ROLES)[keyof typeof ROLES];
 
 export interface AppUser {
   id: string;

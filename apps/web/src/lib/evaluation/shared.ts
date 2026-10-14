@@ -4,7 +4,7 @@ import { calculateCandidate, evaluationTasks } from "@/lib/evaluation-engine";
 import { uid, now } from "@/lib/shared/ids";
 import { deny } from "@/lib/shared/feedback";
 import { personName, departmentName } from "@/lib/shared/names";
-import type { Evaluation } from "@/lib/types";
+import { ROLES, type Evaluation } from "@/lib/types";
 
 /** Thêm một mục lịch sử và bản ghi audit; tăng số phiên bản bản ghi. */
 export function record(
@@ -65,7 +65,8 @@ export function canSelfEvaluate(
     !!user &&
     (ev.subjectType === "PERSON"
       ? user.id === ev.subjectId
-      : user.role === "truong_phong" && user.departmentId === ev.departmentId)
+      : user.role === ROLES.truongPhong &&
+        user.departmentId === ev.departmentId)
   );
 }
 

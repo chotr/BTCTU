@@ -1,29 +1,23 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
 import { createApp } from "@/app";
-import type { Env } from "@/env";
+import { createTestEnv } from "@/env.test-helpers";
 import { ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME } from "@/security/cookie";
-import { AttemptThrottle } from "@/security/throttle";
+import { MemoryLoginThrottle } from "@/security/login-throttle";
+import { HmacJwtTokenService } from "./access-token.service";
 import { AuthService } from "./auth.service";
 import { createInMemoryStores, createTestUser } from "./auth.test-helpers";
 import { PasswordService } from "./password.service";
-import { TokenService } from "./token.service";
+import { RefreshTokenService } from "./refresh-token.service";
 
 const PASSWORD = "Route-Test-Password-1";
 const EMAIL = "officer@btctu.local";
 const ALLOWED_ORIGIN = "http://localhost:3000";
 
-const env: Env = {
-  environment: "test",
-  corsOrigin: ALLOWED_ORIGIN,
-  port: 0,
-  databaseUrl: "postgresql://unused:unused@localhost:5432/unused",
+const env = createTestEnv({
   jwtAccessSecret: "route-test-secret",
-  jwtAccessIssuer: "btctu-api",
-  jwtAccessAudience: "btctu-web",
-  jwtAccessTtlSeconds: 900,
-  refreshTokenTtlSeconds: 604800,
-};
+  corsOrigins: [ALLOWED_ORIGIN],
+});
 
 async function createHarness(
   options: { maxAttempts?: number; now?: () => Date } = {},
@@ -37,16 +31,18 @@ async function createHarness(
     users: stores.userStore,
     sessions: stores.sessionStore,
     passwords: new PasswordService(),
-    tokens: new TokenService({
-      accessSecret: env.jwtAccessSecret,
+    accessTokens: new HmacJwtTokenService({
+      secret: env.jwtAccessSecret,
       issuer: env.jwtAccessIssuer,
       audience: env.jwtAccessAudience,
       accessTtlSeconds: env.jwtAccessTtlSeconds,
     }),
+    refreshTokens: new RefreshTokenService(),
     refreshTtlSeconds: env.refreshTokenTtlSeconds,
+    rotationGraceSeconds: env.auth.rotationGraceSeconds,
     now: options.now,
   });
-  const throttle = new AttemptThrottle({
+  const throttle = new MemoryLoginThrottle({
     maxAttempts: options.maxAttempts ?? 10,
     windowMs: 60_000,
   });

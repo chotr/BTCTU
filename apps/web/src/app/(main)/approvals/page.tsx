@@ -6,11 +6,7 @@ import { scopedData } from "@/lib/access";
 import { evaluationLabel } from "@/lib/api";
 import { canAssign } from "@/lib/policy";
 import { personName } from "@/lib/shared/names";
-import {
-  TASK_IN_REVIEW,
-  EVAL_IN_REVIEW,
-  inGroup,
-} from "@/lib/domain/workflow";
+import { TASK_IN_REVIEW, EVAL_IN_REVIEW, inGroup } from "@/lib/domain/workflow";
 import {
   Badge,
   Card,
@@ -20,6 +16,8 @@ import {
   Select,
   TaskStatusBadge,
 } from "@/components/ui";
+import { ROLES } from "@/lib/types";
+
 export default function ApprovalsPage() {
   const state = useApp();
   const { user } = state;
@@ -46,7 +44,7 @@ export default function ApprovalsPage() {
     (e) =>
       (period === "ALL" || e.periodId === period) &&
       e.subjectId !== user?.id &&
-      (user?.role === "lanh_dao"
+      (user?.role === ROLES.lanhDao
         ? inGroup(EVAL_IN_REVIEW, e.status)
         : e.subjectType === "PERSON" && e.status === "SUBMITTED"),
   );
@@ -84,8 +82,7 @@ export default function ApprovalsPage() {
               >
                 <p className="text-[13px] font-semibold">{t.title}</p>
                 <p className="my-2 text-xs text-ink-3">
-                  {personName(state, t.assigneeId)} ·{" "}
-                  {t.period}
+                  {personName(state, t.assigneeId)} · {t.period}
                 </p>
                 <TaskStatusBadge status={t.status} />
               </Link>

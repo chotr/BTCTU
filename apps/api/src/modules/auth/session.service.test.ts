@@ -6,14 +6,9 @@ import {
   SessionReuseError,
 } from "./auth.types";
 import { SessionService } from "./session.service";
-import { TokenService } from "./token.service";
+import { RefreshTokenService } from "./refresh-token.service";
 
-const tokens = new TokenService({
-  accessSecret: "session-service-secret",
-  issuer: "btctu-api",
-  audience: "btctu-web",
-  accessTtlSeconds: 900,
-});
+const refreshTokens = new RefreshTokenService();
 
 function createService(
   options: {
@@ -25,10 +20,10 @@ function createService(
   const stores = createInMemoryStores();
   const service = new SessionService({
     sessions: stores.sessionStore,
-    tokens,
+    refreshTokens,
     refreshTtlSeconds: options.refreshTtlSeconds ?? 604800,
+    rotationGraceSeconds: options.rotationGraceSeconds ?? 30,
     now: options.now,
-    rotationGraceSeconds: options.rotationGraceSeconds,
   });
 
   return { stores, service };
@@ -40,7 +35,7 @@ describe("SessionService", () => {
 
     const { session, refreshToken } = await service.start("user-1");
 
-    expect(session.refreshTokenHash).toBe(tokens.hashRefreshToken(refreshToken));
+    expect(session.refreshTokenHash).toBe(refreshTokens.hash(refreshToken));
     expect(session.refreshTokenHash).not.toBe(refreshToken);
     expect(session.previousTokenHash).toBeNull();
     expect(session.revokedAt).toBeNull();
@@ -56,10 +51,10 @@ describe("SessionService", () => {
     expect(second.session.id).toBe(first.session.id);
     expect(stores.sessions).toHaveLength(1);
     expect(second.session.previousTokenHash).toBe(
-      tokens.hashRefreshToken(first.refreshToken),
+      refreshTokens.hash(first.refreshToken),
     );
     expect(second.session.refreshTokenHash).toBe(
-      tokens.hashRefreshToken(second.refreshToken),
+      refreshTokens.hash(second.refreshToken),
     );
     expect(second.session.revokedAt).toBeNull();
   });

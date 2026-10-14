@@ -22,6 +22,7 @@ import { canViewAudit } from "@/lib/policy";
 import { scopedData } from "@/lib/access";
 import { runtimeLabel } from "@/lib/runtime-config";
 import { Avatar, Badge, Button, Callout, Modal } from "./ui";
+import { ROLES } from "@/lib/types";
 
 const groups = [
   {
@@ -54,7 +55,7 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   const state = useApp();
   const { user } = state;
   const pending = scopedData(state).evaluations.filter((e) =>
-    user?.role === "lanh_dao"
+    user?.role === ROLES.lanhDao
       ? e.status === "REVIEWED"
       : e.status === "SUBMITTED" && e.subjectId !== user?.id,
   ).length;
@@ -74,7 +75,7 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
                 item.href === "/audit"
                   ? canViewAudit(user)
                   : item.href === "/approvals"
-                    ? user?.role !== "cong_chuc"
+                    ? user?.role !== ROLES.congChuc
                     : true,
               )
               .map((item) => {

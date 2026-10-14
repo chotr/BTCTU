@@ -3,7 +3,7 @@ import { canViewDepartment } from "@/lib/policy";
 import { initialConditions } from "@/lib/domain/conditions";
 import { uid } from "@/lib/shared/ids";
 import { deny } from "@/lib/shared/feedback";
-import type { Evaluation } from "@/lib/types";
+import { ROLES, type Evaluation } from "@/lib/types";
 import { record } from "./shared";
 
 export const caseActions = {
@@ -25,7 +25,7 @@ export const caseActions = {
       !user ||
       !departmentId ||
       !canViewDepartment(user, departmentId) ||
-      (user.role === "cong_chuc" &&
+      (user.role === ROLES.congChuc &&
         (input.subjectType !== "PERSON" || input.subjectId !== user.id))
     ) {
       deny(

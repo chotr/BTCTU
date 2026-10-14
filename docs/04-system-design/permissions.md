@@ -75,6 +75,19 @@ Luôn cần quyền rõ ràng + lý do/audit:
 - mở lại đánh giá đã khóa;
 - yêu cầu kết nối/chia sẻ dữ liệu.
 
+## Mã vai trò trong mã nguồn
+
+Ba mã đang dùng là `lanh_dao`, `truong_phong`, `cong_chuc`. Mỗi mã chỉ khai báo một
+lần: hằng `ROLES` ở `apps/api/src/types.ts` (nguồn chân lý, kiểu `Role` suy ra từ
+đó) và bản phản chiếu ở `apps/web/src/lib/types/organization.ts`. Trong API, mọi
+so sánh vai trò đi qua bảng quy tắc ở `apps/api/src/middleware/authorization.ts`;
+trong web, các chỗ kiểm tra quyền cũng dùng `ROLES` thay cho chuỗi trần. Nhãn hiển
+thị tiếng Việt ("Lãnh đạo Ban", "Trưởng phòng", "Công chức") là văn bản trình bày,
+không phải mã vai trò.
+
+Danh sách vai trò đề xuất ở trên là thiết kế phần mềm. Ba mã này là mô hình đang
+chạy của bản phát triển, chưa phải ma trận đã được phê duyệt.
+
 ## TBD
 
 Ma trận vai trò/hành động chính thức, quy tắc uỷ quyền, nhãn phân loại dữ liệu và

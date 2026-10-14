@@ -1,5 +1,5 @@
 import { appendAudit, getState, pushToast } from "@/lib/store";
-import type { CatalogItem, Person } from "@/lib/types";
+import { ROLES, type CatalogItem, type Person } from "@/lib/types";
 
 export type CatalogInput = Omit<CatalogItem, "id" | "status"> & { id?: string };
 export type PersonRecord = Person & {
@@ -23,9 +23,9 @@ export function actor(action: string, departmentId?: string) {
   const user = getState().user;
   const allowed =
     user &&
-    (user.role === "lanh_dao" ||
+    (user.role === ROLES.lanhDao ||
       (action.startsWith("person.") &&
-        user.role === "truong_phong" &&
+        user.role === ROLES.truongPhong &&
         departmentId === user.departmentId));
   if (!allowed) {
     appendAudit({

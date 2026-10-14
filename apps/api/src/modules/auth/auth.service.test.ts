@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { AuthService } from "./auth.service";
+import { HmacJwtTokenService } from "./access-token.service";
 import { createInMemoryStores, createTestUser } from "./auth.test-helpers";
 import {
   AccountDisabledError,
@@ -11,15 +12,16 @@ import {
   type AuthEvent,
 } from "./auth.types";
 import { PasswordService } from "./password.service";
-import { TokenService } from "./token.service";
+import { RefreshTokenService } from "./refresh-token.service";
 
 const PASSWORD = "Correct-Horse-1";
-const tokens = new TokenService({
-  accessSecret: "auth-service-secret",
+const accessTokens = new HmacJwtTokenService({
+  secret: "auth-service-secret",
   issuer: "btctu-api",
   audience: "btctu-web",
   accessTtlSeconds: 900,
 });
+const refreshTokens = new RefreshTokenService();
 
 async function createSubject(
   options: { now?: () => Date; onEvent?: (event: AuthEvent) => void } = {},
@@ -34,8 +36,10 @@ async function createSubject(
     users: stores.userStore,
     sessions: stores.sessionStore,
     passwords: new PasswordService(),
-    tokens,
+    accessTokens,
+    refreshTokens,
     refreshTtlSeconds: 604800,
+    rotationGraceSeconds: 30,
     ...options,
     onEvent: (event) => {
       events.push(event);
@@ -69,7 +73,7 @@ describe("AuthService.login", () => {
     expect(principal.userId).toBe(user.id);
     const stored = stores.sessions.find((row) => row.id === principal.sessionId);
     expect(stored?.refreshTokenHash).toBe(
-      tokens.hashRefreshToken(result.refreshToken),
+      refreshTokens.hash(result.refreshToken),
     );
     expect(events).toContainEqual({
       type: "login_succeeded",

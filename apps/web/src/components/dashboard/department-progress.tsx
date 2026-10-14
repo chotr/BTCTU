@@ -3,7 +3,7 @@
 import { Card, Progress } from "@/components/ui";
 import { TASK_DONE, inGroup } from "@/lib/domain/workflow";
 import type { AppState } from "@/lib/store";
-import type { Role, Task } from "@/lib/types";
+import { ROLES, type Role, type Task } from "@/lib/types";
 
 /** Thẻ tiến độ hoàn thành cá nhân / đơn vị. */
 export function DepartmentProgress({
@@ -18,7 +18,7 @@ export function DepartmentProgress({
   return (
     <Card className="p-5">
       <h2 className="mb-4 text-sm font-semibold">
-        {role === "cong_chuc"
+        {role === ROLES.congChuc
           ? "Tiến độ nhiệm vụ của tôi"
           : "Tiến độ theo phòng"}
       </h2>

@@ -1,4 +1,4 @@
-import type { MockState } from "./types";
+import { ROLES, type MockState } from "./types";
 
 const baseState: MockState = {
   departments: [
@@ -27,7 +27,7 @@ const baseState: MockState = {
       id: "u-leader",
       name: "Nguyễn Minh Anh",
       title: "Lãnh đạo Ban",
-      role: "lanh_dao",
+      role: ROLES.lanhDao,
       departmentId: "d4",
       positionRefId: "pos-leader",
     },
@@ -35,7 +35,7 @@ const baseState: MockState = {
       id: "u-head",
       name: "Trần Thu Hà",
       title: "Trưởng phòng TCCB",
-      role: "truong_phong",
+      role: ROLES.truongPhong,
       departmentId: "d2",
       positionRefId: "pos-head-tccb",
     },
@@ -43,7 +43,7 @@ const baseState: MockState = {
       id: "u-staff",
       name: "Lê Quốc Bảo",
       title: "Chuyên viên",
-      role: "cong_chuc",
+      role: ROLES.congChuc,
       departmentId: "d2",
       positionRefId: "pos-specialist",
     },
@@ -149,7 +149,6 @@ const baseState: MockState = {
   periods: [{ id: "p-q3-2026", label: "Quý III/2026", lockedAt: null }],
 };
 
-/** Factory tạo dữ liệu mồi cho phát triển. Thay adapter này bằng kho bền vững mà không đổi route. */
 export function createMockState(): MockState {
   return structuredClone(baseState);
 }

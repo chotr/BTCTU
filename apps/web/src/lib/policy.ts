@@ -1,14 +1,21 @@
-import type { AppUser, AuditEvent, Evaluation, Task } from "./types";
+import {
+  ROLES,
+  type AppUser,
+  type AuditEvent,
+  type Evaluation,
+  type Task,
+} from "./types";
 
 // Chính sách giao diện giúp tăng khả dụng; API vẫn là nơi thực thi có thẩm quyền.
-export const canManage = (u: AppUser | null) => u?.role === "lanh_dao";
-export const canAssign = (u: AppUser | null) => !!u && u.role !== "cong_chuc";
+export const canManage = (u: AppUser | null) => u?.role === ROLES.lanhDao;
+export const canAssign = (u: AppUser | null) =>
+  !!u && u.role !== ROLES.congChuc;
 export const canViewDepartment = (u: AppUser | null, id: string) =>
   !!u && (canManage(u) || u.departmentId === id);
 export const canViewTask = (u: AppUser | null, t: Task) =>
   !!u &&
   (canManage(u) ||
-    (u.role === "truong_phong"
+    (u.role === ROLES.truongPhong
       ? u.departmentId === t.departmentId
       : u.id === t.assigneeId));
 export const canSubmitResult = (u: AppUser | null, id: string) =>
@@ -18,7 +25,7 @@ export const canReviewTask = (u: AppUser | null, id: string) =>
 export const canViewEvaluation = (u: AppUser | null, e: Evaluation) =>
   !!u &&
   (canManage(u) ||
-    (u.role === "truong_phong"
+    (u.role === ROLES.truongPhong
       ? u.departmentId === e.departmentId
       : e.subjectType === "PERSON" && u.id === e.subjectId));
 export const canReviewEvaluation = canReviewTask;

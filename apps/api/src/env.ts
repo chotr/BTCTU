@@ -1,16 +1,32 @@
+import {
+  cookiePolicyForProfile,
+  type CookiePolicy,
+  type SameSitePolicy,
+} from "./security/cookie";
+
 const MIN_SECRET_LENGTH = 16;
 const PRODUCTION_MIN_SECRET_LENGTH = 32;
 
+export type AuthConfig = {
+  loginMaxAttempts: number;
+  loginWindowSeconds: number;
+  rotationGraceSeconds: number;
+};
+
 export type Env = {
   environment: string;
-  corsOrigin: string;
+  corsOrigins: string[];
   port: number;
+  publicBaseUrl: string;
+  requestBodyLimit: string;
   databaseUrl: string;
   jwtAccessSecret: string;
   jwtAccessIssuer: string;
   jwtAccessAudience: string;
   jwtAccessTtlSeconds: number;
   refreshTokenTtlSeconds: number;
+  cookiePolicy: CookiePolicy;
+  auth: AuthConfig;
 };
 
 function requireString(source: NodeJS.ProcessEnv, name: string): string {
@@ -59,6 +75,62 @@ function readInteger(
   return value;
 }
 
+function readOptionalBoolean(
+  source: NodeJS.ProcessEnv,
+  name: string,
+): boolean | undefined {
+  const raw = source[name]?.trim().toLowerCase();
+  if (!raw) return undefined;
+  if (["true", "1", "yes"].includes(raw)) return true;
+  if (["false", "0", "no"].includes(raw)) return false;
+
+  throw new Error(`${name} must be true or false, received "${raw}"`);
+}
+
+function readOrigins(source: NodeJS.ProcessEnv): string[] {
+  const raw =
+    source.CORS_ORIGINS?.trim() ||
+    source.CORS_ORIGIN?.trim() ||
+    "http://localhost:3000";
+
+  const origins = raw
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  if (origins.length === 0) {
+    throw new Error("CORS_ORIGINS must list at least one origin");
+  }
+
+  for (const origin of origins) {
+    if (!isHttpUrl(origin)) {
+      throw new Error(
+        `CORS_ORIGINS must list absolute http(s) URLs, received "${origin}"`,
+      );
+    }
+  }
+
+  return origins;
+}
+
+function readSameSite(source: NodeJS.ProcessEnv): SameSitePolicy | undefined {
+  const raw = source.AUTH_COOKIE_SAME_SITE?.trim();
+  if (!raw) return undefined;
+
+  const policies: Record<string, SameSitePolicy> = {
+    strict: "Strict",
+    lax: "Lax",
+    none: "None",
+  };
+  const policy = policies[raw.toLowerCase()];
+  if (!policy) {
+    throw new Error(
+      `AUTH_COOKIE_SAME_SITE must be Strict, Lax or None, received "${raw}"`,
+    );
+  }
+
+  return policy;
+}
+
 export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const environment = source.ENVIRONMENT?.trim() || "local";
   const databaseUrl = requireString(source, "DATABASE_URL");
@@ -77,10 +149,12 @@ export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
     );
   }
 
-  const corsOrigin = source.CORS_ORIGIN?.trim() || "http://localhost:3000";
-  if (!isHttpUrl(corsOrigin)) {
+  const port = readInteger(source, "PORT", 8787, { min: 1, max: 65535 });
+  const publicBaseUrl =
+    source.PUBLIC_BASE_URL?.trim() || `http://localhost:${port}`;
+  if (!isHttpUrl(publicBaseUrl)) {
     throw new Error(
-      `CORS_ORIGIN must be an absolute http(s) URL, received "${corsOrigin}"`,
+      `PUBLIC_BASE_URL must be an absolute http(s) URL, received "${publicBaseUrl}"`,
     );
   }
 
@@ -102,15 +176,44 @@ export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
     );
   }
 
+  const cookiePolicy = cookiePolicyForProfile(environment, {
+    secure: readOptionalBoolean(source, "AUTH_COOKIE_SECURE"),
+    sameSite: readSameSite(source),
+  });
+  if (cookiePolicy.sameSite === "None" && !cookiePolicy.secure) {
+    throw new Error(
+      "AUTH_COOKIE_SAME_SITE=None requires AUTH_COOKIE_SECURE=true",
+    );
+  }
+
   return {
     environment,
-    corsOrigin,
-    port: readInteger(source, "PORT", 8787, { min: 1, max: 65535 }),
+    corsOrigins: readOrigins(source),
+    port,
+    publicBaseUrl,
+    requestBodyLimit: source.REQUEST_BODY_LIMIT?.trim() || "1mb",
     databaseUrl,
     jwtAccessSecret,
     jwtAccessIssuer: source.JWT_ACCESS_ISSUER?.trim() || "btctu-api",
     jwtAccessAudience: source.JWT_ACCESS_AUDIENCE?.trim() || "btctu-web",
     jwtAccessTtlSeconds,
     refreshTokenTtlSeconds,
+    cookiePolicy,
+    auth: {
+      loginMaxAttempts: readInteger(source, "AUTH_LOGIN_MAX_ATTEMPTS", 10, {
+        min: 1,
+        max: 1000,
+      }),
+      loginWindowSeconds: readInteger(source, "AUTH_LOGIN_WINDOW_SECONDS", 60, {
+        min: 1,
+        max: 86400,
+      }),
+      rotationGraceSeconds: readInteger(
+        source,
+        "AUTH_REFRESH_ROTATION_GRACE_SECONDS",
+        30,
+        { min: 0, max: 3600 },
+      ),
+    },
   };
 }

@@ -7,6 +7,21 @@ export const REFRESH_COOKIE_PATH = "/api/v1/auth";
 
 export type SameSitePolicy = "Strict" | "Lax" | "None";
 
+export type CookiePolicy = {
+  secure: boolean;
+  sameSite: SameSitePolicy;
+};
+
+export function cookiePolicyForProfile(
+  environment: string,
+  overrides: { secure?: boolean; sameSite?: SameSitePolicy } = {},
+): CookiePolicy {
+  return {
+    secure: overrides.secure ?? environment === "production",
+    sameSite: overrides.sameSite ?? "Strict",
+  };
+}
+
 export type CookieAttributes = {
   path?: string;
   maxAge?: number;

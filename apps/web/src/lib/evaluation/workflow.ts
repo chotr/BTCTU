@@ -4,7 +4,7 @@ import { classificationEligibility } from "@/lib/evaluation-engine";
 import { now } from "@/lib/shared/ids";
 import { deny } from "@/lib/shared/feedback";
 import { EVAL_IN_REVIEW } from "@/lib/domain/workflow";
-import type { Classification } from "@/lib/types";
+import { ROLES, type Classification } from "@/lib/types";
 import {
   calculationProblem,
   canSelfEvaluate,
@@ -65,7 +65,7 @@ export const workflowActions = {
     if (
       !canReviewEvaluation(user, ev.departmentId) ||
       (ev.subjectType === "PERSON" && ev.subjectId === user.id) ||
-      (ev.subjectType === "DEPARTMENT" && user.role !== "lanh_dao")
+      (ev.subjectType === "DEPARTMENT" && user.role !== ROLES.lanhDao)
     )
       return deny(
         "Thẩm định đánh giá",
