@@ -5,10 +5,16 @@ import {
   text,
   timestamp,
   index,
+  check,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
-// Explicit fields only. No arbitrary JSON payload so secrets, tokens and file
-// content cannot slip into the audit stream through a generic column.
+export const AUDIT_OUTCOMES = ["SUCCESS", "DENIED", "FAILED"] as const;
+
+export type AuditOutcome = (typeof AUDIT_OUTCOMES)[number];
+
+export const AUDIT_REQUEST_ID_MAX_LENGTH = 128;
+
 export const auditEvents = pgTable(
   "audit_events",
   {
@@ -16,15 +22,12 @@ export const auditEvents = pgTable(
       .primaryKey()
       .defaultRandom(),
 
-    // Client-supplied correlation values are not guaranteed to be UUIDs yet,
-    // so this stays a string until an internal/external ID split is agreed.
-    requestId: varchar("request_id", { length: 128 }).notNull(),
+    requestId: varchar("request_id", {
+      length: AUDIT_REQUEST_ID_MAX_LENGTH,
+    }).notNull(),
 
-    // Actor/person identity is still mocked as "u-leader"/"u-staff"; keep it a
-    // string so the schema does not assume a UUID mapping that is unconfirmed.
     actorId: varchar("actor_id", { length: 255 }),
 
-    // Sessions are already real UUIDs.
     sessionId: uuid("session_id"),
 
     action: varchar("action", { length: 100 }).notNull(),
@@ -44,6 +47,10 @@ export const auditEvents = pgTable(
       .defaultNow(),
   },
   (table) => [
+    check(
+      "audit_events_outcome_check",
+      sql`${table.outcome} in ('SUCCESS', 'DENIED', 'FAILED')`,
+    ),
     index("audit_events_actor_id_idx").on(table.actorId),
     index("audit_events_request_id_idx").on(table.requestId),
     index("audit_events_created_at_idx").on(table.createdAt),

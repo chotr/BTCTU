@@ -13,4 +13,5 @@ CREATE TABLE "audit_events" (
 --> statement-breakpoint
 CREATE INDEX "audit_events_actor_id_idx" ON "audit_events" USING btree ("actor_id");--> statement-breakpoint
 CREATE INDEX "audit_events_request_id_idx" ON "audit_events" USING btree ("request_id");--> statement-breakpoint
-CREATE INDEX "audit_events_created_at_idx" ON "audit_events" USING btree ("created_at");
+CREATE INDEX "audit_events_created_at_idx" ON "audit_events" USING btree ("created_at");--> statement-breakpoint
+ALTER TABLE "audit_events" ADD CONSTRAINT "audit_events_outcome_check" CHECK ("audit_events"."outcome" in ('SUCCESS', 'DENIED', 'FAILED'));

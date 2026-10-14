@@ -14,6 +14,7 @@ import { accessTokenFromRequest } from "./middleware/authentication";
 import { can } from "./middleware/authorization";
 import { createOriginGuard } from "./middleware/csrf";
 import { createMockState } from "./mock-state";
+import { validExternalRequestId } from "./shared/request-id";
 import {
   MockActorResolver,
   UnprovisionedActorResolver,
@@ -273,7 +274,12 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
   app.use(express.json({ limit: env.requestBodyLimit }));
 
   app.use((req, res, next) => {
-    const requestId = req.header("x-request-id") ?? crypto.randomUUID();
+    // The client-supplied correlation id must never break the audit column
+    // constraint (or roll back a business transaction that shares it), so an
+    // over-long value is discarded at the boundary.
+    const requestId =
+      validExternalRequestId(req.header("x-request-id")) ??
+      crypto.randomUUID();
     req.requestId = requestId;
     res.setHeader("x-request-id", requestId);
     res.setHeader("x-content-type-options", "nosniff");

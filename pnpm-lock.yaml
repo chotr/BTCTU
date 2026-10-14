@@ -10,6 +10,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@btctu/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       argon2:
         specifier: ^0.45.1
         version: 0.45.1
@@ -62,6 +65,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@btctu/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@phosphor-icons/react':
         specifier: ^2.1.7
         version: 2.1.10(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -102,6 +108,12 @@ importers:
       vitest:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.15)
+
+  packages/shared:
+    devDependencies:
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
 
 packages:
 
