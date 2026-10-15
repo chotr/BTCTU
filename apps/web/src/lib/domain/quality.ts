@@ -1,4 +1,4 @@
-/** The only quality vocabulary accepted by task results and KPI scoring. */
+/** Các mức chất lượng được chấp nhận khi ghi kết quả nhiệm vụ và tính điểm KPI. */
 export const RESULT_QUALITY = [
   "Đáp ứng tốt",
   "Đáp ứng",

@@ -1,6 +1,9 @@
 # Tài liệu dự án BTCTU
 
-Bộ tài liệu chuẩn cho hệ thống quản lý nhiệm vụ, KPI, đánh giá và xếp loại.
+Đây là ghi chép làm việc của dự án: yêu cầu ban đầu, cách nhóm hiểu các văn bản
+nguồn, quyết định kỹ thuật và những điểm chưa chốt. Tài liệu mô tả ý định thiết
+kế; [tình trạng phát triển](06-plan/development-readiness.md) mới là nơi đối chiếu
+với mã nguồn hiện tại.
 
 ## Thứ tự đọc
 
@@ -9,13 +12,13 @@ Bộ tài liệu chuẩn cho hệ thống quản lý nhiệm vụ, KPI, đánh g
 | 00  | Tổng quan               | [00-overview.md](00-overview.md)                                                         | Phạm vi, trạng thái và vấn đề còn mở                    |
 | 01  | Yêu cầu                 | [01-requirements/assignment.md](01-requirements/assignment.md)                           | Yêu cầu và tiêu chí bàn giao                            |
 | 02  | Phân tích nguồn         | [02-source-analysis/README.md](02-source-analysis/README.md)                             | Căn cứ và giới hạn của từng nguồn                       |
-| 02  | Đối soát audit          | [02-source-analysis/audit-reconciliation.md](02-source-analysis/audit-reconciliation.md) | Claim đã sửa và TBD còn lại                             |
+| 02  | Đối chiếu nguồn         | [02-source-analysis/audit-reconciliation.md](02-source-analysis/audit-reconciliation.md) | Nội dung đã sửa và điểm còn chờ xác nhận                |
 | 03  | Nghiệp vụ               | [03-business/domain-map.md](03-business/domain-map.md)                                   | Tổ chức, nhiệm vụ, KPI và đánh giá                      |
-| 03  | Truy vết                | [03-business/traceability-matrix.md](03-business/traceability-matrix.md)                 | Nguồn cho từng capability                               |
+| 03  | Truy vết                | [03-business/traceability-matrix.md](03-business/traceability-matrix.md)                 | Nguồn cho từng nhóm chức năng                           |
 | 03  | Kiểm kê trường tổ chức  | [03-business/organization-fields.md](03-business/organization-fields.md)                 | Trường nào QĐ01 chứng minh, trường nào còn TBD          |
-| 04  | Thiết kế hệ thống       | [04-system-design/context.md](04-system-design/context.md)                               | C4, domain, ERD, quyền, audit, tích hợp, bảo mật        |
-| 04  | contract API đăng nhập  | [04-system-design/auth-api.md](04-system-design/auth-api.md)                             | Bốn endpoint auth, cookie, mã lỗi, cấu hình             |
-| 04  | Gói contract dùng chung | [04-system-design/shared-package.md](04-system-design/shared-package.md)                 | Ranh giới shared giữa web và API, chênh lệch trạng thái |
+| 04  | Thiết kế hệ thống       | [04-system-design/context.md](04-system-design/context.md)                               | Sơ đồ, miền nghiệp vụ, dữ liệu, quyền và bảo mật        |
+| 04  | API đăng nhập           | [04-system-design/auth-api.md](04-system-design/auth-api.md)                             | Bốn tuyến đăng nhập, cookie, mã lỗi và cấu hình         |
+| 04  | Gói dùng chung          | [04-system-design/shared-package.md](04-system-design/shared-package.md)                 | Phần dùng chung giữa web và API                         |
 | 05  | ADR                     | [05-adr/README.md](05-adr/README.md)                                                     | Quyết định kiến trúc                                    |
 | 06  | Triển khai              | [06-plan/development-readiness.md](06-plan/development-readiness.md)                     | Cách chạy và điều kiện chuyển môi trường                |
 | 07  | Nghiệm thu              | [07-acceptance/acceptance-runbook.md](07-acceptance/acceptance-runbook.md)               | Kịch bản kiểm tra xuyên suốt                            |
@@ -30,6 +33,9 @@ Bộ tài liệu chuẩn cho hệ thống quản lý nhiệm vụ, KPI, đánh g
 - **SOURCE DIVERGENCE** — các nguồn khác tầng contract, version hoặc phạm vi.
 
 Không nâng INFERENCE/TBD thành FACT.
+
+Các nhãn tiếng Anh được giữ để tìm kiếm nhất quán trong những tài liệu phân tích
+cũ; chúng không biểu thị trạng thái hoàn thành của phần mềm.
 
 ## Kết quả chính từ nguồn
 

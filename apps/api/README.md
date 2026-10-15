@@ -1,6 +1,11 @@
 # BTCTU API
 
-REST API **Express.js (Node)** cung cấp contract cho nhiệm vụ, đánh giá, kỳ, audit và báo cáo.
+API Express.js cung cấp các tuyến cho nhiệm vụ, đánh giá, kỳ, nhật ký và báo cáo.
+
+Phần đăng nhập đã lưu người dùng và phiên trong PostgreSQL. Các tuyến nghiệp vụ
+khác hiện vẫn tạo dữ liệu tạm theo từng yêu cầu, vì vậy thay đổi ở những tuyến này
+không được giữ lại sau yêu cầu kế tiếp. Xem đây là môi trường phát triển, không
+phải dịch vụ đã sẵn sàng vận hành.
 
 ## Chạy local
 
@@ -14,7 +19,9 @@ pnpm --filter @btctu/api dev
 - OpenAPI: `http://localhost:8787/openapi.json`
 - Health: `http://localhost:8787/health`
 
-Môi trường local dùng header `x-dev-user-id` (`u-leader`, `u-head`, `u-staff`) để chọn actor phát triển. Header này không được chấp nhận như cơ chế xác thực production.
+Môi trường cục bộ dùng header `x-dev-user-id` (`u-leader`, `u-head`, `u-staff`)
+để chọn người dùng thử nghiệm. Header này không phải cơ chế xác thực cho môi
+trường vận hành.
 
 ## Đăng nhập
 
@@ -49,7 +56,8 @@ Tài khoản phát triển (chạy `pnpm --filter @btctu/api db:migrate` trướ
 
 Danh tính cho các route nghiệp vụ đi qua cổng `ActorResolver`. Ở môi trường khác `production`, resolver đọc danh mục trong bộ nhớ và request **bắt buộc** gửi `x-dev-user-id`; thiếu header trả 401 `unknown_actor`. Ở production, danh tính chỉ đến từ access token, và vì bảng `users` chưa gắn với danh mục nhân sự (mốc P2) nên những route đó trả 403 `actor_not_provisioned`.
 
-contract đầy đủ, gồm cookie, mã lỗi và luồng xoay token: [docs/04-system-design/auth-api.md](../../docs/04-system-design/auth-api.md).
+Mô tả chi tiết về cookie, mã lỗi và luồng đổi token:
+[docs/04-system-design/auth-api.md](../../docs/04-system-design/auth-api.md).
 
 ## Endpoint chính
 

@@ -141,8 +141,8 @@ export class AuthService implements AuthPort {
       throw new InvalidAccessTokenError();
     }
 
-    // A valid signature is not enough: logging out or revoking a session has to
-    // stop the access token that was issued for it.
+    // Chữ ký hợp lệ chưa đủ: token truy cập phải ngừng hiệu lực ngay khi phiên
+    // đã đăng xuất hoặc bị thu hồi.
     const session = await this.sessions.findActiveById(claims.sessionId);
     if (!session || session.userId !== claims.userId) {
       throw new InvalidSessionError("Session is not active");

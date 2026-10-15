@@ -7,7 +7,7 @@ import {
 } from "./policy";
 import { ROLES } from "@/lib/types";
 
-/** Records the signed-in role is allowed to see. Export and screens share this. */
+/** Lọc các bản ghi mà vai trò đang đăng nhập được xem; màn hình và xuất tệp dùng chung. */
 export function scopedData(s: AppState) {
   return {
     tasks: s.tasks.filter((t) => canViewTask(s.user, t)),

@@ -17,12 +17,17 @@ flowchart LR
 
 ## Trạng thái
 
-- giao diện nghiệp vụ đã có đầy đủ luồng chính;
-- REST API và OpenAPI đã có contract, validation, policy và error envelope;
-- cấu hình local/staging/production tách biệt;
-- dữ liệu local hiện do adapter tạm thời cung cấp trong lúc chờ API/kho dữ liệu hoàn chỉnh;
-- typecheck, unit test, contract test, E2E và production build là cổng kiểm tra;
-- các quy tắc chưa đủ căn cứ vẫn được đánh dấu chờ phê duyệt.
+Đây là bản thử nghiệm phát triển, chưa phải hệ thống sẵn sàng vận hành:
+
+- giao diện đã mô phỏng các luồng chính nhưng vẫn xử lý dữ liệu trên trình duyệt;
+- API đã có mô tả OpenAPI, kiểm tra đầu vào, đăng nhập và phân quyền;
+- một số bảng PostgreSQL đã có, nhưng các tuyến nghiệp vụ vẫn chủ yếu dùng dữ liệu
+  tạo lại theo từng yêu cầu;
+- giao diện chưa gọi các tuyến API nghiệp vụ;
+- kiểm tra kiểu dữ liệu, kiểm thử tự động và đóng gói là điều kiện tối thiểu khi
+  ghép thay đổi;
+- quy tắc chưa đủ căn cứ tiếp tục được đánh dấu chờ xác nhận, không được coi là
+  quy định chính thức.
 
 ## Vấn đề còn mở
 
@@ -44,7 +49,9 @@ Phân tích nguồn
 → Thiết kế hệ thống
 → Triển khai ứng dụng
 → Nghiệm thu
-→ Chuyển adapter API và hạ tầng được phê duyệt
+→ Kết nối giao diện với API
+→ Thay dữ liệu tạm bằng PostgreSQL
+→ Kiểm thử tích hợp và xin phê duyệt vận hành
 ```
 
-Kiến trúc domain và API không phụ thuộc việc hạ tầng production cuối cùng là Cloudflare hay nền tảng khác được phê duyệt.
+Hạ tầng vận hành cuối cùng chưa được quyết định trong repo này.

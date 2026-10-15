@@ -34,10 +34,11 @@ import {
 import { exportReport, type ReportKind } from "./exports";
 
 /**
- * The only command surface screens may call.
- * This binding is the in-browser mock. Replacing it with a fetch client must
- * keep these method names and return values; screens must not import the
- * local engines, fixtures, or store mutators directly.
+ * Điểm gọi thao tác duy nhất dành cho các màn hình.
+ *
+ * Phần triển khai hiện chạy cục bộ trên trình duyệt. Khi thay bằng lớp gọi API,
+ * cần giữ tên hàm và kiểu trả về để màn hình không phụ thuộc trực tiếp vào dữ
+ * liệu mẫu, bộ xử lý cục bộ hoặc hàm thay đổi kho trạng thái.
  */
 export const perm = policy;
 export const api = {

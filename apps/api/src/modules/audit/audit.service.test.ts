@@ -128,7 +128,7 @@ describe("AuditService", () => {
     const { executor } = createFakeDb();
     const service = new AuditService(executor);
 
-    // A caller forcing extra keys past the type guard must not widen the schema.
+    // Dữ liệu ép kiểu có thêm trường cũng không được làm rộng bản ghi nhật ký.
     const event = await service.record({
       ...baseInput(),
       accessToken: "eyJhbGciOi...",
