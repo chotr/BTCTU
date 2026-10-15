@@ -48,6 +48,12 @@ AuditEvent
 - thông tin IP/thiết bị nguồn khi được phép
 ```
 
+Cột `outcome` của bảng `audit_events` chỉ nhận `SUCCESS`, `DENIED` hoặc `FAILED`.
+Ràng buộc `audit_events_outcome_check` (migration `0003`) chặn mọi giá trị khác, và
+hằng `AUDIT_OUTCOMES` ở `apps/api/src/db/schema/audit-events.ts` là nơi khai báo
+duy nhất mà mã dùng — vết audit tạm trong bộ nhớ và bản ghi trong bảng cùng một bộ
+giá trị.
+
 ## Quy tắc bảo mật
 
 - không ghi log secrets/token/nội dung file;
@@ -55,6 +61,9 @@ AuditEvent
 - lưu trữ append-only/chống sửa đổi;
 - quyền đọc audit bị giới hạn;
 - thời gian/correlation ID tập trung;
+- chỉ nhận `x-request-id` do client gửi khi giá trị chỉ gồm chữ, số và các dấu
+  `.`, `_`, `:`, `-`, không quá 128 ký tự; giá trị khác bị bỏ và thay bằng UUID
+  do máy chủ sinh;
 - giám sát bảo mật có thể tiêu thụ luồng/read model audit.
 
 ## TBD

@@ -84,7 +84,7 @@ export function createEvaluationRouter(): Router {
       evaluation.status = "SUBMITTED";
       evaluation.selfComment = input.comment;
       evaluation.classification = input.proposed;
-      recordAudit(req, "self_evaluate", evaluation.id, "OK");
+      recordAudit(req, "self_evaluate", evaluation.id, "SUCCESS");
       res.json({ data: evaluation });
     },
   );
@@ -121,7 +121,7 @@ export function createEvaluationRouter(): Router {
       req,
       input.action === "propose" ? "review_evaluation" : "return_evaluation",
       evaluation.id,
-      "OK",
+      "SUCCESS",
       input.comment,
     );
     res.json({ data: evaluation });
@@ -153,7 +153,13 @@ export function createEvaluationRouter(): Router {
       evaluation.status = "APPROVED";
       evaluation.classification = input.classification;
       evaluation.decisionNote = input.note;
-      recordAudit(req, "decide_evaluation", evaluation.id, "OK", input.note);
+      recordAudit(
+        req,
+        "decide_evaluation",
+        evaluation.id,
+        "SUCCESS",
+        input.note,
+      );
       res.json({ data: evaluation });
     },
   );
@@ -192,7 +198,7 @@ export function createEvaluationRouter(): Router {
     )) {
       evaluation.status = "LOCKED";
     }
-    recordAudit(req, "lock_period", period.id, "OK");
+    recordAudit(req, "lock_period", period.id, "SUCCESS");
     res.json({ data: period });
   });
 

@@ -25,4 +25,35 @@ describe("validExternalRequestId", () => {
     expect(validExternalRequestId(undefined)).toBeUndefined();
     expect(validExternalRequestId("   ")).toBeUndefined();
   });
+
+  it("accepts the separators used by uuids, trace ids and prefixed names", () => {
+    expect(validExternalRequestId("0af7651916cd43dd8448eb211c80319c")).toBe(
+      "0af7651916cd43dd8448eb211c80319c",
+    );
+    expect(
+      validExternalRequestId("00-4bf92f3577b34da6a3ce929d0e0e4736-01"),
+    ).toBe("00-4bf92f3577b34da6a3ce929d0e0e4736-01");
+    expect(validExternalRequestId("checkout_v2:01H8Z.svc-a")).toBe(
+      "checkout_v2:01H8Z.svc-a",
+    );
+  });
+
+  it("rejects a value with inner whitespace or a line break", () => {
+    expect(validExternalRequestId("req 1")).toBeUndefined();
+    expect(validExternalRequestId("req\n1")).toBeUndefined();
+    expect(validExternalRequestId("req\r\nset-cookie: x=1")).toBeUndefined();
+  });
+
+  it("rejects control characters", () => {
+    expect(validExternalRequestId("req\u0000-1")).toBeUndefined();
+    expect(validExternalRequestId("req\u001b[31m")).toBeUndefined();
+  });
+
+  it("rejects characters that could break a header or a log line", () => {
+    expect(validExternalRequestId('req"1')).toBeUndefined();
+    expect(validExternalRequestId("req<1>")).toBeUndefined();
+    expect(validExternalRequestId("team/1")).toBeUndefined();
+    expect(validExternalRequestId("id=1")).toBeUndefined();
+    expect(validExternalRequestId("mã-01")).toBeUndefined();
+  });
 });

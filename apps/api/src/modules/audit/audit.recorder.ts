@@ -1,11 +1,12 @@
 import type { Request, Response } from "express";
 import { problem } from "@/shared/problem";
+import type { AuditOutcome } from "./audit.types";
 
 export function recordAudit(
   req: Request,
   action: string,
   resource: string,
-  outcome: "OK" | "DENIED",
+  outcome: AuditOutcome,
   detail = "",
 ): void {
   const state = req.state!;

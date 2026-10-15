@@ -5,6 +5,7 @@ import type {
   Role,
   TaskStatus,
 } from "@btctu/shared";
+import type { AuditOutcome } from "@/modules/audit/audit.types";
 
 export { ROLES };
 export type { Classification, EvaluationStatus, Role, TaskStatus };
@@ -86,7 +87,9 @@ export type AuditEvent = {
   actorId: string;
   action: string;
   resource: string;
-  outcome: "OK" | "DENIED";
+  // Dùng đúng bộ giá trị mà ràng buộc `audit_events_outcome_check` cho phép, để
+  // vết tạm trong bộ nhớ và bảng audit không lệch nhau.
+  outcome: AuditOutcome;
   detail: string;
   at: string;
 };

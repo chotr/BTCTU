@@ -92,7 +92,7 @@ export function createTaskRouter(): Router {
       req,
       "create_task",
       task.id,
-      "OK",
+      "SUCCESS",
       `Assigned to ${assignee.name}`,
     );
     res.status(201).json({ data: task });
@@ -142,7 +142,7 @@ export function createTaskRouter(): Router {
       req,
       input.submit ? "submit_task_result" : "save_task_result",
       task.id,
-      "OK",
+      "SUCCESS",
     );
     res.json({ data: task });
   });
@@ -172,7 +172,7 @@ export function createTaskRouter(): Router {
       return;
     }
     task.status = "ACCEPTED";
-    recordAudit(req, "accept_task", task.id, "OK");
+    recordAudit(req, "accept_task", task.id, "SUCCESS");
     res.json({ data: task });
   });
 
@@ -202,7 +202,7 @@ export function createTaskRouter(): Router {
     }
     const input = req.validated as z.infer<typeof returnSchema>;
     task.status = "RETURNED";
-    recordAudit(req, "return_task", task.id, "OK", input.note);
+    recordAudit(req, "return_task", task.id, "SUCCESS", input.note);
     res.json({ data: task });
   });
 

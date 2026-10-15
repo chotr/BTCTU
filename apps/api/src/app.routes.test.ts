@@ -44,6 +44,20 @@ describe("identity và request context", () => {
     expect(response.headers["x-request-id"]).toBe("corr-123");
   });
 
+  it("thay request id không an toàn bằng UUID do server sinh", async () => {
+    const unsafe = await request(app)
+      .get("/health")
+      .set("x-request-id", "bad id");
+    const tooLong = await request(app)
+      .get("/health")
+      .set("x-request-id", "x".repeat(129));
+    const uuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+    expect(unsafe.headers["x-request-id"]).toMatch(uuid);
+    expect(tooLong.headers["x-request-id"]).toMatch(uuid);
+  });
+
   it("chỉ trả CORS cho origin nằm trong danh sách cho phép", async () => {
     const allowed = await request(app)
       .get("/api/v1/me")
