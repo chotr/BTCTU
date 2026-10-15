@@ -13,6 +13,7 @@ describe("readEnv", () => {
       corsOrigins: ["http://localhost:3000"],
       port: 8787,
       publicBaseUrl: "http://localhost:8787",
+      problemTypeBase: "http://localhost:8787/problems",
       requestBodyLimit: "1mb",
       jwtAccessIssuer: "btctu-api",
       jwtAccessAudience: "btctu-web",
@@ -52,6 +53,27 @@ describe("readEnv", () => {
         CORS_ORIGINS: "https://app.example.vn,localhost:3000",
       }),
     ).toThrow(/absolute/);
+  });
+
+  it("derives the problem type namespace from the public base url", () => {
+    const env = readEnv({ ...base, PUBLIC_BASE_URL: "https://api.btctu.vn" });
+
+    expect(env.problemTypeBase).toBe("https://api.btctu.vn/problems");
+  });
+
+  it("accepts an explicit problem type namespace and drops the trailing slash", () => {
+    const env = readEnv({
+      ...base,
+      PROBLEM_TYPE_BASE: "https://docs.btctu.vn/problems/",
+    });
+
+    expect(env.problemTypeBase).toBe("https://docs.btctu.vn/problems");
+  });
+
+  it("rejects a problem type namespace that is not absolute", () => {
+    expect(() => readEnv({ ...base, PROBLEM_TYPE_BASE: "/problems" })).toThrow(
+      /PROBLEM_TYPE_BASE/,
+    );
   });
 
   it("rejects a database url that is not postgres", () => {

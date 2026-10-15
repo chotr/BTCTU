@@ -3,8 +3,5 @@ export const TASK_STATUSES = [
   "IN_PROGRESS",
   "SUBMITTED",
   "RETURNED",
-  "REVIEWED",
   "ACCEPTED",
-  "LOCKED",
-  "CANCELLED",
 ] as const;

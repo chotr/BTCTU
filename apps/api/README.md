@@ -1,6 +1,6 @@
 # BTCTU API
 
-REST API **Express.js (Node)** cung cấp hợp đồng cho nhiệm vụ, đánh giá, kỳ, audit và báo cáo.
+REST API **Express.js (Node)** cung cấp contract cho nhiệm vụ, đánh giá, kỳ, audit và báo cáo.
 
 ## Chạy local
 
@@ -20,12 +20,12 @@ Môi trường local dùng header `x-dev-user-id` (`u-leader`, `u-head`, `u-staf
 
 API xác thực bằng email/mật khẩu, cấp access token (JWT) và refresh token lưu trong cookie `HttpOnly`:
 
-| Method | Path | Mục đích |
-|---|---|---|
-| POST | `/api/v1/auth/login` | đổi email/mật khẩu lấy token, đặt cả hai vào cookie |
-| POST | `/api/v1/auth/refresh` | xoay refresh token, cấp access token mới |
-| POST | `/api/v1/auth/logout` | thu hồi phiên và xoá cả hai cookie |
-| GET | `/api/v1/auth/session` | tài khoản và phiên của phiên hiện tại |
+| Method | Path                   | Mục đích                                            |
+| ------ | ---------------------- | --------------------------------------------------- |
+| POST   | `/api/v1/auth/login`   | đổi email/mật khẩu lấy token, đặt cả hai vào cookie |
+| POST   | `/api/v1/auth/refresh` | xoay refresh token, cấp access token mới            |
+| POST   | `/api/v1/auth/logout`  | thu hồi phiên và xoá cả hai cookie                  |
+| GET    | `/api/v1/auth/session` | tài khoản và phiên của phiên hiện tại               |
 
 ```bash
 curl -i -c cookies.txt -X POST http://localhost:8787/api/v1/auth/login \
@@ -43,43 +43,49 @@ curl -b cookies.txt http://localhost:8787/api/v1/auth/session
 - `POST /login` bị giới hạn theo `AUTH_LOGIN_MAX_ATTEMPTS` lần sai trong `AUTH_LOGIN_WINDOW_SECONDS` giây cho mỗi cặp email/IP (mặc định 10 lần trong 60 giây), vượt hạn mức trả về 429;
 - request thay đổi trạng thái có `Origin` ngoài `CORS_ORIGINS` bị từ chối với `origin_not_allowed`;
 - cờ `Secure`/`SameSite` của cookie suy ra từ `ENVIRONMENT`, ghi đè bằng `AUTH_COOKIE_SECURE` và `AUTH_COOKIE_SAME_SITE`; `SameSite=None` đòi `Secure`;
-- lỗi trả về theo problem+json (`type`, `title`, `status`, `detail`, `instance`, `requestId`) như các route khác.
+- lỗi trả về theo problem+json (`type`, `title`, `status`, `detail`, `instance`, `requestId`) như các route khác; phần đầu của `type` theo `PROBLEM_TYPE_BASE`, mặc định là `${PUBLIC_BASE_URL}/problems`.
 
 Tài khoản phát triển (chạy `pnpm --filter @btctu/api db:migrate` trước, rồi `pnpm --filter @btctu/api db:seed`) dùng email `leader@btctu.local`, `head@btctu.local`, `staff@btctu.local`. Mật khẩu mặc định là `dev-only-changeme`; đặt `DEV_SEED_PASSWORD` để đổi.
 
 Danh tính cho các route nghiệp vụ đi qua cổng `ActorResolver`. Ở môi trường khác `production`, resolver đọc danh mục trong bộ nhớ và request **bắt buộc** gửi `x-dev-user-id`; thiếu header trả 401 `unknown_actor`. Ở production, danh tính chỉ đến từ access token, và vì bảng `users` chưa gắn với danh mục nhân sự (mốc P2) nên những route đó trả 403 `actor_not_provisioned`.
 
-Hợp đồng đầy đủ, gồm cookie, mã lỗi và luồng xoay token: [docs/04-system-design/auth-api.md](../../docs/04-system-design/auth-api.md).
+contract đầy đủ, gồm cookie, mã lỗi và luồng xoay token: [docs/04-system-design/auth-api.md](../../docs/04-system-design/auth-api.md).
 
 ## Endpoint chính
 
-| Method | Path | Mục đích |
-|---|---|---|
-| GET | `/health` | liveness/readiness cơ bản |
-| GET | `/openapi.json` | REST contract |
-| GET | `/api/v1/me` | actor hiện tại |
-| GET | `/api/v1/organizations` | đơn vị và nhân sự |
-| GET | `/api/v1/catalog` | danh mục công việc có phiên bản |
-| GET/POST | `/api/v1/tasks` | danh sách/tạo nhiệm vụ |
-| GET | `/api/v1/tasks/:id` | chi tiết nhiệm vụ |
-| POST | `/api/v1/tasks/:id/result` | lưu hoặc nộp kết quả |
-| POST | `/api/v1/tasks/:id/accept` | nghiệm thu |
-| POST | `/api/v1/tasks/:id/return` | trả lại chỉnh sửa |
-| GET | `/api/v1/evaluations` | danh sách hồ sơ đánh giá |
-| POST | `/api/v1/evaluations/:id/self` | tự đánh giá |
-| POST | `/api/v1/evaluations/:id/review` | thẩm định |
-| POST | `/api/v1/evaluations/:id/decision` | quyết định |
-| POST | `/api/v1/periods/:id/lock` | khóa kỳ |
-| GET | `/api/v1/audit` | nhật ký audit |
-| GET | `/api/v1/reports/summary` | số liệu tổng hợp |
+| Method   | Path                               | Mục đích                        |
+| -------- | ---------------------------------- | ------------------------------- |
+| GET      | `/health`                          | liveness/readiness cơ bản       |
+| GET      | `/openapi.json`                    | REST contract                   |
+| GET      | `/api/v1/me`                       | actor hiện tại                  |
+| GET      | `/api/v1/organizations`            | đơn vị và nhân sự               |
+| GET      | `/api/v1/catalog`                  | danh mục công việc có phiên bản |
+| GET/POST | `/api/v1/tasks`                    | danh sách/tạo nhiệm vụ          |
+| GET      | `/api/v1/tasks/:id`                | chi tiết nhiệm vụ               |
+| POST     | `/api/v1/tasks/:id/result`         | lưu hoặc nộp kết quả            |
+| POST     | `/api/v1/tasks/:id/accept`         | nghiệm thu                      |
+| POST     | `/api/v1/tasks/:id/return`         | trả lại chỉnh sửa               |
+| GET      | `/api/v1/evaluations`              | danh sách hồ sơ đánh giá        |
+| POST     | `/api/v1/evaluations/:id/self`     | tự đánh giá                     |
+| POST     | `/api/v1/evaluations/:id/review`   | thẩm định                       |
+| POST     | `/api/v1/evaluations/:id/decision` | quyết định                      |
+| POST     | `/api/v1/periods/:id/lock`         | khóa kỳ                         |
+| GET      | `/api/v1/audit`                    | nhật ký audit                   |
+| GET      | `/api/v1/reports/summary`          | số liệu tổng hợp                |
 
 ## Cấu trúc
 
-- `src/app.ts` — factory `createApp(env)` dựng Express app (kiểm thử được qua supertest, không cần mở cổng).
+- `src/app.ts` — điểm ghép nối: chọn adapter theo môi trường, lắp middleware chung rồi mount module. `createApp(env)` kiểm thử được qua supertest, không cần mở cổng.
 - `src/index.ts` — entry khởi động server (`listen`).
-- `src/env.ts` — đọc cấu hình từ biến môi trường (`PORT`, `ENVIRONMENT`, `CORS_ORIGIN`).
+- `src/env.ts` — đọc cấu hình từ biến môi trường (`PORT`, `ENVIRONMENT`, `CORS_ORIGINS`, `PROBLEM_TYPE_BASE`).
+- `src/modules/*` — một thư mục cho mỗi module nghiệp vụ (organization, catalog, task, evaluation, audit, reporting, auth, identity); mỗi module tự khai báo router và schema của mình.
+- `src/middleware/*` — request id và CORS, kiểm Origin, kiểm body, xử lý lỗi, xác thực và uỷ quyền.
+- `src/contract/openapi.ts` — bản mô tả hợp đồng phục vụ ở `/openapi.json`.
+- `src/shared/*` — khuôn lỗi problem+json và tiện ích dùng chung.
 - `src/mock-state.ts` — dữ liệu theo từng request để contract test độc lập trong lúc chờ kho dữ liệu thật; chưa có persistence.
 - `src/types.ts` — kiểu domain của API.
+
+Ánh xạ module sang mã nguồn: [docs/04-system-design/module-boundaries.md](../../docs/04-system-design/module-boundaries.md).
 
 ## Adapter dữ liệu tạm thời
 

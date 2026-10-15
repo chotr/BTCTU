@@ -10,7 +10,7 @@ Phiên bản `1.0.0` sẵn sàng cho môi trường phát triển:
 - Express.js trên Node cho REST API;
 - phân quyền theo vai trò, audit, snapshot, khóa/mở kỳ và xuất báo cáo;
 - dữ liệu khởi tạo cục bộ được cô lập trong `apps/web/src/lib/mock/`;
-- hợp đồng HTTP và cấu hình môi trường đã sẵn sàng để thay adapter cục bộ bằng API;
+- contract HTTP và cấu hình môi trường đã sẵn sàng để thay adapter cục bộ bằng API;
 - các quy tắc nghiệp vụ chưa được phê duyệt vẫn có trạng thái kiểm soát rõ ràng.
 
 Mock chỉ là nguồn dữ liệu tạm thời trong quá trình hoàn thiện API, không phải kiến trúc lưu trữ đích.

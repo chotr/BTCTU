@@ -1,7 +1,9 @@
-import type { TaskStatus } from "@btctu/shared";
+import type { TaskStatus as ApiTaskStatus } from "@btctu/shared";
 import type { CatalogItem } from "./catalog";
 
-export type { TaskStatus };
+export type WebOnlyTaskStatus = "REVIEWED" | "LOCKED" | "CANCELLED";
+
+export type TaskStatus = ApiTaskStatus | WebOnlyTaskStatus;
 
 export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
   ASSIGNED: "Đã giao",

@@ -26,16 +26,16 @@ pnpm --filter @btctu/web test:e2e
 4. Khi adapter API hoàn tất, chuyển `NEXT_PUBLIC_DATA_SOURCE=api`.
 5. Secret local đặt trong `apps/api/.dev.vars`, không commit.
 
-## Hợp đồng thay mock bằng API
+## Contract thay mock bằng API
 
-| Miền | Nguồn local hiện tại | API đích |
-|---|---|---|
-| Phiên/tác nhân | `mock/users.ts` | `GET /api/v1/me` |
-| Tổ chức | `mock/organization.ts` | `GET /api/v1/organizations` |
-| Danh mục | `mock/catalog.ts` | `GET /api/v1/catalog` |
-| Nhiệm vụ | `mock/tasks.ts` | `/api/v1/tasks` |
-| Kỳ/đánh giá | `mock/periods.ts`, `mock/evaluations.ts` | `/api/v1/periods`, `/api/v1/evaluations` |
-| Audit/report | `mock/audit.ts`, selector cục bộ | `/api/v1/audit`, `/api/v1/reports/summary` |
+| Miền           | Nguồn local hiện tại                     | API đích                                   |
+| -------------- | ---------------------------------------- | ------------------------------------------ |
+| Phiên/tác nhân | `mock/users.ts`                          | `GET /api/v1/me`                           |
+| Tổ chức        | `mock/organization.ts`                   | `GET /api/v1/organizations`                |
+| Danh mục       | `mock/catalog.ts`                        | `GET /api/v1/catalog`                      |
+| Nhiệm vụ       | `mock/tasks.ts`                          | `/api/v1/tasks`                            |
+| Kỳ/đánh giá    | `mock/periods.ts`, `mock/evaluations.ts` | `/api/v1/periods`, `/api/v1/evaluations`   |
+| Audit/report   | `mock/audit.ts`, selector cục bộ         | `/api/v1/audit`, `/api/v1/reports/summary` |
 
 Nguyên tắc chuyển đổi:
 

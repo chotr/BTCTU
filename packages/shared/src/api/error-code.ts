@@ -1,0 +1,26 @@
+export const API_ERROR_CODES = [
+  "account_disabled",
+  "actor_not_provisioned",
+  "evaluation_not_found",
+  "forbidden",
+  "inactive_account",
+  "internal_error",
+  "invalid_access_token",
+  "invalid_credentials",
+  "invalid_json",
+  "invalid_reference",
+  "invalid_refresh_token",
+  "missing_access_token",
+  "missing_refresh_token",
+  "origin_not_allowed",
+  "period_not_found",
+  "refresh_in_progress",
+  "refresh_token_reuse",
+  "route_not_found",
+  "task_not_found",
+  "too_many_attempts",
+  "unknown_actor",
+  "validation_failed",
+] as const;
+
+export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

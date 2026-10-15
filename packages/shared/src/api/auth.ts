@@ -13,7 +13,7 @@ export type LoginRequest = {
   password: string;
 };
 
-export type LoginResponse = {
+export type LoginResponseData = {
   user: AuthenticatedUser;
   expiresIn: number;
 };

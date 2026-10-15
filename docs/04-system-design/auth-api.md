@@ -1,4 +1,4 @@
-# Hợp đồng API đăng nhập
+# Contract API đăng nhập
 
 Trạng thái: đã hiện thực trong `apps/api`, kèm migration `0002`. Đây là thiết kế
 cục bộ; việc gắn tài khoản với danh mục nhân sự và vai trò còn để lại (xem mục
@@ -15,49 +15,49 @@ Header `x-dev-user-id` chỉ còn hiệu lực khi `ENVIRONMENT` khác `producti
 
 Cả bốn endpoint nằm dưới `/api/v1/auth`:
 
-| Method | Path | Việc | Cần access token |
-|---|---|---|---|
-| POST | `/api/v1/auth/login` | đổi email và mật khẩu lấy token | không |
-| POST | `/api/v1/auth/refresh` | xoay refresh token, cấp access token mới | không, dùng cookie hoặc body |
-| POST | `/api/v1/auth/logout` | thu hồi phiên hiện tại | không |
-| GET | `/api/v1/auth/session` | trả tài khoản và phiên của access token | có, cookie hoặc Bearer |
+| Method | Path                   | Việc                                     | Cần access token             |
+| ------ | ---------------------- | ---------------------------------------- | ---------------------------- |
+| POST   | `/api/v1/auth/login`   | đổi email và mật khẩu lấy token          | không                        |
+| POST   | `/api/v1/auth/refresh` | xoay refresh token, cấp access token mới | không, dùng cookie hoặc body |
+| POST   | `/api/v1/auth/logout`  | thu hồi phiên hiện tại                   | không                        |
+| GET    | `/api/v1/auth/session` | trả tài khoản và phiên của access token  | có, cookie hoặc Bearer       |
 
 ## Thành phần
 
 Đường dẫn tính từ `apps/api/src`.
 
-| File | Vai trò |
-|---|---|
-| `modules/auth/auth.routes.ts` | bốn route, ghi/xoá cookie, ánh xạ lỗi sang HTTP |
-| `modules/auth/auth.service.ts` | xác minh mật khẩu, cấp phiên, xác minh access token |
-| `modules/auth/session.service.ts` | cấp phiên, xoay token tại chỗ, phát hiện dùng lại |
-| `modules/auth/access-token.service.ts` | cổng `AccessTokenService` và bản HMAC-JWT |
-| `modules/auth/refresh-token.service.ts` | sinh và băm refresh token |
-| `modules/auth/password.service.ts` | băm và kiểm mật khẩu bằng argon2id |
-| `modules/auth/auth.policy.ts` | hằng số chính sách mật khẩu và email |
-| `modules/auth/repositories/user.repository.ts` | đọc và tạo bản ghi `users` |
-| `modules/auth/repositories/session.repository.ts` | tạo, tra, xoay và thu hồi `sessions` |
-| `modules/auth/auth.module.ts` | ghép nối từ biến môi trường, mở pool ở request đầu tiên |
-| `modules/auth/auth.types.ts` | cổng `AuthPort`, `SessionStore` và các lỗi miền |
-| `modules/identity/actor-resolver.ts` | cổng `ActorResolver` và hai adapter |
-| `middleware/authentication.ts` | guard Bearer/cookie cho route cần token |
-| `middleware/authorization.ts` | bảng quy tắc uỷ quyền theo hành động |
-| `middleware/csrf.ts`, `security/origin.ts` | kiểm `Origin` cho request đổi trạng thái |
-| `security/cookie.ts` | tên cookie, ghi và đọc cookie, không phụ thuộc thư viện ngoài |
-| `security/login-throttle.ts` | cổng `LoginThrottle` và adapter trong bộ nhớ |
-| `shared/problem.ts` | khuôn lỗi problem+json dùng chung với các route khác |
+| File                                              | Vai trò                                                       |
+| ------------------------------------------------- | ------------------------------------------------------------- |
+| `modules/auth/auth.routes.ts`                     | bốn route, ghi/xoá cookie, ánh xạ lỗi sang HTTP               |
+| `modules/auth/auth.service.ts`                    | xác minh mật khẩu, cấp phiên, xác minh access token           |
+| `modules/auth/session.service.ts`                 | cấp phiên, xoay token tại chỗ, phát hiện dùng lại             |
+| `modules/auth/access-token.service.ts`            | cổng `AccessTokenService` và bản HMAC-JWT                     |
+| `modules/auth/refresh-token.service.ts`           | sinh và băm refresh token                                     |
+| `modules/auth/password.service.ts`                | băm và kiểm mật khẩu bằng argon2id                            |
+| `modules/auth/auth.policy.ts`                     | hằng số chính sách mật khẩu và email                          |
+| `modules/auth/repositories/user.repository.ts`    | đọc và tạo bản ghi `users`                                    |
+| `modules/auth/repositories/session.repository.ts` | tạo, tra, xoay và thu hồi `sessions`                          |
+| `modules/auth/auth.module.ts`                     | ghép nối từ biến môi trường, mở pool ở request đầu tiên       |
+| `modules/auth/auth.types.ts`                      | cổng `AuthPort`, `SessionStore` và các lỗi miền               |
+| `modules/identity/actor-resolver.ts`              | cổng `ActorResolver` và hai adapter                           |
+| `middleware/authentication.ts`                    | guard Bearer/cookie cho route cần token                       |
+| `middleware/authorization.ts`                     | bảng quy tắc uỷ quyền theo hành động                          |
+| `middleware/csrf.ts`, `security/origin.ts`        | kiểm `Origin` cho request đổi trạng thái                      |
+| `security/cookie.ts`                              | tên cookie, ghi và đọc cookie, không phụ thuộc thư viện ngoài |
+| `security/login-throttle.ts`                      | cổng `LoginThrottle` và adapter trong bộ nhớ                  |
+| `shared/problem.ts`                               | khuôn lỗi problem+json dùng chung với các route khác          |
 
 ## Cổng và adapter
 
 Bốn chỗ thay đổi theo môi trường đều là cổng, không phải biến cấu hình cho thuật
 toán:
 
-| Cổng | Bản đang dùng | Thay thế dự kiến |
-|---|---|---|
-| `AccessTokenService` | `HmacJwtTokenService` (HS256, khoá đối xứng) | verifier OIDC/JWKS khi dùng IdP ngoài |
-| `ActorResolver` | `MockActorResolver` (danh mục trong bộ nhớ) | resolver truy vấn bảng nhân sự ở mốc P2 |
-| `LoginThrottle` | `MemoryLoginThrottle` (một tiến trình) | adapter dùng kho chia sẻ |
-| `AuthPort` | `AuthService` | hiện thực khác cho SSO nếu cần |
+| Cổng                 | Bản đang dùng                                | Thay thế dự kiến                        |
+| -------------------- | -------------------------------------------- | --------------------------------------- |
+| `AccessTokenService` | `HmacJwtTokenService` (HS256, khoá đối xứng) | verifier OIDC/JWKS khi dùng IdP ngoài   |
+| `ActorResolver`      | `MockActorResolver` (danh mục trong bộ nhớ)  | resolver truy vấn bảng nhân sự ở mốc P2 |
+| `LoginThrottle`      | `MemoryLoginThrottle` (một tiến trình)       | adapter dùng kho chia sẻ                |
+| `AuthPort`           | `AuthService`                                | hiện thực khác cho SSO nếu cần          |
 
 Algorithm không đưa thành chuỗi cấu hình vì HS256 và RS256 không dùng chung mô
 hình khoá. Đổi nhà cung cấp định danh là thêm một hiện thực của
@@ -68,24 +68,25 @@ hình khoá. Đổi nhà cung cấp định danh là thêm một hiện thực c
 `readEnv` kiểm tra cấu hình lúc khởi động và dừng ngay nếu sai, thay vì chạy với
 giá trị `NaN` hay chuỗi rỗng.
 
-| Biến | Mặc định | Ràng buộc |
-|---|---|---|
-| `DATABASE_URL` | bắt buộc | phải bắt đầu bằng `postgres://` hoặc `postgresql://` |
-| `JWT_ACCESS_SECRET` | bắt buộc | từ 16 ký tự; từ 32 ký tự khi `ENVIRONMENT=production` |
-| `JWT_ACCESS_ISSUER` | `btctu-api` | |
-| `JWT_ACCESS_AUDIENCE` | `btctu-web` | |
-| `JWT_ACCESS_TTL_SECONDS` | 900 | số nguyên 60..86400 |
-| `REFRESH_TOKEN_TTL_SECONDS` | 604800 | số nguyên 300..31536000 và lớn hơn `JWT_ACCESS_TTL_SECONDS` |
-| `CORS_ORIGINS` | `http://localhost:3000` | danh sách phân tách bằng dấu phẩy, mỗi mục là URL tuyệt đối http(s); `CORS_ORIGIN` vẫn dùng được như bí danh một mục |
-| `PORT` | 8787 | số nguyên 1..65535 |
-| `PUBLIC_BASE_URL` | `http://localhost:${PORT}` | URL tuyệt đối, dùng cho mục `servers` của OpenAPI |
-| `REQUEST_BODY_LIMIT` | `1mb` | chuỗi giới hạn body của `express.json` |
-| `ENVIRONMENT` | `local` | `production` bật `Secure` cho cookie và tắt header phát triển |
-| `AUTH_COOKIE_SECURE` | theo `ENVIRONMENT` | `true`/`false`; production mặc định `true` |
-| `AUTH_COOKIE_SAME_SITE` | `Strict` | `Strict`, `Lax` hoặc `None`; `None` đòi `AUTH_COOKIE_SECURE=true` |
-| `AUTH_LOGIN_MAX_ATTEMPTS` | 10 | số nguyên 1..1000 |
-| `AUTH_LOGIN_WINDOW_SECONDS` | 60 | số nguyên 1..86400 |
-| `AUTH_REFRESH_ROTATION_GRACE_SECONDS` | 30 | số nguyên 0..3600 |
+| Biến                                  | Mặc định                      | Ràng buộc                                                                                                            |
+| ------------------------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                        | bắt buộc                      | phải bắt đầu bằng `postgres://` hoặc `postgresql://`                                                                 |
+| `JWT_ACCESS_SECRET`                   | bắt buộc                      | từ 16 ký tự; từ 32 ký tự khi `ENVIRONMENT=production`                                                                |
+| `JWT_ACCESS_ISSUER`                   | `btctu-api`                   |                                                                                                                      |
+| `JWT_ACCESS_AUDIENCE`                 | `btctu-web`                   |                                                                                                                      |
+| `JWT_ACCESS_TTL_SECONDS`              | 900                           | số nguyên 60..86400                                                                                                  |
+| `REFRESH_TOKEN_TTL_SECONDS`           | 604800                        | số nguyên 300..31536000 và lớn hơn `JWT_ACCESS_TTL_SECONDS`                                                          |
+| `CORS_ORIGINS`                        | `http://localhost:3000`       | danh sách phân tách bằng dấu phẩy, mỗi mục là URL tuyệt đối http(s); `CORS_ORIGIN` vẫn dùng được như bí danh một mục |
+| `PORT`                                | 8787                          | số nguyên 1..65535                                                                                                   |
+| `PUBLIC_BASE_URL`                     | `http://localhost:${PORT}`    | URL tuyệt đối, dùng cho mục `servers` của OpenAPI và làm mặc định của `PROBLEM_TYPE_BASE`                            |
+| `PROBLEM_TYPE_BASE`                   | `${PUBLIC_BASE_URL}/problems` | không gian tên của `type` trong problem+json; URL tuyệt đối http(s), dấu `/` ở cuối được bỏ                          |
+| `REQUEST_BODY_LIMIT`                  | `1mb`                         | chuỗi giới hạn body của `express.json`                                                                               |
+| `ENVIRONMENT`                         | `local`                       | `production` bật `Secure` cho cookie và tắt header phát triển                                                        |
+| `AUTH_COOKIE_SECURE`                  | theo `ENVIRONMENT`            | `true`/`false`; production mặc định `true`                                                                           |
+| `AUTH_COOKIE_SAME_SITE`               | `Strict`                      | `Strict`, `Lax` hoặc `None`; `None` đòi `AUTH_COOKIE_SECURE=true`                                                    |
+| `AUTH_LOGIN_MAX_ATTEMPTS`             | 10                            | số nguyên 1..1000                                                                                                    |
+| `AUTH_LOGIN_WINDOW_SECONDS`           | 60                            | số nguyên 1..86400                                                                                                   |
+| `AUTH_REFRESH_ROTATION_GRACE_SECONDS` | 30                            | số nguyên 0..3600                                                                                                    |
 
 Ba biến `AUTH_LOGIN_*` và `AUTH_REFRESH_ROTATION_GRACE_SECONDS` được gom thành
 `Env.auth` và truyền từ `auth.module.ts`; trước đây cùng một chính sách bị khai
@@ -93,9 +94,9 @@ báo lại ở cả module lẫn router.
 
 ## Cookie
 
-| Cookie | Nội dung | Path | Max-Age | Cờ |
-|---|---|---|---|---|
-| `btctu_access` | JWT access token | `/api/v1` | `JWT_ACCESS_TTL_SECONDS` | `HttpOnly`, `SameSite=Strict` |
+| Cookie          | Nội dung          | Path           | Max-Age                     | Cờ                            |
+| --------------- | ----------------- | -------------- | --------------------------- | ----------------------------- |
+| `btctu_access`  | JWT access token  | `/api/v1`      | `JWT_ACCESS_TTL_SECONDS`    | `HttpOnly`, `SameSite=Strict` |
 | `btctu_refresh` | refresh token thô | `/api/v1/auth` | `REFRESH_TOKEN_TTL_SECONDS` | `HttpOnly`, `SameSite=Strict` |
 
 Cờ `Secure` và `SameSite` không viết cứng trong route mà suy ra từ hồ sơ triển
@@ -170,10 +171,10 @@ dòng, request kia biết mình đã thua.
 
 Request thua cuộc được phân loại theo thời gian:
 
-| Tình huống | Kết quả |
-|---|---|
+| Tình huống                           | Kết quả                                                                                     |
+| ------------------------------------ | ------------------------------------------------------------------------------------------- |
 | Token vừa bị xoay trong vòng 30 giây | 409 `refresh_in_progress`, không thu hồi gì; client thử lại và trình duyệt đã có cookie mới |
-| Token cũ xuất hiện lại sau 30 giây | coi là token bị lộ, thu hồi mọi phiên của tài khoản, trả 401 `refresh_token_reuse` |
+| Token cũ xuất hiện lại sau 30 giây   | coi là token bị lộ, thu hồi mọi phiên của tài khoản, trả 401 `refresh_token_reuse`          |
 
 Cửa sổ 30 giây là hằng số `ROTATION_GRACE_SECONDS`. Nó đánh đổi: trong 30 giây đầu,
 việc dùng lại token cũ không kích hoạt thu hồi, bù lại hai tab refresh đồng thời
@@ -184,13 +185,13 @@ chưa đủ, phiên phải còn tồn tại, chưa bị thu hồi và chưa hế
 hoặc thu hồi phiên có hiệu lực ngay với access token, đổi lại mỗi request tốn thêm
 một truy vấn `sessions`.
 
-| Trạng thái phiên tra theo hash | Kết quả của `refresh` |
-|---|---|
-| Không tìm thấy ở cả hai cột hash | 401 `invalid_refresh_token` |
-| Đã quá `expires_at` | 401 `invalid_refresh_token` |
-| Đã có `revoked_at` (ví dụ sau đăng xuất) | 401 `invalid_refresh_token` |
-| Còn hiệu lực | xoay token tại chỗ, trả 200 |
-| Tài khoản đã bị khoá hoặc đã xoá | 403 `account_disabled` hoặc 401, mọi phiên bị thu hồi |
+| Trạng thái phiên tra theo hash           | Kết quả của `refresh`                                 |
+| ---------------------------------------- | ----------------------------------------------------- |
+| Không tìm thấy ở cả hai cột hash         | 401 `invalid_refresh_token`                           |
+| Đã quá `expires_at`                      | 401 `invalid_refresh_token`                           |
+| Đã có `revoked_at` (ví dụ sau đăng xuất) | 401 `invalid_refresh_token`                           |
+| Còn hiệu lực                             | xoay token tại chỗ, trả 200                           |
+| Tài khoản đã bị khoá hoặc đã xoá         | 403 `account_disabled` hoặc 401, mọi phiên bị thu hồi |
 
 ## POST /api/v1/auth/refresh
 
@@ -234,7 +235,7 @@ Mọi lỗi trả về cùng khuôn problem+json như các route khác:
 
 ```json
 {
-  "type": "https://btctu.local/problems/invalid_credentials",
+  "type": "http://localhost:8787/problems/invalid_credentials",
   "title": "Unauthorized",
   "status": 401,
   "detail": "Email or password is incorrect.",
@@ -243,22 +244,32 @@ Mọi lỗi trả về cùng khuôn problem+json như các route khác:
 }
 ```
 
-| HTTP | `type` (phần cuối) | Khi nào |
-|---|---|---|
-| 422 | `validation_failed` | body sai hợp đồng, `detail` liệt kê từng field |
-| 401 | `invalid_credentials` | sai mật khẩu hoặc không có tài khoản, dùng chung một thông báo |
-| 403 | `account_disabled` | mật khẩu đúng nhưng `status` là `DISABLED` |
-| 429 | `too_many_attempts` | quá số lần sai cho phép, kèm header `Retry-After` |
-| 409 | `refresh_in_progress` | request refresh thứ hai trong cửa sổ 30 giây |
-| 403 | `origin_not_allowed` | request đổi trạng thái có `Origin` khác `CORS_ORIGIN` |
-| 401 | `missing_access_token` | route cần token nhưng không có cookie lẫn header |
-| 401 | `invalid_access_token` | token sai chữ ký, sai issuer/audience, hết hạn hoặc phiên đã bị thu hồi |
-| 401 | `inactive_account` | token hợp lệ nhưng tài khoản không còn `ACTIVE` |
-| 403 | `actor_not_provisioned` | production: tài khoản chưa gắn với nhân sự trong danh mục |
-| 401 | `missing_refresh_token` | không có cookie và body rỗng |
-| 401 | `invalid_refresh_token` | refresh token không tồn tại, đã hết hạn hoặc đã bị thu hồi |
-| 401 | `refresh_token_reuse` | token cũ quay lại sau cửa sổ 30 giây |
-| 500 | `internal_error` | lỗi ngoài dự kiến, ví dụ không kết nối được cơ sở dữ liệu |
+| HTTP | `type` (phần cuối)      | Khi nào                                                                 |
+| ---- | ----------------------- | ----------------------------------------------------------------------- |
+| 422  | `validation_failed`     | body sai contract, `detail` liệt kê từng field                          |
+| 401  | `invalid_credentials`   | sai mật khẩu hoặc không có tài khoản, dùng chung một thông báo          |
+| 403  | `account_disabled`      | mật khẩu đúng nhưng `status` là `DISABLED`                              |
+| 429  | `too_many_attempts`     | quá số lần sai cho phép, kèm header `Retry-After`                       |
+| 409  | `refresh_in_progress`   | request refresh thứ hai trong cửa sổ 30 giây                            |
+| 403  | `origin_not_allowed`    | request đổi trạng thái có `Origin` khác `CORS_ORIGIN`                   |
+| 401  | `missing_access_token`  | route cần token nhưng không có cookie lẫn header                        |
+| 401  | `invalid_access_token`  | token sai chữ ký, sai issuer/audience, hết hạn hoặc phiên đã bị thu hồi |
+| 401  | `inactive_account`      | token hợp lệ nhưng tài khoản không còn `ACTIVE`                         |
+| 403  | `actor_not_provisioned` | production: tài khoản chưa gắn với nhân sự trong danh mục               |
+| 401  | `missing_refresh_token` | không có cookie và body rỗng                                            |
+| 401  | `invalid_refresh_token` | refresh token không tồn tại, đã hết hạn hoặc đã bị thu hồi              |
+| 401  | `refresh_token_reuse`   | token cũ quay lại sau cửa sổ 30 giây                                    |
+| 500  | `internal_error`        | lỗi ngoài dự kiến, ví dụ không kết nối được cơ sở dữ liệu               |
+
+Danh sách mã lỗi được khai báo một lần ở `API_ERROR_CODES` trong `@btctu/shared`
+(xem [shared-package.md](shared-package.md)); thêm mã mới thì khai báo ở đó trước.
+API nhận đúng kiểu `ApiErrorCode` ở hàm dựng problem+json nên không thể phát ra mã
+chưa định nghĩa.
+
+Phần đầu của `type` là không gian tên của triển khai, đọc một lần lúc khởi động:
+mặc định `${PUBLIC_BASE_URL}/problems`, đặt `PROBLEM_TYPE_BASE` khi muốn một định
+danh cố định dùng chung giữa các môi trường. Phần cuối vẫn là mã lỗi ở bảng trên,
+nên client nên so khớp theo mã thay vì theo cả URL.
 
 ## Luồng đăng nhập
 
@@ -306,22 +317,22 @@ flowchart TD
 
 ## Quy tắc đang áp dụng
 
-| Quy tắc | Cách làm |
-|---|---|
-| Mật khẩu không lưu dạng thô | argon2id, tham số mặc định của thư viện |
-| Không lộ tài khoản nào đã đăng ký | sai mật khẩu và không có tài khoản trả cùng 401, có bù thời gian |
-| Token không lưu dạng thô | cơ sở dữ liệu giữ `sha256` của refresh token |
-| JavaScript không đọc được token | cả hai token là cookie `HttpOnly` |
-| Thu hồi phiên có hiệu lực ngay | mỗi request có token đều kiểm phiên trong `sessions` |
-| Token bị lộ thì mất hiệu lực | xoay token mỗi lần refresh; token cũ quay lại sau cửa sổ ân hạn thì thu hồi cả họ phiên |
-| Hai tab refresh cùng lúc không đá nhau | xoay nguyên tử, request thua nhận 409 để thử lại |
-| Chặn dò mật khẩu | 10 lần sai trong 60 giây cho mỗi cặp email và IP |
-| Chặn gọi chéo từ site khác | kiểm `Origin` cho mọi request đổi trạng thái dưới `/api/v1`, token trong cookie đều `SameSite=Strict` |
-| Route cần token thì mặc định từ chối | guard trả 401 trước khi vào handler |
-| Production không nhận danh tính từ header | `x-dev-user-id` chỉ dùng khi `ENVIRONMENT` khác `production` |
-| Ghi vết | mỗi lần đăng nhập, làm mới, đăng xuất, phát hiện dùng lại đều phát một dòng log có `scope: auth` |
-| Uỷ quyền tập trung | mọi kiểm tra quyền đi qua bảng quy tắc ở `middleware/authorization.ts`, route không còn so sánh `role === ...` |
-| Danh tính tách khỏi dữ liệu | route chỉ biết `ActorResolver`; danh mục đến từ fixture hay cơ sở dữ liệu là chi tiết của adapter |
+| Quy tắc                                    | Cách làm                                                                                                                   |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| Mật khẩu không lưu dạng thô                | argon2id, tham số mặc định của thư viện                                                                                    |
+| Không lộ tài khoản nào đã đăng ký          | sai mật khẩu và không có tài khoản trả cùng 401, có bù thời gian                                                           |
+| Token không lưu dạng thô                   | cơ sở dữ liệu giữ `sha256` của refresh token                                                                               |
+| JavaScript không đọc được token            | cả hai token là cookie `HttpOnly`                                                                                          |
+| Thu hồi phiên có hiệu lực ngay             | mỗi request có token đều kiểm phiên trong `sessions`                                                                       |
+| Token bị lộ thì mất hiệu lực               | xoay token mỗi lần refresh; token cũ quay lại sau cửa sổ ân hạn thì thu hồi cả họ phiên                                    |
+| Hai tab refresh cùng lúc không đá nhau     | xoay nguyên tử, request thua nhận 409 để thử lại                                                                           |
+| Chặn dò mật khẩu                           | 10 lần sai trong 60 giây cho mỗi cặp email và IP                                                                           |
+| Chặn gọi chéo từ site khác                 | kiểm `Origin` cho mọi request đổi trạng thái dưới `/api/v1`, token trong cookie đều `SameSite=Strict`                      |
+| Route cần token thì mặc định từ chối       | guard trả 401 trước khi vào handler                                                                                        |
+| Production không nhận danh tính từ header  | `x-dev-user-id` chỉ dùng khi `ENVIRONMENT` khác `production`                                                               |
+| Ghi vết                                    | mỗi lần đăng nhập, làm mới, đăng xuất, phát hiện dùng lại đều phát một dòng log có `scope: auth`                           |
+| Uỷ quyền tập trung                         | mọi kiểm tra quyền đi qua bảng quy tắc ở `middleware/authorization.ts`, route không còn so sánh `role === ...`             |
+| Danh tính tách khỏi dữ liệu                | route chỉ biết `ActorResolver`; danh mục đến từ fixture hay cơ sở dữ liệu là chi tiết của adapter                          |
 | Danh tính không đến từ header ở production | `x-dev-user-id` chỉ dùng khi `ENVIRONMENT` khác `production`, và ở local header là bắt buộc thay vì mặc định một tài khoản |
 
 Không ghi mật khẩu, access token hoặc refresh token vào log.
@@ -380,6 +391,6 @@ với kho in-memory nên không cần PostgreSQL.
 - Web app hiện dùng dữ liệu mock, chưa gọi các endpoint này.
 - `instance` trong phản hồi lỗi đang là path tương đối so với router được mount,
   ví dụ `/login`; riêng lỗi 500 của handler toàn cục dùng path đầy đủ. Cần thống
-  nhất trước khi chốt hợp đồng. [TBD]
+  nhất trước khi chốt contract. [TBD]
 - Chưa chạy `db:migrate` và `db:seed` trên PostgreSQL thật trong môi trường phát
   triển hiện tại, nên phần truy vấn chỉ được kiểm chứng ở mức sinh đúng câu SQL.

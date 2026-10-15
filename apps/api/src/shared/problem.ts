@@ -1,21 +1,30 @@
-import type { ProblemResponse } from "@btctu/shared";
-import type { Request, Response } from "express";
+import type { ApiErrorCode, ProblemResponse } from "@btctu/shared";
+import type { Application, Request, Response } from "express";
 import type { ZodError } from "zod";
 
-/**
- * RFC 9457 style problem response shared by every route. `code` is the stable
- * machine-readable identifier clients switch on.
- */
+const FALLBACK_PROBLEM_TYPE_BASE = "https://btctu.local/problems";
+
+export function configureProblemTypeBase(app: Application, base: string): void {
+  app.locals.problemTypeBase = base;
+}
+
+function problemTypeBase(req: Request): string {
+  const configured: unknown = req.app?.locals?.problemTypeBase;
+  return typeof configured === "string" && configured !== ""
+    ? configured
+    : FALLBACK_PROBLEM_TYPE_BASE;
+}
+
 export function problem(
   req: Request,
   res: Response,
   status: number,
   title: string,
   detail: string,
-  code: string,
+  code: ApiErrorCode,
 ): Response {
   const body: ProblemResponse = {
-    type: `https://btctu.local/problems/${code}`,
+    type: `${problemTypeBase(req)}/${code}`,
     title,
     status,
     detail,

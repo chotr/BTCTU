@@ -3,12 +3,14 @@ import { cookiePolicyForProfile } from "./security/cookie";
 
 export function createTestEnv(overrides: Partial<Env> = {}): Env {
   const environment = overrides.environment ?? "test";
+  const publicBaseUrl = overrides.publicBaseUrl ?? "http://localhost:3000";
 
   return {
     environment,
     corsOrigins: ["http://localhost:3000"],
     port: 0,
-    publicBaseUrl: "http://localhost:3000",
+    publicBaseUrl,
+    problemTypeBase: `${publicBaseUrl}/problems`,
     requestBodyLimit: "1mb",
     databaseUrl: "postgresql://test:test@localhost:5432/btctu_test",
     jwtAccessSecret: "test-access-secret",

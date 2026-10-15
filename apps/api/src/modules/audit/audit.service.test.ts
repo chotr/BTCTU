@@ -4,8 +4,6 @@ import type { AuditEvent, NewAuditEvent } from "@/db/schema";
 import type { AuditDbExecutor, WriteAuditInput } from "./audit.types";
 import { AuditService } from "./audit.service";
 
-// Minimal stand-in for the drizzle insert chain so the repository/service can be
-// exercised without a live PostgreSQL connection.
 function createFakeDb() {
   const rows: AuditEvent[] = [];
 
@@ -72,9 +70,6 @@ describe("AuditService", () => {
   it("keeps the request id verbatim", async () => {
     const { executor } = createFakeDb();
     const service = new AuditService(executor);
-
-    // Not a UUID: a client-supplied correlation id must survive untouched while
-    // the column stays a string.
     const event = await service.record(baseInput({ requestId: "abc" }));
 
     expect(event.requestId).toBe("abc");

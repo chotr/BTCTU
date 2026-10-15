@@ -18,6 +18,7 @@ export type Env = {
   corsOrigins: string[];
   port: number;
   publicBaseUrl: string;
+  problemTypeBase: string;
   requestBodyLimit: string;
   databaseUrl: string;
   jwtAccessSecret: string;
@@ -39,9 +40,7 @@ function requireString(source: NodeJS.ProcessEnv, name: string): string {
 }
 
 function isPostgresUrl(value: string): boolean {
-  return (
-    value.startsWith("postgres://") || value.startsWith("postgresql://")
-  );
+  return value.startsWith("postgres://") || value.startsWith("postgresql://");
 }
 
 function isHttpUrl(value: string): boolean {
@@ -51,6 +50,24 @@ function isHttpUrl(value: string): boolean {
   } catch {
     return false;
   }
+}
+
+// Không gian tên của `type` trong problem+json. Mặc định đi theo địa chỉ công
+// khai của triển khai; đặt `PROBLEM_TYPE_BASE` khi muốn một định danh cố định
+// dùng chung giữa các môi trường.
+function readProblemTypeBase(
+  source: NodeJS.ProcessEnv,
+  publicBaseUrl: string,
+): string {
+  const raw = source.PROBLEM_TYPE_BASE?.trim() || `${publicBaseUrl}/problems`;
+  const normalized = raw.replace(/\/+$/, "");
+  if (!isHttpUrl(normalized)) {
+    throw new Error(
+      `PROBLEM_TYPE_BASE must be an absolute http(s) URL, received "${raw}"`,
+    );
+  }
+
+  return normalized;
 }
 
 function readInteger(
@@ -135,7 +152,9 @@ export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const environment = source.ENVIRONMENT?.trim() || "local";
   const databaseUrl = requireString(source, "DATABASE_URL");
   if (!isPostgresUrl(databaseUrl)) {
-    throw new Error("DATABASE_URL must start with postgres:// or postgresql://");
+    throw new Error(
+      "DATABASE_URL must start with postgres:// or postgresql://",
+    );
   }
 
   const jwtAccessSecret = requireString(source, "JWT_ACCESS_SECRET");
@@ -157,6 +176,7 @@ export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
       `PUBLIC_BASE_URL must be an absolute http(s) URL, received "${publicBaseUrl}"`,
     );
   }
+  const problemTypeBase = readProblemTypeBase(source, publicBaseUrl);
 
   const jwtAccessTtlSeconds = readInteger(
     source,
@@ -191,6 +211,7 @@ export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
     corsOrigins: readOrigins(source),
     port,
     publicBaseUrl,
+    problemTypeBase,
     requestBodyLimit: source.REQUEST_BODY_LIMIT?.trim() || "1mb",
     databaseUrl,
     jwtAccessSecret,
