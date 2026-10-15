@@ -49,10 +49,12 @@ AuditEvent
 ```
 
 Cột `outcome` của bảng `audit_events` chỉ nhận `SUCCESS`, `DENIED` hoặc `FAILED`.
-Ràng buộc `audit_events_outcome_check` (migration `0003`) chặn mọi giá trị khác, và
-hằng `AUDIT_OUTCOMES` ở `apps/api/src/db/schema/audit-events.ts` là nơi khai báo
-duy nhất mà mã dùng — vết audit tạm trong bộ nhớ và bản ghi trong bảng cùng một bộ
-giá trị.
+Ràng buộc `audit_events_outcome_check` chặn mọi giá trị khác; nó được tạo ở
+migration `0003` và được bảo đảm lại ở `0004_audit_outcome_check.sql` cho những cơ
+sở dữ liệu đã chạy bản `0003` cũ (xem [deployment.md](deployment.md)). Hằng
+`AUDIT_OUTCOMES` ở `apps/api/src/db/schema/audit-events.ts` là nơi khai báo duy
+nhất mà mã dùng — vết audit tạm trong bộ nhớ và bản ghi trong bảng cùng một bộ giá
+trị.
 
 ## Quy tắc bảo mật
 

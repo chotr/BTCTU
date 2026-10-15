@@ -12,6 +12,7 @@ Bộ tài liệu chuẩn cho hệ thống quản lý nhiệm vụ, KPI, đánh g
 | 02  | Đối soát audit          | [02-source-analysis/audit-reconciliation.md](02-source-analysis/audit-reconciliation.md) | Claim đã sửa và TBD còn lại                             |
 | 03  | Nghiệp vụ               | [03-business/domain-map.md](03-business/domain-map.md)                                   | Tổ chức, nhiệm vụ, KPI và đánh giá                      |
 | 03  | Truy vết                | [03-business/traceability-matrix.md](03-business/traceability-matrix.md)                 | Nguồn cho từng capability                               |
+| 03  | Kiểm kê trường tổ chức  | [03-business/organization-fields.md](03-business/organization-fields.md)                 | Trường nào QĐ01 chứng minh, trường nào còn TBD          |
 | 04  | Thiết kế hệ thống       | [04-system-design/context.md](04-system-design/context.md)                               | C4, domain, ERD, quyền, audit, tích hợp, bảo mật        |
 | 04  | contract API đăng nhập  | [04-system-design/auth-api.md](04-system-design/auth-api.md)                             | Bốn endpoint auth, cookie, mã lỗi, cấu hình             |
 | 04  | Gói contract dùng chung | [04-system-design/shared-package.md](04-system-design/shared-package.md)                 | Ranh giới shared giữa web và API, chênh lệch trạng thái |

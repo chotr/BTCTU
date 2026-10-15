@@ -36,18 +36,23 @@ erDiagram
 
 ## Ánh xạ nguồn → thực thể
 
-| Thực thể | Vì sao tồn tại |
-|---|---|
-| Organization / Department / Responsibility | QĐ01 |
-| Person / Membership / PositionReference | QĐ01 có nhắc tổ chức/thành viên/vị trí; master chủ quản vẫn TBD |
-| WorkCatalogVersion / Item | 05-HD PL1 + danh mục công việc vận hành |
-| Task / Assignment / Result | phân công theo QĐ01 + khái niệm nhiệm vụ/sản phẩm/kết quả của 05-HD |
-| MetricSnapshot | đo lường A/B/C/D của 05-HD |
-| EvaluationPeriod / Evaluation | đề bài + 05-HD/QĐ39 |
-| CalculationRun / ScoreComponent | phép tính 30/70 phải tái lập được/theo phiên bản |
-| ClassificationRuleVersion / Decision | ngưỡng + điều kiện của QĐ39 |
-| AssessmentAction | các bước của QĐ39/05 |
-| AuditEvent | yêu cầu truy vết của QĐ342 |
+| Thực thể                                   | Vì sao tồn tại                                                      |
+| ------------------------------------------ | ------------------------------------------------------------------- |
+| Organization / Department / Responsibility | QĐ01                                                                |
+| Person / Membership / PositionReference    | QĐ01 có nhắc tổ chức/thành viên/vị trí; master chủ quản vẫn TBD     |
+| WorkCatalogVersion / Item                  | 05-HD PL1 + danh mục công việc vận hành                             |
+| Task / Assignment / Result                 | phân công theo QĐ01 + khái niệm nhiệm vụ/sản phẩm/kết quả của 05-HD |
+| MetricSnapshot                             | đo lường A/B/C/D của 05-HD                                          |
+| EvaluationPeriod / Evaluation              | đề bài + 05-HD/QĐ39                                                 |
+| CalculationRun / ScoreComponent            | phép tính 30/70 phải tái lập được/theo phiên bản                    |
+| ClassificationRuleVersion / Decision       | ngưỡng + điều kiện của QĐ39                                         |
+| AssessmentAction                           | các bước của QĐ39/05                                                |
+| AuditEvent                                 | yêu cầu truy vết của QĐ342                                          |
+
+Mốc ORG-001 hiện thực bốn thực thể đầu thành bảng `departments`, `people`,
+`positions` và `position_assignments` (migration `0005_org_core.sql`); phần tên
+trường và căn cứ từng trường nằm ở
+[organization-fields.md](../03-business/organization-fields.md).
 
 ## Quy tắc mô hình hóa quan trọng
 
