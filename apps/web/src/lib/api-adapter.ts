@@ -232,7 +232,6 @@ export function mapApiTask(task: ApiTask, state: TaskContext): Task {
   const department = state.departments.find(
     (item) => item.id === task.departmentId,
   );
-  const period = state.periods[0];
   const result: TaskResult | null = task.result
     ? {
         quantity: task.result.quantity,
@@ -253,9 +252,9 @@ export function mapApiTask(task: ApiTask, state: TaskContext): Task {
     assigneeId: task.assigneeId,
     assignerId: task.assignerId,
     positionRefId: person?.positionRefId ?? "",
-    period: period?.name ?? "",
-    periodId: period?.id,
-    plannedQuantity: result?.quantity ?? 1,
+    period: "",
+    periodId: undefined,
+    plannedQuantity: undefined,
     catalogSnapshot: catalog
       ? {
           id: catalog.id,
@@ -282,7 +281,6 @@ export function mapApiTask(task: ApiTask, state: TaskContext): Task {
     result,
     evidence: [],
     history: [],
-    revision: 1,
   };
 }
 
@@ -293,6 +291,10 @@ export function mapApiEvaluation(
   previous?: Evaluation,
 ): Evaluation {
   const person = state.people.find((item) => item.id === evaluation.subjectId);
+  const isLeader = person
+    ? person.positionRefId === "pos-tp" ||
+      person.positionRefId === "pos-lanh-dao"
+    : false;
   const base: Evaluation =
     previous ??
     ({
@@ -302,8 +304,7 @@ export function mapApiEvaluation(
       subjectType: "PERSON",
       departmentId: evaluation.departmentId,
       status: evaluation.status,
-      isLeader:
-        person?.title.toLocaleLowerCase("vi").includes("lãnh đạo") ?? false,
+      isLeader,
       generalScore: evaluation.score,
       generalMax: 100,
       axes: [],
@@ -321,7 +322,6 @@ export function mapApiEvaluation(
       decision: null,
       conditions: [],
       history: [],
-      revision: 1,
     } satisfies Evaluation);
 
   return {
@@ -330,6 +330,7 @@ export function mapApiEvaluation(
     subjectId: evaluation.subjectId,
     departmentId: evaluation.departmentId,
     status: evaluation.status,
+    isLeader: base.isLeader,
     generalScore: evaluation.score,
     calc: {
       ...base.calc,
@@ -340,22 +341,22 @@ export function mapApiEvaluation(
       ? {
           comment: evaluation.selfComment,
           proposed: evaluation.classification,
-          at: base.self?.at ?? receivedAt,
+          at: base.self?.at ?? null,
         }
       : null,
     review: evaluation.reviewComment
       ? {
           comment: evaluation.reviewComment,
           proposed: evaluation.classification,
-          reviewerId: base.review?.reviewerId ?? getState().user?.id ?? "",
-          at: base.review?.at ?? receivedAt,
+          reviewerId: base.review?.reviewerId ?? "",
+          at: base.review?.at ?? "",
         }
       : null,
     decision: evaluation.decisionNote
       ? {
           classification: evaluation.classification,
-          decidedById: base.decision?.decidedById ?? getState().user?.id ?? "",
-          at: base.decision?.at ?? receivedAt,
+          decidedById: base.decision?.decidedById ?? "",
+          at: base.decision?.at ?? "",
           note: evaluation.decisionNote,
         }
       : null,

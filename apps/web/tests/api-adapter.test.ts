@@ -112,7 +112,8 @@ describe("API adapter", () => {
       },
     );
 
-    expect(task.periodId).toBe("p-q3-2026");
+    expect(task.periodId).toBeUndefined();
+    expect(task.plannedQuantity).toBeUndefined();
     expect(task.positionRefId).toBe("pos-staff");
     expect(task.result?.qualityLevel).toBe("Đáp ứng tốt");
     expect(task.evidence).toEqual([]);
@@ -151,6 +152,7 @@ describe("API adapter", () => {
     expect(evaluation.calc.arithmeticTotal).toBe(86.75);
     expect(evaluation.self?.comment).toBe("Đã hoàn thành nhiệm vụ.");
     expect(evaluation.review?.comment).toBe("Đủ căn cứ đề xuất.");
+    expect(evaluation.review?.reviewerId).toBe("");
     expect(evaluation.conditions[0].passed).toBe(true);
   });
 });

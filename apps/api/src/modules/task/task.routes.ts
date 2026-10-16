@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
-import { can } from "@/middleware/authorization";
+import { can, canReadTask } from "@/middleware/authorization";
 import { validate } from "@/middleware/validation";
 import { denyWithAudit, recordAudit } from "@/modules/audit/audit.recorder";
 import { query } from "@/shared/request";
@@ -25,11 +25,13 @@ export function createTaskRouter(): Router {
   const router = Router();
 
   router.get("/tasks", (req, res) => {
+    const actor = req.actor!;
     const status = query(req, "status");
     const departmentId = query(req, "departmentId");
     const q = query(req, "q")?.toLowerCase();
     const data = req.state!.tasks.filter(
       (task) =>
+        canReadTask(actor, task) &&
         (!status || task.status === status) &&
         (!departmentId || task.departmentId === departmentId) &&
         (!q || `${task.id} ${task.title}`.toLowerCase().includes(q)),
@@ -99,10 +101,11 @@ export function createTaskRouter(): Router {
   });
 
   router.get("/tasks/:id", (req, res) => {
+    const actor = req.actor!;
     const task = req.state!.tasks.find(
       (candidate) => candidate.id === req.params.id,
     );
-    if (!task) {
+    if (!task || !canReadTask(actor, task)) {
       taskNotFound(req, res);
       return;
     }

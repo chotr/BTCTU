@@ -21,27 +21,17 @@ export function calculateScore(
   )
     throw new Error("Điểm điều hành phải từ 0 đến 100.");
   const missingInputs: string[] = [];
-  const snapshots = tasks.map((task) => {
-    const extended = task as Task & {
-      plannedQuantity?: number;
-      catalogSnapshot?: { version?: string };
-    };
-    return {
-      id: task.id,
-      title: task.title,
-      status: task.status,
-      quantity: task.result?.quantity ?? 0,
-      plannedQuantity: extended.plannedQuantity ?? 1,
-      quality: task.result?.qualityLevel ?? "",
-      submittedAt:
-        (task.result as Task["result"] & { completedAt?: string })
-          ?.completedAt ||
-        task.result?.submittedAt ||
-        "",
-      dueAt: task.dueAt,
-      catalogVersion: extended.catalogSnapshot?.version ?? "catalog/default",
-    };
-  });
+  const snapshots = tasks.map((task) => ({
+    id: task.id,
+    title: task.title,
+    status: task.status,
+    quantity: task.result?.quantity ?? 0,
+    plannedQuantity: task.plannedQuantity ?? 0,
+    quality: task.result?.qualityLevel ?? "",
+    submittedAt: task.result?.completedAt || task.result?.submittedAt || "",
+    dueAt: task.dueAt,
+    catalogVersion: task.catalogSnapshot?.version ?? "catalog/default",
+  }));
   const accepted = snapshots.filter(
     (task) => task.status === "ACCEPTED" || task.status === "LOCKED",
   );

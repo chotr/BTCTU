@@ -51,6 +51,33 @@ export const AUTHORIZATION_RULES: Record<
   "audit.read": (actor) => actor.role !== ROLES.congChuc,
 };
 
+export function canReadTask(
+  actor: Actor,
+  task: { departmentId: string; assigneeId: string },
+): boolean {
+  if (actor.role === ROLES.lanhDao) return true;
+  if (actor.role === ROLES.truongPhong) {
+    return (
+      actor.departmentId !== null && actor.departmentId === task.departmentId
+    );
+  }
+  return actor.id === task.assigneeId;
+}
+
+export function canReadEvaluation(
+  actor: Actor,
+  evaluation: { departmentId: string; subjectId: string },
+): boolean {
+  if (actor.role === ROLES.lanhDao) return true;
+  if (actor.role === ROLES.truongPhong) {
+    return (
+      actor.departmentId !== null &&
+      actor.departmentId === evaluation.departmentId
+    );
+  }
+  return actor.id === evaluation.subjectId;
+}
+
 export function can(actor: Actor, request: AuthorizationRequest): boolean {
   return AUTHORIZATION_RULES[request.action](actor, request.resource ?? {});
 }

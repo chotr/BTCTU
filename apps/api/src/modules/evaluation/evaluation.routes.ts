@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
-import { can } from "@/middleware/authorization";
+import { can, canReadEvaluation } from "@/middleware/authorization";
 import { validate } from "@/middleware/validation";
 import { denyWithAudit, recordAudit } from "@/modules/audit/audit.recorder";
 import { problem } from "@/shared/problem";
@@ -26,10 +26,12 @@ export function createEvaluationRouter(): Router {
   const router = Router();
 
   router.get("/evaluations", (req, res) => {
+    const actor = req.actor!;
     const periodId = query(req, "periodId");
     const status = query(req, "status");
     const data = req.state!.evaluations.filter(
       (evaluation) =>
+        canReadEvaluation(actor, evaluation) &&
         (!periodId || evaluation.periodId === periodId) &&
         (!status || evaluation.status === status),
     );
@@ -37,10 +39,11 @@ export function createEvaluationRouter(): Router {
   });
 
   router.get("/evaluations/:id", (req, res) => {
+    const actor = req.actor!;
     const evaluation = req.state!.evaluations.find(
       (candidate) => candidate.id === req.params.id,
     );
-    if (!evaluation) {
+    if (!evaluation || !canReadEvaluation(actor, evaluation)) {
       evaluationNotFound(req, res);
       return;
     }
