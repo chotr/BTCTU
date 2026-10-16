@@ -17,3 +17,4 @@ export { Callout } from "./callout";
 export { EmptyState } from "./empty-state";
 export { Modal } from "./modal";
 export { Chip } from "./chip";
+export { LoadingScreen } from "./loading-screen";

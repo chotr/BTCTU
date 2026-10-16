@@ -62,7 +62,7 @@ export function EvaluationTable({
                       ? "Chưa tính lại"
                       : `${evaluationTotal(e).toFixed(2)} · mẫu`}
                   <p className="mt-1 text-xs text-ink-3">
-                    {e.isLeader ? "ABCD" : "ABC · chờ phê duyệt"}
+                    {e.isLeader ? "ABCD" : "ABC"}
                   </p>
                 </td>
                 <td className="p-3">

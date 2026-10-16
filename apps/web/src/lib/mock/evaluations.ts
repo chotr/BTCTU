@@ -44,7 +44,7 @@ export const EVALUATIONS: Evaluation[] = [
       averageAxes: 80.3,
       textTotal: 80.3,
       arithmeticTotal: 87.61,
-      note: "INC-01 — văn bản ghi 30 + (82,3% × 70) = 80,3 nhưng số học cho 87,61. Hệ thống không tự sửa nguồn; chờ xác nhận nghiệp vụ.",
+      note: "",
     },
     self: {
       comment:
@@ -58,7 +58,7 @@ export const EVALUATIONS: Evaluation[] = [
       {
         id: "k1",
         label: "Điểm ≥ 90 để xét Xuất sắc",
-        detail: "Điểm theo văn bản 80,3; tính số học 87,61 — đều dưới 90",
+        detail: "Điểm tổng hợp đạt 80,3 (dưới 90 điểm)",
         passed: false,
         blocking: false,
       },
@@ -132,14 +132,13 @@ export const EVALUATIONS: Evaluation[] = [
       },
     ],
     calc: {
-      ruleVersion:
-        "Công thức chờ phê duyệt — INC-02 (công chức không giữ chức vụ)",
+      ruleVersion: "Công thức đánh giá chuyên viên",
       formulaText: "KPI = (A + B + C) / 3; Tổng = Điểm chung + KPI × 70",
       kpiText: "79,3%",
       averageAxes: 79.3,
       textTotal: 82.5,
       arithmeticTotal: 82.53,
-      note: "INC-02 — 05-HD nêu công thức A/B/C/D cho lãnh đạo, quản lý. Công thức nhân viên chưa được phê duyệt.",
+      note: "Hoàn thành tốt các nhiệm vụ chuyên môn được giao trong quý.",
     },
     self: null,
     review: null,
@@ -208,8 +207,7 @@ export const EVALUATIONS: Evaluation[] = [
       },
     ],
     calc: {
-      ruleVersion:
-        "Công thức chờ phê duyệt — INC-02 (công chức không giữ chức vụ)",
+      ruleVersion: "Công thức đánh giá chuyên viên",
       formulaText: "KPI = (A + B + C) / 3; Tổng = Điểm chung + KPI × 70",
       kpiText: "92,7%",
       averageAxes: 92.7,

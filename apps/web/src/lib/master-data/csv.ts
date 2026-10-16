@@ -110,4 +110,4 @@ export function previewCatalogCsv(text: string, version: string): ImportRow[] {
   });
 }
 
-export const catalogCsvTemplate = `${CSV_FIELDS.join(",")}\nNV-DEV-01,Tổng hợp số liệu,Báo cáo tổng hợp,Báo cáo,Trung bình,8,1,7,Danh mục vận hành chờ phê duyệt\n`;
+export const catalogCsvTemplate = `${CSV_FIELDS.join(",")}\nNV-DEV-01,Tổng hợp số liệu,Báo cáo tổng hợp,Báo cáo,Trung bình,8,1,7,Danh mục vận hành\n`;

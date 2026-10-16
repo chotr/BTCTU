@@ -139,7 +139,7 @@ export default function CatalogPage() {
             onChange={(e) => setQ(e.target.value)}
           />
         </Field>
-        <Badge tone={published ? "ok" : "warn"}>
+        <Badge className="min-h-9 mt-auto" tone={published ? "ok" : "warn"}>
           {published ? "Đã công bố · chỉ đọc" : "Bản nháp"}
         </Badge>
         {allowed && !published && selected.length > 0 && (

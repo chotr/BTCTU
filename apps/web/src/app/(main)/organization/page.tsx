@@ -175,7 +175,7 @@ export default function OrganizationPage() {
               </option>
             ))}
           </Select>
-          <Badge>{items.length} mục</Badge>
+          <Badge className="rounded-sm px-2 py-0.5 ">{items.length} mục</Badge>
         </div>
       </Card>
       {tab === "departments" ? (

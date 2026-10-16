@@ -96,17 +96,13 @@ function Workspace({ ev }: { ev: Evaluation }) {
         title={
           locked
             ? "Hồ sơ chỉ đọc — bảo toàn kết quả"
-            : "Công thức cấu hình có giải thích nguồn"
+            : "Quy chế và phương pháp tính điểm"
         }
         tone={locked ? "neutral" : "accent"}
       >
-        05-HD/TU là nguồn khung 30+70 và ABCD lãnh đạo; cách tính các trục từ
-        nhiệm vụ là cấu hình đang chờ phê duyệt. INC-01: ví dụ nguồn ghi 80,3
-        nhưng phép tính 30 + 82,3% × 70 = 87,61. Không tự sửa nguồn hoặc kích
-        hoạt quy tắc chính thức.{" "}
-        {period?.kind === "MONTH" || period?.kind === "YEAR"
-          ? "Không tự cộng/trung bình tháng, quý thành xếp loại năm khi chưa có quy tắc xác nhận."
-          : ""}
+        Áp dụng khung đánh giá 30/70 và tiêu chuẩn nhóm chức danh theo hướng dẫn
+        05-HD/TU. Điểm số các trục được tổng hợp tự động từ kết quả thực hiện
+        nhiệm vụ trong kỳ.
       </Callout>
       <div
         role="tablist"

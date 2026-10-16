@@ -45,7 +45,7 @@ export function Field({
       {hint ? (
         <span
           id={`${fieldId}-hint`}
-          className="mt-1 block text-[11px] text-ink-3"
+          className="mt-1 block text-[12px] text-ink-3"
         >
           {hint}
         </span>

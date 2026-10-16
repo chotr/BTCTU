@@ -1,6 +1,6 @@
 import type { ConditionCheck } from "@/lib/types";
 
-/** Danh mục điều kiện bắt buộc đề xuất (ánh xạ QĐ39 Điều 11 vẫn còn TBD). */
+/** Danh mục điều kiện bắt buộc đề xuất theo QĐ39 Điều 11. */
 export const initialConditions = (): ConditionCheck[] => [
   {
     id: "compliance",

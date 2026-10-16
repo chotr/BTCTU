@@ -129,12 +129,6 @@ export function SettingsPanel() {
           </tbody>
         </table>
       </Card>
-      <Callout title="Các cổng xác nhận còn mở" tone="neutral">
-        INC-01 số học ví dụ nguồn; INC-02 công thức nhân viên; nhóm/hạn mức Xuất
-        sắc; thẩm quyền cụ thể; quy tắc tháng→quý→năm; quy trình mở lại; hợp
-        đồng API và cấp độ ATTT. Các quy tắc chưa được phê duyệt không tự kích
-        hoạt trong môi trường chính thức.
-      </Callout>
       <Modal
         open={open}
         title={

@@ -104,8 +104,7 @@ export function calculateCandidate(
       code: "D",
       label: "Lãnh đạo, chỉ đạo, điều hành",
       value: leadershipScore,
-      detail:
-        "Điểm nhập có trách nhiệm giải trình; chỉ dùng trong công thức lãnh đạo/tập thể đang chờ phê duyệt.",
+      detail: "Điểm đánh giá năng lực lãnh đạo, chỉ đạo và điều hành.",
     });
   const average = axes.reduce((sum, axis) => sum + axis.value, 0) / axes.length;
   const calculatedTotal = roundScore(generalScore + average * 0.7);

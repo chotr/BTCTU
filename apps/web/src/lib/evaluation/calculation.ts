@@ -108,8 +108,8 @@ export const calculationActions = {
             arithmeticTotal: run.finalTotal,
             status: "CANDIDATE",
             note: ev.isLeader
-              ? "INC-01: ví dụ nguồn ghi 80,3; số học 30 + 82,3% × 70 = 87,61. Quy tắc đang chờ phê duyệt trước khi áp dụng chính thức."
-              : "INC-02: công thức ABC đang chờ xác nhận; 05-HD/TU chưa xác nhận công thức cho nhân viên.",
+              ? "Điểm tổng hợp theo khung 30/70 cán bộ lãnh đạo, quản lý."
+              : "Điểm tổng hợp theo tiêu chí công chức, người lao động.",
           },
         },
         input.overrideTotal !== undefined

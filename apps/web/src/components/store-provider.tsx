@@ -2,6 +2,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { initializeDataSource } from "@/lib/data-source";
 import { hydrateStore } from "@/lib/store";
+import { LoadingScreen } from "@/components/ui";
 
 let initialization: Promise<void> | null = null;
 
@@ -57,11 +58,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }
 
   if (!ready) {
-    return (
-      <main className="grid min-h-dvh place-items-center bg-canvas p-6 text-sm text-ink-2">
-        Đang tải dữ liệu…
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   return children;

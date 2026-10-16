@@ -3,9 +3,11 @@ import type { ReactNode } from "react";
 export function Badge({
   tone = "neutral",
   children,
+  className = ""
 }: {
   tone?: "neutral" | "accent" | "ok" | "warn" | "danger";
   children: ReactNode;
+  className?: string;
 }) {
   const tones = {
     neutral: "bg-fill-2 text-ink-2",
@@ -16,7 +18,7 @@ export function Badge({
   } as const;
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-pill px-2 py-0.5 text-[11px] font-semibold ${tones[tone]}`}
+      className={`inline-flex items-center gap-1 text-[12px] font-semibold ${tones[tone]} ${className}`}
     >
       {children}
     </span>

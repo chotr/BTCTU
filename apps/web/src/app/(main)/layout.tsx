@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import type { ReactNode } from "react";
 import Shell from "@/components/shell";
 import { useApp } from "@/lib/store";
+import { LoadingScreen } from "@/components/ui";
 
 export default function MainLayout({ children }: { children: ReactNode }) {
   const { user, hydrated } = useApp();
@@ -16,12 +17,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
     }
   }, [user, hydrated, router]);
 
-  if (!hydrated || !user)
-    return (
-      <main className="p-8 text-sm text-ink-2" role="status">
-        Đang mở không gian làm việc…
-      </main>
-    );
+  if (!hydrated || !user) return <LoadingScreen />;
 
   return <Shell>{children}</Shell>;
 }

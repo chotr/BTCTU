@@ -84,17 +84,17 @@ function initialState(): AppState {
         {
           field: "person.id",
           target: "personnelCode",
-          source: "QĐ607 · cấu hình chờ phê duyệt",
+          source: "QĐ607",
         },
         {
           field: "person.name",
           target: "fullName",
-          source: "QĐ308 · cấu hình chờ phê duyệt",
+          source: "QĐ308",
         },
         {
           field: "department.code",
           target: "organizationCode",
-          source: "QĐ308 · cấu hình chờ phê duyệt",
+          source: "QĐ308",
         },
       ],
       runs: [],

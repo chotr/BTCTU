@@ -60,8 +60,7 @@ export default function ReportsPage() {
       actorId: state.user!.id,
       action: "Tạo dự thảo báo cáo",
       resource: periodId,
-      detail:
-        "Mẫu xác định từ dữ liệu tổng hợp; không AI, không tự ký/ban hành",
+      detail: "Dự thảo báo cáo tổng hợp từ dữ liệu hệ thống",
       outcome: "OK",
     });
   }
@@ -147,7 +146,11 @@ export default function ReportsPage() {
             <option value="DEPARTMENT">Tập thể</option>
           </Select>
         </Field>
-        <Button icon={<FileText size={16} />} onClick={makeDraft}>
+        <Button
+          className="min-h-9"
+          icon={<FileText size={16} />}
+          onClick={makeDraft}
+        >
           Soạn dự thảo
         </Button>
       </Card>

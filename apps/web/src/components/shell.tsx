@@ -64,10 +64,10 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav
       aria-label="Điều hướng chính"
-      className="flex-1 overflow-y-auto px-3 py-3"
+      className="flex-1 overflow-y-auto pt-2 lg:px-4 lg:pt-4"
     >
-      {groups.map((group) => (
-        <div className="mb-5" key={group.label}>
+      {groups.map((group, i) => (
+        <div className={`${i < groups.length - 1 ? "mb-5" : ""}`} key={group.label}>
           <p className="mb-1.5 px-2.5 text-[11px] font-semibold text-ink-3">
             {group.label}
           </p>
@@ -108,7 +108,7 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
 }
 function Brand() {
   return (
-    <div className="flex h-16 shrink-0 items-center gap-3 px-4">
+    <div className="flex h-12 shrink-0 items-center gap-3 lg:px-4 lg:pt-2">
       <Image
         src={quocHuyImg}
         alt="Quốc huy Việt Nam"

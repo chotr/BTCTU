@@ -22,7 +22,7 @@ export function Button({
   return (
     <button
       type="button"
-      className={`inline-flex min-h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-ctl px-3 py-1.5 text-[13px] font-medium transition-colors duration-100 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 ${buttonVariants[variant]} ${className}`}
+      className={`inline-flex min-h-4 h-auto shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-ctl px-3 py-1 text-[13px] font-medium transition-colors duration-100 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 ${buttonVariants[variant]} ${className}`}
       {...rest}
     >
       {icon}

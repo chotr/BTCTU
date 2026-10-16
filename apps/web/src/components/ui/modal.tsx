@@ -39,22 +39,22 @@ export function Modal({
         event.preventDefault();
         onClose();
       }}
-      className="fixed inset-0 m-auto max-h-[88dvh] w-[calc(100%-2rem)] max-w-[640px] overflow-y-auto rounded-card bg-surface p-5 text-ink shadow-pop backdrop:bg-ink/35"
+      className="fixed inset-0 m-auto max-h-[88dvh] w-[calc(100%-2rem)] max-w-[640px] overflow-y-auto rounded-card bg-surface text-ink shadow-pop backdrop:bg-ink/35"
     >
-      <div className="mb-4 flex items-center justify-between">
-        <h2 id={titleId} className="text-[15px] font-semibold">
+      <div className="mb-1 flex items-center justify-between p-4 pb-0">
+        <h2 id={titleId} className="text-[15px] font-semibold mb-2">
           {title}
         </h2>
         <button
           type="button"
           aria-label="Đóng hộp thoại"
           onClick={onClose}
-          className="flex h-9 w-9 items-center justify-center rounded-ctl text-ink-3 transition-colors hover:bg-fill-2 hover:text-ink"
+          className="flex h-9 w-9 items-center justify-center rounded-ctl text-ink-3 transition-colors hover:bg-fill-2 hover:text-ink absolute top-2 right-2"
         >
           <X size={14} weight="bold" />
         </button>
       </div>
-      <div className="flex flex-col gap-3">{children}</div>
+      <div className="flex flex-col gap-3 px-4 pb-4">{children}</div>
       {footer ? (
         <div className="mt-5 flex flex-wrap justify-end gap-2">{footer}</div>
       ) : null}

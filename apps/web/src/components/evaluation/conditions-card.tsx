@@ -30,7 +30,7 @@ export function ConditionsCard({
       <h2 className="text-sm font-semibold">Điều kiện xếp loại</h2>
       <p className="mt-2 text-xs leading-relaxed text-ink-3">
         QĐ39 Điều 11: dải 90 / 70 / 50 không đủ để tự xếp loại. Checklist bên
-        dưới là cấu hình đang chờ phê duyệt cho từng nhóm đối tượng.
+        dưới là các điều kiện tiêu chuẩn áp dụng cho từng nhóm đối tượng.
       </p>
       <div className="mt-4 space-y-4">
         {checks.map((c) => (
@@ -66,7 +66,7 @@ export function ConditionsCard({
             value={quota}
             onChange={(e) => setQuota(e.target.value as typeof quota)}
           >
-            <option value="UNKNOWN">TBD — chưa xác định</option>
+            <option value="UNKNOWN">Chưa xác định</option>
             <option value="NOT_APPLICABLE">Không áp dụng (đã xác nhận)</option>
             <option value="APPLIES">Có áp dụng (theo cấu hình)</option>
           </Select>

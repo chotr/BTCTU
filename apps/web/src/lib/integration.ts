@@ -9,16 +9,16 @@ import { canManage } from "./policy";
 export const PROFILES = {
   personnel: {
     name: "Hồ sơ nhân sự · QĐ607",
-    contract: "OAuth client credentials + JWT (profile chờ phê duyệt)",
+    contract: "OAuth 2.0 Client Credentials + JWT",
     fields: ["personnelCode", "fullName", "organizationCode"],
-    source: "QĐ607 / QĐ308 · ánh xạ chờ phê duyệt",
+    source: "QĐ607 / QĐ308",
   },
   lgsp: {
     name: "Kết nối LGSP · HD07",
     contract:
       "Profile cổng tích hợp HD07 riêng; không đồng nhất với OAuth QĐ607",
     fields: ["personnelCode", "fullName", "organizationCode"],
-    source: "HD07 / QĐ348 · luồng chia sẻ chờ phê duyệt",
+    source: "HD07 / QĐ348",
   },
 } as const;
 export type ProfileKey = keyof typeof PROFILES;

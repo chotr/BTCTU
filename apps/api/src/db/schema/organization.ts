@@ -95,7 +95,7 @@ export const positionAssignments = pgTable(
 
     sourceRef: varchar("source_ref", { length: 255 }),
 
-    // Nhãn căn cứ theo quy ước ở docs/02-source-analysis/README.md.
+    // Phân loại nguồn dữ liệu.
     sourceClass: varchar("source_class", { length: 32 }),
 
     createdAt: timestamp("created_at", { withTimezone: true })
