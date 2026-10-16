@@ -13,8 +13,7 @@ import { createAuditRouter } from "@/modules/audit/audit.routes";
 import { createCatalogRouter } from "@/modules/catalog/catalog.routes";
 import { createEvaluationRouter } from "@/modules/evaluation/evaluation.routes";
 import {
-  DirectoryActorResolver,
-  UnprovisionedActorResolver,
+  createDirectoryActorResolver,
   type ActorResolver,
 } from "@/modules/identity/actor-resolver";
 import { createActorMiddleware } from "@/modules/identity/identity.middleware";
@@ -37,8 +36,8 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
   const actorResolver =
     dependencies.actorResolver ??
     (env.environment === "production"
-      ? new UnprovisionedActorResolver()
-      : new DirectoryActorResolver(state.people));
+      ? () => null
+      : createDirectoryActorResolver(state.people));
 
   const app = express();
   app.disable("x-powered-by");

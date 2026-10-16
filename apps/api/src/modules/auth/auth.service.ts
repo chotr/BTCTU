@@ -17,7 +17,6 @@ import {
   type UserStore,
 } from "./auth.types";
 import type { PasswordService } from "./password.service";
-import type { RefreshTokenService } from "./refresh-token.service";
 import { SessionService, type StartedSession } from "./session.service";
 
 export type AuthServiceOptions = {
@@ -25,7 +24,6 @@ export type AuthServiceOptions = {
   sessions: SessionStore;
   passwords: PasswordService;
   accessTokens: AccessTokenService;
-  refreshTokens: RefreshTokenService;
   refreshTtlSeconds: number;
   rotationGraceSeconds: number;
   now?: () => Date;
@@ -38,7 +36,6 @@ export class AuthService implements AuthPort {
   constructor(private readonly options: AuthServiceOptions) {
     this.sessions = new SessionService({
       sessions: options.sessions,
-      refreshTokens: options.refreshTokens,
       refreshTtlSeconds: options.refreshTtlSeconds,
       rotationGraceSeconds: options.rotationGraceSeconds,
       now: options.now,
@@ -130,7 +127,11 @@ export class AuthService implements AuthPort {
     const session = await this.sessions.revokeByRefreshToken(refreshToken);
     if (!session) return;
 
-    this.emit({ type: "logout", userId: session.userId, sessionId: session.id });
+    this.emit({
+      type: "logout",
+      userId: session.userId,
+      sessionId: session.id,
+    });
   }
 
   async authenticate(accessToken: string): Promise<AuthPrincipal> {

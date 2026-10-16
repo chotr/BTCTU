@@ -83,7 +83,7 @@ export function createActorMiddleware(
       userId = header;
     }
 
-    const actor = await actorResolver.resolve(userId);
+    const actor = await actorResolver(userId);
     if (!actor) {
       if (env.environment === "production") {
         problem(

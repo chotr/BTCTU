@@ -1,15 +1,22 @@
 import type { Session } from "@/db/schema";
+import { createHash, randomBytes } from "node:crypto";
 import {
   InvalidSessionError,
   RotationInProgressError,
   SessionReuseError,
   type SessionStore,
 } from "./auth.types";
-import type { RefreshTokenService } from "./refresh-token.service";
+
+export function generateRefreshToken(): string {
+  return randomBytes(32).toString("base64url");
+}
+
+export function hashRefreshToken(refreshToken: string): string {
+  return createHash("sha256").update(refreshToken).digest("hex");
+}
 
 export type SessionServiceOptions = {
   sessions: SessionStore;
-  refreshTokens: RefreshTokenService;
   refreshTtlSeconds: number;
   rotationGraceSeconds: number;
   now?: () => Date;
@@ -24,14 +31,14 @@ export class SessionService {
   constructor(private readonly options: SessionServiceOptions) {}
 
   async start(userId: string): Promise<StartedSession> {
-    const refreshToken = this.options.refreshTokens.generate();
+    const refreshToken = generateRefreshToken();
     const expiresAt = new Date(
       this.currentTime().getTime() + this.options.refreshTtlSeconds * 1000,
     );
 
     const session = await this.options.sessions.create({
       userId,
-      refreshTokenHash: this.options.refreshTokens.hash(refreshToken),
+      refreshTokenHash: hashRefreshToken(refreshToken),
       expiresAt,
     });
 
@@ -39,10 +46,9 @@ export class SessionService {
   }
 
   async rotate(refreshToken: string): Promise<StartedSession> {
-    const presentedHash = this.options.refreshTokens.hash(refreshToken);
-    const current = await this.options.sessions.findByRefreshTokenHash(
-      presentedHash,
-    );
+    const presentedHash = hashRefreshToken(refreshToken);
+    const current =
+      await this.options.sessions.findByRefreshTokenHash(presentedHash);
 
     if (current) {
       if (current.revokedAt) {
@@ -55,9 +61,8 @@ export class SessionService {
       return this.rotateCurrent(current, presentedHash);
     }
 
-    const replayed = await this.options.sessions.findByPreviousTokenHash(
-      presentedHash,
-    );
+    const replayed =
+      await this.options.sessions.findByPreviousTokenHash(presentedHash);
     if (!replayed) throw new InvalidSessionError("Unknown refresh token");
     if (replayed.revokedAt) {
       throw new InvalidSessionError("Session was revoked");
@@ -78,7 +83,7 @@ export class SessionService {
 
   async revokeByRefreshToken(refreshToken: string): Promise<Session | null> {
     const session = await this.options.sessions.findByRefreshTokenHash(
-      this.options.refreshTokens.hash(refreshToken),
+      hashRefreshToken(refreshToken),
     );
     if (!session) return null;
 
@@ -93,19 +98,18 @@ export class SessionService {
     session: Session,
     presentedHash: string,
   ): Promise<StartedSession> {
-    const nextToken = this.options.refreshTokens.generate();
+    const nextToken = generateRefreshToken();
     const rotated = await this.options.sessions.rotate({
       sessionId: session.id,
       currentHash: presentedHash,
-      nextHash: this.options.refreshTokens.hash(nextToken),
+      nextHash: hashRefreshToken(nextToken),
       usedAt: this.currentTime(),
     });
 
     if (rotated) return { session: rotated, refreshToken: nextToken };
 
-    const latest = await this.options.sessions.findByPreviousTokenHash(
-      presentedHash,
-    );
+    const latest =
+      await this.options.sessions.findByPreviousTokenHash(presentedHash);
     if (!latest) throw new InvalidSessionError("Refresh token is not usable");
     if (latest.revokedAt) throw new InvalidSessionError("Session was revoked");
 

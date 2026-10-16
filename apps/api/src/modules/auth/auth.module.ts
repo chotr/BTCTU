@@ -8,7 +8,6 @@ import { HmacJwtTokenService } from "./access-token.service";
 import { AuthService } from "./auth.service";
 import type { AuthPort } from "./auth.types";
 import { PasswordService } from "./password.service";
-import { RefreshTokenService } from "./refresh-token.service";
 import { SessionRepository } from "./repositories/session.repository";
 import { UserRepository } from "./repositories/user.repository";
 
@@ -41,7 +40,6 @@ export function createAuthModule(
           audience: env.jwtAccessAudience,
           accessTtlSeconds: env.jwtAccessTtlSeconds,
         }),
-        refreshTokens: new RefreshTokenService(),
         refreshTtlSeconds: env.refreshTokenTtlSeconds,
         rotationGraceSeconds: env.auth.rotationGraceSeconds,
         onEvent: (event) =>
