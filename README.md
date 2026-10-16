@@ -9,17 +9,17 @@ giá trên cùng một quy trình.
 Repo hiện là **bản thử nghiệm phục vụ phát triển**, chưa phải bản triển khai chính
 thức.
 
-| Phần việc | Đã có | Chưa hoàn tất |
-| --- | --- | --- |
-| Giao diện | Các màn hình và luồng nghiệp vụ chính | Chưa đọc/ghi dữ liệu qua API |
-| API | Express, OpenAPI, kiểm tra dữ liệu đầu vào, đăng nhập và phân quyền | Nhiều tuyến nghiệp vụ vẫn dùng dữ liệu tạo lại theo từng yêu cầu |
-| Cơ sở dữ liệu | Lược đồ tổ chức, người dùng, phiên đăng nhập và nhật ký | Chưa thay toàn bộ dữ liệu tạm bằng kho dữ liệu thật |
-| Kiểm thử | Kiểm thử đơn vị, kiểm thử API và một số kịch bản trình duyệt | Chưa có kiểm thử xuyên suốt với web, API và PostgreSQL thật |
-| Vận hành | Có mẫu cấu hình cho môi trường phát triển | Chưa hoàn tất tích hợp định danh, sao lưu, giám sát và thẩm định an toàn thông tin |
+| Phần việc     | Đã có                                                               | Chưa hoàn tất                                                                      |
+| ------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Giao diện     | Đọc dữ liệu và gọi các thao tác đã có API                           | Một số màn hình chưa có endpoint tương ứng                                         |
+| API           | Express, OpenAPI, kiểm tra dữ liệu đầu vào, đăng nhập và phân quyền | Nhiều tuyến nghiệp vụ vẫn dùng dữ liệu tạo lại theo từng yêu cầu                   |
+| Cơ sở dữ liệu | Lược đồ tổ chức, người dùng, phiên đăng nhập và nhật ký             | Chưa thay toàn bộ dữ liệu tạm bằng kho dữ liệu thật                                |
+| Kiểm thử      | Kiểm thử đơn vị, kiểm thử API và một số kịch bản trình duyệt        | Chưa có kiểm thử xuyên suốt với web, API và PostgreSQL thật                        |
+| Vận hành      | Có mẫu cấu hình cho môi trường phát triển                           | Chưa hoàn tất tích hợp định danh, sao lưu, giám sát và thẩm định an toàn thông tin |
 
-Giao diện hiện dùng dữ liệu mẫu trong `apps/web/src/lib/mock/` và lưu trạng thái
-trên trình duyệt. Chọn `NEXT_PUBLIC_DATA_SOURCE=api` sẽ chủ động dừng khởi tạo vì
-phần kết nối giao diện với API chưa được viết xong.
+Giao diện mặc định dùng dữ liệu mẫu trong `apps/web/src/lib/mock/`. Đặt
+`NEXT_PUBLIC_DATA_SOURCE=api` để đọc dữ liệu từ API và dùng các endpoint nhiệm
+vụ, đánh giá, khóa kỳ hiện có.
 
 ## Chạy trên máy phát triển
 
@@ -66,8 +66,8 @@ hoặc `TBD` chưa phải quy định nghiệp vụ đã được phê duyệt.
 
 ## Việc ưu tiên tiếp theo
 
-1. Nối giao diện với các tuyến API hiện có.
-2. Chuyển nhiệm vụ, đánh giá, danh mục và tổ chức từ dữ liệu tạm sang PostgreSQL.
+1. Chuyển nhiệm vụ, đánh giá, danh mục và tổ chức từ dữ liệu tạm sang PostgreSQL.
+2. Bổ sung endpoint cho các thao tác còn thiếu trên giao diện.
 3. Gắn tài khoản đăng nhập với hồ sơ nhân sự và phạm vi đơn vị.
 4. Chạy kiểm thử xuyên suốt trên một môi trường tích hợp.
 5. Chốt các công thức và trường dữ liệu còn thiếu căn cứ trước khi dùng dữ liệu thật.

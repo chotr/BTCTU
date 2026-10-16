@@ -5,6 +5,6 @@ export interface AuditEvent {
   action: string;
   resource: string;
   detail: string;
-  outcome: "OK" | "DENIED";
+  outcome: "OK" | "DENIED" | "FAILED";
   requestId: string;
 }

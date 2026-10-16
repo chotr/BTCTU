@@ -15,6 +15,11 @@ export const metadata: Metadata = {
   title: "BTCTU · Quản lý nhiệm vụ & đánh giá",
   description:
     "Hệ thống quản lý nhiệm vụ, KPI, đánh giá và xếp loại cho Ban Tổ chức Tỉnh ủy.",
+  icons: {
+    icon: "/quoc-huy.png",
+    shortcut: "/quoc-huy.png",
+    apple: "/quoc-huy.png",
+  },
   robots: {
     index: false,
     follow: false,

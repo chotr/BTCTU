@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { runtimeConfig } from "./runtime-config";
 import type {
   AuditEvent,
   CatalogItem,
@@ -106,7 +107,12 @@ let state = initialState();
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((listener) => listener());
 function persist(): void {
-  if (typeof window === "undefined" || !state.hydrated) return;
+  if (
+    runtimeConfig.dataSource !== "local" ||
+    typeof window === "undefined" ||
+    !state.hydrated
+  )
+    return;
   try {
     const {
       toasts: _toasts,

@@ -1,6 +1,8 @@
 "use client";
 
 import { ArrowRight, ShieldCheck } from "@phosphor-icons/react";
+import Image from "next/image";
+import quocHuyImg from "../../../public/quoc-huy.png";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/lib/api";
@@ -21,22 +23,29 @@ export default function LoginPage() {
 
   async function choose(userId: string) {
     setBusy(userId);
-    await api.login(userId);
-    router.replace("/dashboard");
+    const loggedIn = await api.login(userId);
+    if (loggedIn) {
+      router.replace("/dashboard");
+      return;
+    }
+    setBusy(null);
   }
 
   return (
     <main className="flex min-h-dvh items-center justify-center px-4">
       <div className="w-full max-w-[400px]">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-card bg-accent-600 text-[15px] font-bold text-white shadow-raise">
-            BT
-          </div>
+        <div className="mb-6 flex items-center gap-3.5">
+          <Image
+            src={quocHuyImg}
+            alt="Quốc huy Việt Nam"
+            className="h-12 w-auto shrink-0 object-contain drop-shadow-sm"
+            priority
+          />
           <div>
             <p className="text-[15px] font-semibold leading-tight">
               Ban Tổ chức Tỉnh ủy
             </p>
-            <p className="text-[12px] text-ink-3">
+            <p className="mt-0.5 text-[12px] text-ink-3">
               Quản lý nhiệm vụ & đánh giá
             </p>
           </div>

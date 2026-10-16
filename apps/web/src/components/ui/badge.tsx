@@ -9,10 +9,10 @@ export function Badge({
 }) {
   const tones = {
     neutral: "bg-fill-2 text-ink-2",
-    accent: "bg-accent-50 text-accent-600",
-    ok: "bg-ok-50 text-ok-600",
-    warn: "bg-warn-50 text-warn-600",
-    danger: "bg-danger-50 text-danger-600",
+    accent: "text-accent-600",
+    ok: "text-ok-600",
+    warn: "text-warn-600",
+    danger: "text-danger-600",
   } as const;
   return (
     <span

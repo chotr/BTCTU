@@ -32,6 +32,8 @@ import {
   type ProfileKey,
 } from "./integration";
 import { exportReport, type ReportKind } from "./exports";
+import { apiModeActions } from "./api-adapter";
+import { runtimeConfig } from "./runtime-config";
 
 /**
  * Điểm gọi thao tác duy nhất dành cho các màn hình.
@@ -41,7 +43,7 @@ import { exportReport, type ReportKind } from "./exports";
  * liệu mẫu, bộ xử lý cục bộ hoặc hàm thay đổi kho trạng thái.
  */
 export const perm = policy;
-export const api = {
+const localApi = {
   ...taskActions,
   ...evaluationActions,
   ...masterActions,
@@ -54,12 +56,12 @@ export const api = {
   profiles: PROFILES,
   catalogTemplate: catalogCsvTemplate,
   previewCatalogCsv,
-  async login(userId: string): Promise<void> {
+  async login(userId: string): Promise<boolean> {
     hydrateStore();
     const user = resolveAppUser(getState(), userId);
     if (!user) {
       pushToast("error", "Tài khoản không tồn tại");
-      return;
+      return false;
     }
     setUser(user);
     appendAudit({
@@ -69,6 +71,7 @@ export const api = {
       detail: `Vai trò: ${user.role}`,
       outcome: "OK",
     });
+    return true;
   },
   async logout(): Promise<void> {
     const user = getState().user;
@@ -93,6 +96,11 @@ export const api = {
     pushToast("error", "Không có quyền truy cập — đã ghi nhật ký");
   },
 };
+
+export const api =
+  runtimeConfig.dataSource === "api"
+    ? { ...localApi, ...apiModeActions }
+    : localApi;
 
 export function personLabel(id: string): string {
   const state = getState();

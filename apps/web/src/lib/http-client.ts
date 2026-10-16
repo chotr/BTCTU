@@ -1,6 +1,8 @@
 import type { ApiEnvelope, ProblemResponse } from "@btctu/shared";
 import { runtimeConfig } from "./runtime-config";
 
+const DEVELOPMENT_IDENTITY_KEY = "btctu:api-user:v1";
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -15,6 +17,28 @@ export class ApiError extends Error {
 /** Body lỗi có thể thiếu trường, nên chỉ đọc phần có mặt. */
 type ProblemBody = Partial<ProblemResponse>;
 
+export function getDevelopmentIdentity(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.sessionStorage.getItem(DEVELOPMENT_IDENTITY_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setDevelopmentIdentity(userId: string | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (userId) {
+      window.sessionStorage.setItem(DEVELOPMENT_IDENTITY_KEY, userId);
+    } else {
+      window.sessionStorage.removeItem(DEVELOPMENT_IDENTITY_KEY);
+    }
+  } catch {
+    // Phiên phát triển vẫn có thể tiếp tục cho đến khi tải lại trang.
+  }
+}
+
 export async function apiRequest<T>(
   path: string,
   init: RequestInit = {},
@@ -24,6 +48,10 @@ export async function apiRequest<T>(
   const headers = new Headers(init.headers);
   headers.set("accept", "application/json");
   if (init.body) headers.set("content-type", "application/json");
+  const developmentIdentity = getDevelopmentIdentity();
+  if (developmentIdentity && runtimeConfig.environment !== "production") {
+    headers.set("x-dev-user-id", developmentIdentity);
+  }
 
   try {
     const response = await fetch(`${runtimeConfig.apiBaseUrl}${path}`, {
@@ -41,6 +69,10 @@ export async function apiRequest<T>(
         response.status,
         problem.requestId ?? requestId,
       );
+    }
+
+    if (response.status === 204) {
+      return { data: undefined as T };
     }
 
     return (await response.json()) as ApiEnvelope<T>;

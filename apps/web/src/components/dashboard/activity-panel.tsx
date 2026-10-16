@@ -31,6 +31,9 @@ export function ActivityPanel({
               <div className="flex justify-between gap-2">
                 <p className="font-medium">{a.action}</p>
                 {a.outcome === "DENIED" && <Badge tone="danger">Từ chối</Badge>}
+                {a.outcome === "FAILED" && (
+                  <Badge tone="danger">Thất bại</Badge>
+                )}
               </div>
               <p className="mt-1 break-words text-ink-3">
                 {a.resource} · {fmtDateTime(a.at)}

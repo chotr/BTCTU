@@ -14,6 +14,8 @@ import {
   X,
 } from "@phosphor-icons/react";
 import Link from "next/link";
+import Image from "next/image";
+import quocHuyImg from "../../public/quoc-huy.png";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { api } from "@/lib/api";
@@ -106,13 +108,20 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
 }
 function Brand() {
   return (
-    <div className="flex h-16 shrink-0 items-center gap-2.5 px-4">
-      <span className="flex h-8 w-8 items-center justify-center rounded-ctl bg-accent-600 text-xs font-bold text-white">
-        BT
-      </span>
-      <div>
-        <p className="text-[13px] font-semibold">Ban Tổ chức Tỉnh ủy</p>
-        <p className="mt-0.5 text-[11px] text-ink-3">Nhiệm vụ & đánh giá</p>
+    <div className="flex h-16 shrink-0 items-center gap-3 px-4">
+      <Image
+        src={quocHuyImg}
+        alt="Quốc huy Việt Nam"
+        className="h-9 w-auto shrink-0 object-contain drop-shadow-sm"
+        priority
+      />
+      <div className="min-w-0">
+        <p className="truncate text-[13px] font-semibold leading-tight">
+          Ban Tổ chức Tỉnh ủy
+        </p>
+        <p className="mt-0.5 truncate text-[11px] text-ink-3">
+          Nhiệm vụ & đánh giá
+        </p>
       </div>
     </div>
   );
@@ -151,7 +160,7 @@ export default function Shell({ children }: { children: ReactNode }) {
       </aside>
       <div className="min-w-0 lg:pl-60 print:pl-0">
         <header className="sticky top-0 z-20 flex min-h-16 items-center justify-between gap-3 bg-surface px-4 shadow-card sm:px-6 print:hidden">
-          <div className="flex min-w-0 items-center gap-3">
+          <div className="flex min-w-0 items-center gap-2.5">
             <button
               aria-label="Mở điều hướng"
               aria-expanded={menu}
@@ -160,6 +169,11 @@ export default function Shell({ children }: { children: ReactNode }) {
             >
               <List size={22} />
             </button>
+            <Image
+              src={quocHuyImg}
+              alt="Quốc huy Việt Nam"
+              className="h-7 w-auto shrink-0 object-contain lg:hidden"
+            />
             <span className="truncate text-sm font-semibold">{title}</span>
           </div>
           <details className="relative">
@@ -201,6 +215,9 @@ export default function Shell({ children }: { children: ReactNode }) {
         </main>
       </div>
       <Modal open={menu} title="Điều hướng" onClose={() => setMenu(false)}>
+        <div className="border-b border-fill-2 pb-2">
+          <Brand />
+        </div>
         <Navigation onNavigate={() => setMenu(false)} />
       </Modal>
       <div

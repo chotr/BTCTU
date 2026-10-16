@@ -2,19 +2,20 @@
 
 Ứng dụng Next.js cho các màn hình quản lý nhiệm vụ, KPI và đánh giá.
 
-## Trạng thái nguồn dữ liệu
+## Nguồn dữ liệu
 
-Giao diện hiện chạy với dữ liệu mẫu:
+- `NEXT_PUBLIC_DATA_SOURCE=local`: dùng dữ liệu mẫu và lưu thay đổi trong
+  `localStorage`.
+- `NEXT_PUBLIC_DATA_SOURCE=api`: tải tổ chức, danh mục, nhiệm vụ, đánh giá, kỳ và
+  nhật ký từ API.
 
-- dữ liệu ban đầu nằm trong `src/lib/mock/`;
-- thay đổi trong phiên được lưu ở `localStorage`;
-- các màn hình gọi qua `src/lib/api.ts`, nhưng tệp này hiện vẫn là lớp xử lý cục bộ;
-- `src/lib/http-client.ts` mới chỉ cung cấp tiện ích gọi HTTP, chưa được nối vào
-  các thao tác nghiệp vụ.
+Ở chế độ API, các thao tác tạo nhiệm vụ, lưu/nộp kết quả, nghiệm thu, trả lại,
+tự đánh giá, thẩm định, quyết định và khóa kỳ gọi endpoint tương ứng. Những thao
+tác chưa có endpoint sẽ báo chưa hỗ trợ và không sửa dữ liệu trên trình duyệt.
 
-`NEXT_PUBLIC_DATA_SOURCE=api` **chưa kích hoạt một trình kết nối API**. Khi chọn
-giá trị này, `StoreProvider` hiển thị lỗi cấu hình để tránh tạo cảm giác rằng dữ
-liệu đã được lưu trên máy chủ.
+API nghiệp vụ hiện vẫn tạo lại dữ liệu theo từng request. Vì vậy response của
+thao tác được cập nhật ngay lên màn hình, nhưng tải lại trang sẽ trở về dữ liệu
+khởi tạo của API.
 
 ## Chạy ứng dụng
 
@@ -39,23 +40,19 @@ pnpm --filter @btctu/web test:e2e
 
 ## Biến môi trường
 
-| Biến | Giá trị mặc định | Ghi chú |
-| --- | --- | --- |
-| `NEXT_PUBLIC_DATA_SOURCE` | `local` | Giữ nguyên `local` cho đến khi hoàn thành kết nối API |
-| `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8787` | Địa chỉ API sẽ được dùng bởi trình kết nối |
-| `NEXT_PUBLIC_APP_ENV` | `development` | `development`, `staging` hoặc `production` |
+| Biến                       | Giá trị mặc định        | Ghi chú                                    |
+| -------------------------- | ----------------------- | ------------------------------------------ |
+| `NEXT_PUBLIC_DATA_SOURCE`  | `local`                 | Chọn `api` để dùng API                     |
+| `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8787` | Địa chỉ API                                |
+| `NEXT_PUBLIC_APP_ENV`      | `development`           | `development`, `staging` hoặc `production` |
 
 Không đặt mật khẩu hoặc khóa bí mật trong biến `NEXT_PUBLIC_*`, vì các giá trị
 này được đưa xuống trình duyệt.
 
-## Điều kiện để bỏ dữ liệu mẫu
+## Phần còn thiếu trước khi vận hành
 
-- mỗi thao tác trên màn hình có tuyến API tương ứng;
-- dữ liệu trả về từ API được kiểm tra trước khi đưa vào trạng thái giao diện;
+- bổ sung endpoint cho mọi thao tác trên màn hình;
 - đăng nhập dùng phiên do API cấp, không dùng bộ chọn tài khoản mẫu;
 - tải lại trang không làm mất thay đổi đã lưu;
 - các lỗi API hiển thị được mã yêu cầu để đối chiếu nhật ký;
 - kiểm thử trình duyệt chạy với API và cơ sở dữ liệu thật.
-
-Chỉ đổi biến môi trường là chưa đủ; cần hoàn thành các mục trên trước khi dùng cấu
-hình `api`.

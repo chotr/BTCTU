@@ -52,7 +52,9 @@ export function SettingsPanel() {
             <Badge tone={state.storageError ? "warn" : "ok"}>
               {state.storageError
                 ? "Lưu trữ cần kiểm tra"
-                : "Lưu cục bộ · schema v2"}
+                : runtimeConfig.dataSource === "api"
+                  ? "Dữ liệu từ API"
+                  : "Lưu cục bộ · schema v3"}
             </Badge>
             <Badge>{state.tasks.length} nhiệm vụ</Badge>
             <Badge tone={runtimeConfig.dataSource === "api" ? "ok" : "warn"}>
@@ -60,11 +62,14 @@ export function SettingsPanel() {
             </Badge>
           </div>
           <p className="my-4 text-xs leading-relaxed text-ink-3">
-            Đổi tài khoản vẫn giữ dữ liệu. Khôi phục không gian làm việc sẽ xóa
-            các thay đổi cục bộ trên trình duyệt này và giữ phiên đăng nhập.
+            {runtimeConfig.dataSource === "api"
+              ? "Tải lại để lấy bản dữ liệu mới nhất từ API."
+              : "Đổi tài khoản vẫn giữ dữ liệu. Khôi phục sẽ thay dữ liệu cục bộ bằng bộ mẫu."}
           </p>
           <Button onClick={() => setOpen(true)}>
-            Khôi phục không gian làm việc
+            {runtimeConfig.dataSource === "api"
+              ? "Tải lại từ API"
+              : "Khôi phục không gian làm việc"}
           </Button>
         </Card>
         <Card className="p-5">
@@ -132,12 +137,17 @@ export function SettingsPanel() {
       </Callout>
       <Modal
         open={open}
-        title="Khôi phục không gian làm việc?"
+        title={
+          runtimeConfig.dataSource === "api"
+            ? "Tải lại dữ liệu từ API?"
+            : "Khôi phục không gian làm việc?"
+        }
         onClose={() => setOpen(false)}
       >
         <p className="text-sm leading-relaxed">
-          Thay đổi nhiệm vụ, danh mục, đánh giá và nhật ký bạn vừa tạo sẽ được
-          thay bằng bộ mẫu. Hãy xuất báo cáo cần giữ trước khi xác nhận.
+          {runtimeConfig.dataSource === "api"
+            ? "Dữ liệu trên màn hình sẽ được thay bằng bản mới nhất từ API."
+            : "Dữ liệu hiện tại sẽ được thay bằng bộ mẫu. Hãy xuất báo cáo cần giữ trước khi xác nhận."}
         </p>
         <div className="flex justify-end gap-2">
           <Button onClick={() => setOpen(false)}>Giữ dữ liệu</Button>
@@ -148,7 +158,9 @@ export function SettingsPanel() {
               setOpen(false);
             }}
           >
-            Khôi phục bộ mẫu
+            {runtimeConfig.dataSource === "api"
+              ? "Tải lại"
+              : "Khôi phục bộ mẫu"}
           </Button>
         </div>
       </Modal>

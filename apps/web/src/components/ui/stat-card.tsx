@@ -20,19 +20,13 @@ export function StatCard({
     warn: "text-warn-600",
     danger: "text-danger-600",
   }[tone];
-  const toneBg = {
-    accent: "bg-accent-50",
-    ok: "bg-ok-50",
-    warn: "bg-warn-50",
-    danger: "bg-danger-50",
-  }[tone];
   return (
     <Card className="p-4">
       <div className="flex items-start justify-between">
         <p className="text-[12px] font-medium text-ink-3">{label}</p>
         {icon ? (
           <span
-            className={`flex h-7 w-7 items-center justify-center rounded-card ${toneBg} ${toneText}`}
+            className={`flex h-7 w-7 items-center justify-center rounded-card ${toneText}`}
           >
             {icon}
           </span>

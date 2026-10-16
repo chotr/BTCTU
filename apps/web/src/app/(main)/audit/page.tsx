@@ -23,7 +23,9 @@ export default function AuditPage() {
   const { user } = state;
   const { audit } = scopedData(state);
   const [q, setQ] = useState("");
-  const [outcome, setOutcome] = useState<"ALL" | "OK" | "DENIED">("ALL");
+  const [outcome, setOutcome] = useState<"ALL" | "OK" | "DENIED" | "FAILED">(
+    "ALL",
+  );
 
   const filtered = useMemo(() => {
     return audit.filter((a) => {
@@ -81,12 +83,13 @@ export default function AuditPage() {
             className="w-40"
             value={outcome}
             onChange={(e) =>
-              setOutcome(e.target.value as "ALL" | "OK" | "DENIED")
+              setOutcome(e.target.value as "ALL" | "OK" | "DENIED" | "FAILED")
             }
           >
             <option value="ALL">Mọi kết quả</option>
             <option value="OK">Thành công</option>
             <option value="DENIED">Bị từ chối</option>
+            <option value="FAILED">Thất bại</option>
           </Select>
           <span className="ml-auto text-[11px] text-ink-3">
             {filtered.length} sự kiện
@@ -142,6 +145,8 @@ export default function AuditPage() {
                     <td className="px-3 py-2.5">
                       {a.outcome === "OK" ? (
                         <Badge tone="ok">Thành công</Badge>
+                      ) : a.outcome === "FAILED" ? (
+                        <Badge tone="danger">Thất bại</Badge>
                       ) : (
                         <Badge tone="danger">Từ chối</Badge>
                       )}
