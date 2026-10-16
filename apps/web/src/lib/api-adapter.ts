@@ -4,6 +4,7 @@ import {
   ROLES,
   TASK_STATUSES,
   type Classification,
+  type CreateTaskInput,
   type EvaluationStatus,
   type Role,
 } from "@btctu/shared";
@@ -567,13 +568,7 @@ export const apiModeActions = {
     setState((state) => ({ ...state, user: null, hydrated: true }));
   },
 
-  async createTask(input: {
-    catalogItemId: string;
-    assigneeId: string;
-    title: string;
-    description: string;
-    dueAt: string;
-  }): Promise<boolean> {
+  async createTask(input: CreateTaskInput): Promise<boolean> {
     return updateTask(
       "/api/v1/tasks",
       { method: "POST", body: JSON.stringify(input) },

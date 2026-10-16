@@ -3,9 +3,8 @@
 API Express.js cung cấp các tuyến cho nhiệm vụ, đánh giá, kỳ, nhật ký và báo cáo.
 
 Phần đăng nhập đã lưu người dùng và phiên trong PostgreSQL. Các tuyến nghiệp vụ
-khác hiện vẫn tạo dữ liệu tạm theo từng yêu cầu, vì vậy thay đổi ở những tuyến này
-không được giữ lại sau yêu cầu kế tiếp. Xem đây là môi trường phát triển, không
-phải dịch vụ đã sẵn sàng vận hành.
+khác hiện chia sẻ dữ liệu bộ nhớ (WorkspaceState) trong cùng phiên bản ứng dụng,
+nhưng chưa được lưu bền vững vào cơ sở dữ liệu khi khởi động lại server.
 
 ## Chạy local
 
@@ -95,9 +94,9 @@ Mô tả chi tiết về cookie, mã lỗi và luồng đổi token:
 
 Ánh xạ module sang mã nguồn: [docs/04-system-design/module-boundaries.md](../../docs/04-system-design/module-boundaries.md).
 
-## Adapter dữ liệu tạm thời
+## Trạng thái dữ liệu tạm thời
 
-`src/mock-state.ts` tạo dữ liệu theo từng request để contract test độc lập trong lúc chờ kho dữ liệu thật. Nó không cung cấp persistence.
+`src/mock-state.ts` khởi tạo trạng thái làm việc mẫu (`createWorkspaceState`) khi ứng dụng khởi động. Trạng thái này tồn tại trong RAM của tiến trình, phục vụ thử nghiệm giao diện và kiểm thử hợp đồng, nhưng không đảm bảo tính bền vững (persistence) khi khởi động lại hoặc khi mở rộng nhiều instance.
 
 Trước khi production:
 

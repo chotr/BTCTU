@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  apiModeActions,
   mapApiCatalogItem,
   mapApiEvaluation,
   mapApiPeriod,
@@ -157,4 +158,54 @@ describe("API adapter", () => {
     expect(evaluation.review?.reviewerId).toBe("");
     expect(evaluation.conditions[0].passed).toBe(true);
   });
+  it("serializes full CreateTaskInput payload including periodId and plannedQuantity", async () => {
+    let capturedBody = "";
+    const originalFetch = global.fetch;
+    global.fetch = async (_url, init) => {
+      capturedBody = init?.body as string;
+      return {
+        ok: true,
+        status: 200,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: async () => ({
+          data: {
+            id: "NV-NEW",
+            title: "Task with period",
+            description: "Desc",
+            catalogItemId: "cat-01",
+            departmentId: "d2",
+            assigneeId: "u-staff",
+            assignerId: "u-head",
+            periodId: "p-q3-2026",
+            plannedQuantity: 5,
+            dueAt: "2026-10-31",
+            status: "ASSIGNED",
+            progress: 0,
+            result: null,
+          },
+        }),
+      } as unknown as Response;
+    };
+
+    try {
+      const success = await apiModeActions.createTask({
+        catalogItemId: "cat-01",
+        assigneeId: "u-staff",
+        periodId: "p-q3-2026",
+        plannedQuantity: 5,
+        title: "Task with period",
+        description: "Desc",
+        dueAt: "2026-10-31",
+      });
+
+      expect(success).toBe(true);
+      const parsed = JSON.parse(capturedBody);
+      expect(parsed.periodId).toBe("p-q3-2026");
+      expect(parsed.plannedQuantity).toBe(5);
+      expect(parsed.catalogItemId).toBe("cat-01");
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
 });

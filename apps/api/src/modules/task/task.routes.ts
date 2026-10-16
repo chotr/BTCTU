@@ -21,9 +21,13 @@ function taskNotFound(req: Request, res: Response): void {
   problem(req, res, 404, "Not found", "Task does not exist.", "task_not_found");
 }
 
+function findPeriod(req: Request, periodId?: string) {
+  if (!periodId) return undefined;
+  return req.state!.periods.find((p) => p.id === periodId);
+}
+
 function isPeriodLocked(req: Request, periodId?: string): boolean {
-  if (!periodId) return false;
-  const period = req.state!.periods.find((p) => p.id === periodId);
+  const period = findPeriod(req, periodId);
   return Boolean(period?.lockedAt);
 }
 
@@ -82,16 +86,30 @@ export function createTaskRouter(): Router {
       return;
     }
 
-    if (input.periodId && isPeriodLocked(req, input.periodId)) {
-      problem(
-        req,
-        res,
-        409,
-        "Conflict",
-        "Cannot create task in a locked period.",
-        "period_locked",
-      );
-      return;
+    if (input.periodId) {
+      const period = findPeriod(req, input.periodId);
+      if (!period) {
+        problem(
+          req,
+          res,
+          422,
+          "Validation failed",
+          "periodId does not exist.",
+          "invalid_reference",
+        );
+        return;
+      }
+      if (period.lockedAt) {
+        problem(
+          req,
+          res,
+          409,
+          "Conflict",
+          "Cannot create task in a locked period.",
+          "period_locked",
+        );
+        return;
+      }
     }
 
     const task: Task = {

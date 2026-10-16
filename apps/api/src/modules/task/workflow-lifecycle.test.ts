@@ -143,4 +143,46 @@ describe("Workflow Lifecycle & Period Locking", () => {
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].id).toBe("a-1");
   });
+  it("rejects creating task with non-existent periodId", async () => {
+    const state = createWorkspaceState();
+    const app = createApp(testEnv, { state });
+
+    const res = await request(app)
+      .post("/api/v1/tasks")
+      .set("x-dev-user-id", "u-leader")
+      .send({
+        catalogItemId: state.catalog[0].id,
+        assigneeId: "u-staff",
+        periodId: "p-non-existent",
+        title: "Nhiệm vụ kiểm thử kỳ",
+        dueAt: "2026-12-31",
+        plannedQuantity: 3,
+      });
+
+    expect(res.status).toBe(422);
+    expect(res.body.type).toContain("invalid_reference");
+  });
+
+  it("successfully creates task with valid periodId and plannedQuantity", async () => {
+    const state = createWorkspaceState();
+    const app = createApp(testEnv, { state });
+
+    const res = await request(app)
+      .post("/api/v1/tasks")
+      .set("x-dev-user-id", "u-leader")
+      .send({
+        catalogItemId: state.catalog[0].id,
+        assigneeId: "u-staff",
+        periodId: state.periods[0].id,
+        title: "Nhiệm vụ kiểm thử hợp lệ",
+        dueAt: "2026-12-31",
+        plannedQuantity: 4,
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.periodId).toBe(state.periods[0].id);
+    expect(res.body.data.plannedQuantity).toBe(4);
+    expect(res.body.data.title).toBe("Nhiệm vụ kiểm thử hợp lệ");
+  });
+
 });
