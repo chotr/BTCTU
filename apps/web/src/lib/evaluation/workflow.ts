@@ -1,6 +1,6 @@
 import { getState, pushToast, upsertEvaluation } from "@/lib/store";
 import { canDecide, canReviewEvaluation } from "@/lib/policy";
-import { classificationEligibility } from "@/lib/evaluation-engine";
+import { classificationEligibility } from "@/lib/domain/classification";
 import { now } from "@/lib/shared/ids";
 import { deny } from "@/lib/shared/feedback";
 import { EVAL_IN_REVIEW } from "@/lib/domain/workflow";

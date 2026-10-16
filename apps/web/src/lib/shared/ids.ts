@@ -1,4 +1,4 @@
-/** Tiện ích id/đồng hồ dùng chung cho tầng ứng dụng mock. */
+/** Tiện ích id và đồng hồ dùng chung cho tầng ứng dụng. */
 
 /** Id phía client ngắn, có tiền tố, hạn chế trùng lặp (`NV-1a2b3c4d`). */
 export function uid(prefix: string, upper = false): string {

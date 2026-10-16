@@ -4,30 +4,28 @@ import { useState } from "react";
 import { SectionHeader } from "@/components/ui";
 import { SettingsPanel } from "@/components/console/settings-panel";
 import { IntegrationPanel } from "@/components/console/integration-panel";
+import { isApiMode } from "@/lib/runtime-config";
 
 const TABS = [
   ["settings", "Thiết lập"],
   ["integration", "Kết nối dữ liệu"],
 ] as const;
 
-/**
- * Bảng điều khiển kỹ thuật ẩn (chỉ truy cập bằng URL, không liên kết trong
- * điều hướng chính): thông tin phiên/runtime, sandbox tích hợp mock và phạm vi quyền.
- */
 export default function ConsolePage() {
   const [tab, setTab] = useState<(typeof TABS)[number][0]>("settings");
+  const tabs = isApiMode ? TABS.slice(0, 1) : TABS;
   return (
     <div className="space-y-4">
       <SectionHeader
         title="Bảng điều khiển kỹ thuật"
-        hint="Trang ẩn — chỉ truy cập bằng URL; phục vụ kiểm thử và trình diễn, không hiển thị trên menu."
+        hint="Theo dõi môi trường hoạt động và cấu hình hệ thống."
       />
       <div
         role="tablist"
         aria-label="Nội dung bảng điều khiển"
         className="flex flex-wrap gap-1"
       >
-        {TABS.map(([id, label]) => (
+        {tabs.map(([id, label]) => (
           <button
             key={id}
             role="tab"
@@ -40,7 +38,7 @@ export default function ConsolePage() {
         ))}
       </div>
       {tab === "settings" && <SettingsPanel />}
-      {tab === "integration" && <IntegrationPanel />}
+      {!isApiMode && tab === "integration" && <IntegrationPanel />}
     </div>
   );
 }

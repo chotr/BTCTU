@@ -19,7 +19,6 @@ describe("API adapter", () => {
           coefficient: 1.2,
           durationDays: 10,
           sourceRef: "05-HD/TU",
-          sourceClass: "FACT",
         },
         "v1.1",
       ),
@@ -56,7 +55,6 @@ describe("API adapter", () => {
         coefficient: 1,
         durationDays: 10,
         sourceRef: "05-HD/TU",
-        sourceClass: "FACT",
       },
       "v1.1",
     );

@@ -54,7 +54,7 @@ export default function ReportsPage() {
         )
         .join(
           "\n",
-        )}\n\n3. Nội dung cần rà soát\nĐối chiếu thẩm quyền, điều kiện QĐ39 và các quy tắc đang chờ phê duyệt. Kiểm tra nguồn và căn cứ từng hồ sơ trước khi sử dụng.\n\nNgười rà soát: ................................`,
+        )}\n\n3. Nội dung cần rà soát\nĐối chiếu thẩm quyền, điều kiện QĐ39 và căn cứ từng hồ sơ trước khi sử dụng.\n\nNgười rà soát: ................................`,
     );
     appendAudit({
       actorId: state.user!.id,
@@ -69,7 +69,7 @@ export default function ReportsPage() {
       actorId: state.user!.id,
       action: "In / lưu PDF",
       resource: periodId,
-      detail: `Phạm vi ${dept}; loại ${type}; dữ liệu synthetic`,
+      detail: `Phạm vi ${dept}; loại ${type}`,
       outcome: "OK",
     });
     window.print();

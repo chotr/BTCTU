@@ -4,7 +4,7 @@ import { useState } from "react";
 import { CheckCircle } from "@phosphor-icons/react";
 import { useBusy } from "@/components/use-busy";
 import { api, evaluationTotal } from "@/lib/api";
-import { classificationEligibility } from "@/lib/evaluation-engine";
+import { classificationEligibility } from "@/lib/domain/classification";
 import { EVAL_IN_REVIEW, inGroup } from "@/lib/domain/workflow";
 import {
   Button,

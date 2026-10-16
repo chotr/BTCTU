@@ -13,7 +13,7 @@ import { createAuditRouter } from "@/modules/audit/audit.routes";
 import { createCatalogRouter } from "@/modules/catalog/catalog.routes";
 import { createEvaluationRouter } from "@/modules/evaluation/evaluation.routes";
 import {
-  MockActorResolver,
+  DirectoryActorResolver,
   UnprovisionedActorResolver,
   type ActorResolver,
 } from "@/modules/identity/actor-resolver";
@@ -22,20 +22,23 @@ import { createIdentityRouter } from "@/modules/identity/identity.routes";
 import { createOrganizationRouter } from "@/modules/organization/organization.routes";
 import { createReportingRouter } from "@/modules/reporting/reporting.routes";
 import { createTaskRouter } from "@/modules/task/task.routes";
-import { createMockState } from "@/mock-state";
+import { createWorkspaceState } from "@/mock-state";
 import { configureProblemTypeBase } from "@/shared/problem";
+import type { WorkspaceState } from "@/types";
 
 export type AppDependencies = AuthModuleOverrides & {
   actorResolver?: ActorResolver;
+  state?: WorkspaceState;
 };
 
 export function createApp(env: Env, dependencies: AppDependencies = {}) {
   const { auth, throttle } = createAuthModule(env, dependencies);
+  const state = dependencies.state ?? createWorkspaceState();
   const actorResolver =
     dependencies.actorResolver ??
     (env.environment === "production"
       ? new UnprovisionedActorResolver()
-      : new MockActorResolver(createMockState().people));
+      : new DirectoryActorResolver(state.people));
 
   const app = express();
   app.disable("x-powered-by");
@@ -74,7 +77,7 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
     }),
   );
 
-  api.use(createActorMiddleware({ env, auth, actorResolver }));
+  api.use(createActorMiddleware({ env, auth, actorResolver, state }));
   api.use(createIdentityRouter(env));
   api.use(createOrganizationRouter());
   api.use(createCatalogRouter());

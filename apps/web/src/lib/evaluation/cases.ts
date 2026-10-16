@@ -63,7 +63,7 @@ export const caseActions = {
       generalMax: 30,
       axes: [],
       calc: {
-        ruleVersion: "Chưa tính · CANDIDATE",
+        ruleVersion: "Chưa tính",
         formulaText: isLeader
           ? "Điểm chung + (A+B+C+D)/4 × 70%"
           : "Điểm chung + (A+B+C)/3 × 70%",
@@ -72,7 +72,7 @@ export const caseActions = {
         textTotal: 0,
         arithmeticTotal: null,
         note: null,
-        status: "CANDIDATE",
+        status: "CALCULATED",
       },
       self: null,
       review: null,

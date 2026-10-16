@@ -12,7 +12,7 @@ export const evidenceActions = {
       sizeBytes: number;
       kind: string;
       classification: "Nội bộ";
-      synthetic: boolean;
+      scopeConfirmed: boolean;
     },
     expectedRevision?: number,
   ): Promise<boolean> {
@@ -25,7 +25,7 @@ export const evidenceActions = {
         taskId,
         "Chỉ người được giao được bổ sung minh chứng trước khi nộp kết quả.",
       );
-    if (!input.synthetic || input.classification !== "Nội bộ")
+    if (!input.scopeConfirmed || input.classification !== "Nội bộ")
       return deny(
         action,
         taskId,
@@ -60,7 +60,7 @@ export const evidenceActions = {
       classification: "Nội bộ" as const,
       uploadedAt: now(),
       uploadedBy: getState().user!.id,
-      synthetic: true,
+      scopeConfirmed: true,
       storageMode: "METADATA_ONLY" as const,
     };
     return update(

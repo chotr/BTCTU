@@ -18,6 +18,8 @@ export const runtimeConfig = Object.freeze({
   environment: appEnvironment(process.env.NEXT_PUBLIC_APP_ENV),
 });
 
+export const isApiMode = runtimeConfig.dataSource === "api";
+
 export function runtimeLabel(): string {
   const environment = {
     development: "Phát triển",

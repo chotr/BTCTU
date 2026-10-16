@@ -44,13 +44,7 @@ export function createEvaluationRouter(): Router {
       evaluationNotFound(req, res);
       return;
     }
-    res.json({
-      data: evaluation,
-      meta: {
-        formulaNote:
-          "05-HD/TU has a worked-example arithmetic inconsistency; the configured rule remains subject to approval.",
-      },
-    });
+    res.json({ data: evaluation });
   });
 
   router.post(

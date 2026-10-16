@@ -34,7 +34,7 @@ export const peopleActions = {
               departmentId: old.departmentId,
               positionRefId: old.positionRefId,
               at: "2026-07-01T00:00:00.000Z",
-              reason: "Dữ liệu ban đầu (synthetic)",
+              reason: "Dữ liệu ban đầu",
             },
           ]
         : []);

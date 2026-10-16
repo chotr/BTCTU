@@ -9,7 +9,7 @@ export function createOrganizationRouter(): Router {
         departments: req.state!.departments,
         people: req.state!.people,
       },
-      meta: { sourceClass: "FACT", sourceRef: "QĐ01, Điều 2–7" },
+      meta: { sourceRef: "QĐ01, Điều 2–7" },
     }),
   );
 

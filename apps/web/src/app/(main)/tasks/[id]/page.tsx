@@ -8,6 +8,7 @@ import { useApp } from "@/lib/store";
 import { canReviewTask, canViewDepartment, canViewTask } from "@/lib/policy";
 import { personName } from "@/lib/shared/names";
 import { api, taskPeriodLocked } from "@/lib/api";
+import { isApiMode } from "@/lib/runtime-config";
 import { useBusy } from "@/components/use-busy";
 import type { Task } from "@/lib/types";
 import { TASK_EDITABLE, inGroup } from "@/lib/domain/workflow";
@@ -136,19 +137,20 @@ function TaskWorkspace({ task }: { task: Task }) {
               ))}
             </dl>
             <p className="mt-4 text-xs text-ink-3">
-              Nguồn: {catalog?.sourceRef}. Danh mục operational draft; không mặc
-              định là quy định pháp lý.
+              Nguồn: {catalog?.sourceRef ?? "—"}
             </p>
-            {editable && canReviewTask(user, task.departmentId) && (
-              <div className="mt-4 flex gap-2">
-                <Button onClick={() => setAction("reassign")}>
-                  Phân công lại
-                </Button>
-                <Button variant="ghost" onClick={() => setAction("cancel")}>
-                  Hủy nhiệm vụ
-                </Button>
-              </div>
-            )}
+            {!isApiMode &&
+              editable &&
+              canReviewTask(user, task.departmentId) && (
+                <div className="mt-4 flex gap-2">
+                  <Button onClick={() => setAction("reassign")}>
+                    Phân công lại
+                  </Button>
+                  <Button variant="ghost" onClick={() => setAction("cancel")}>
+                    Hủy nhiệm vụ
+                  </Button>
+                </div>
+              )}
           </Card>
           <ResultSection
             task={task}
@@ -159,10 +161,14 @@ function TaskWorkspace({ task }: { task: Task }) {
             reviewer={reviewer}
             onAction={setAction}
           />
-          <EvidenceSection task={task} owner={owner} editable={editable} />
+          {!isApiMode && (
+            <EvidenceSection task={task} owner={owner} editable={editable} />
+          )}
         </div>
         <div className="space-y-4">
-          <ProgressCard task={task} owner={owner} editable={editable} />
+          {!isApiMode && (
+            <ProgressCard task={task} owner={owner} editable={editable} />
+          )}
           <TaskHistory task={task} state={state} />
         </div>
       </div>

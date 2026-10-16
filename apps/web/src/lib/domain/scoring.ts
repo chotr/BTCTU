@@ -1,17 +1,12 @@
 import type { AxisSnapshot, CalculationRun, Task } from "@/lib/types";
 import { qualityScore } from "@/lib/domain/quality";
 
-/** Mã định danh phiên bản quy tắc đề xuất, hiển thị trong snapshot/giao diện. */
-export const CANDIDATE_RULE = "BTCTU-CANDIDATE-2026.1";
+export const SCORING_RULE_VERSION = "BTCTU-2026.1";
 
 export const roundScore = (value: number) =>
   Math.round((value + Number.EPSILON) * 100) / 100;
 
-/**
- * Chỉ là cách diễn giải đề xuất: nguồn không quy định các trọng số theo từng
- * nhiệm vụ này. Hàm thuần túy — không trạng thái, không tác dụng phụ.
- */
-export function calculateCandidate(
+export function calculateScore(
   tasks: Task[],
   generalScore: number,
   leadershipScore?: number,
@@ -44,7 +39,7 @@ export function calculateCandidate(
         task.result?.submittedAt ||
         "",
       dueAt: task.dueAt,
-      catalogVersion: extended.catalogSnapshot?.version ?? "fixture/synthetic",
+      catalogVersion: extended.catalogSnapshot?.version ?? "catalog/default",
     };
   });
   const accepted = snapshots.filter(
@@ -110,7 +105,7 @@ export function calculateCandidate(
   const calculatedTotal = roundScore(generalScore + average * 0.7);
   return {
     ruleVersion:
-      CANDIDATE_RULE + (leadershipScore === undefined ? "-ABC" : "-ABCD"),
+      SCORING_RULE_VERSION + (leadershipScore === undefined ? "-ABC" : "-ABCD"),
     generalScore,
     axes,
     calculatedTotal,

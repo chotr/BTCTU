@@ -1,6 +1,6 @@
-import { ROLES, type MockState } from "./types";
+import { ROLES, type WorkspaceState } from "./types";
 
-const baseState: MockState = {
+const baseState: WorkspaceState = {
   departments: [
     {
       id: "d1",
@@ -58,7 +58,6 @@ const baseState: MockState = {
       coefficient: 1,
       durationDays: 15,
       sourceRef: "05-HD/TU, Phụ lục công việc",
-      sourceClass: "FACT",
     },
     {
       id: "cat-02",
@@ -69,7 +68,6 @@ const baseState: MockState = {
       coefficient: 1,
       durationDays: 10,
       sourceRef: "05-HD/TU, mục đánh giá quý",
-      sourceClass: "FACT",
     },
     {
       id: "cat-03",
@@ -80,7 +78,6 @@ const baseState: MockState = {
       coefficient: 0.8,
       durationDays: 7,
       sourceRef: "Excel operational draft",
-      sourceClass: "TBD",
     },
   ],
   tasks: [
@@ -149,6 +146,6 @@ const baseState: MockState = {
   periods: [{ id: "p-q3-2026", label: "Quý III/2026", lockedAt: null }],
 };
 
-export function createMockState(): MockState {
+export function createWorkspaceState(): WorkspaceState {
   return structuredClone(baseState);
 }

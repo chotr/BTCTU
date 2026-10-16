@@ -16,10 +16,10 @@ import {
   canSelfEvaluate,
   evaluationLabel,
 } from "@/lib/api";
-import { evaluationTasks } from "@/lib/evaluation-engine";
+import { evaluationTasks } from "@/lib/domain/periods";
+import { isApiMode } from "@/lib/runtime-config";
 import type { Evaluation } from "@/lib/types";
 import {
-  Badge,
   Callout,
   Card,
   EmptyState,
@@ -63,6 +63,7 @@ function Workspace({ ev }: { ev: Evaluation }) {
   const locked = period?.status !== "ACTIVE" || inGroup(EVAL_FINAL, ev.status);
   const self = canSelfEvaluate(user, ev);
   const canCalc =
+    !isApiMode &&
     !locked &&
     inGroup(EVAL_EDITABLE, ev.status) &&
     canCalculateEvaluation(user, ev) &&
@@ -84,12 +85,7 @@ function Workspace({ ev }: { ev: Evaluation }) {
       <SectionHeader
         title={evaluationLabel(ev, state)}
         hint={`${ev.subjectType === "DEPARTMENT" ? "Tập thể phòng" : "Cá nhân"} · ${period?.name} · ${ev.id}`}
-        actions={
-          <>
-            <Badge tone="warn">CHỜ PHÊ DUYỆT</Badge>
-            <EvalStatusBadge status={ev.status} />
-          </>
-        }
+        actions={<EvalStatusBadge status={ev.status} />}
       />
       <StatusPipeline status={ev.status} />
       <Callout

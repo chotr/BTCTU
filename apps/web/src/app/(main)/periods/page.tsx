@@ -5,6 +5,7 @@ import { useApp } from "@/lib/store";
 import { canManage } from "@/lib/policy";
 import { scopedData } from "@/lib/access";
 import { api } from "@/lib/api";
+import { isApiMode } from "@/lib/runtime-config";
 import { EVAL_FINAL, inGroup } from "@/lib/domain/workflow";
 import { useBusy } from "@/components/use-busy";
 import {
@@ -56,7 +57,8 @@ export default function PeriodsPage() {
         title="Quản lý kỳ"
         hint="Theo dõi tiến trình, khóa dữ liệu và mở lại có kiểm soát."
         actions={
-          allowed && (
+          allowed &&
+          !isApiMode && (
             <Button variant="primary" onClick={() => setMode("create")}>
               Tạo kỳ
             </Button>
@@ -66,9 +68,7 @@ export default function PeriodsPage() {
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         {state.periods.map((p) => {
           const evs = scoped.evaluations.filter((e) => e.periodId === p.id);
-          const done = evs.filter((e) =>
-            inGroup(EVAL_FINAL, e.status),
-          ).length;
+          const done = evs.filter((e) => inGroup(EVAL_FINAL, e.status)).length;
           return (
             <Card key={p.id} className="p-5">
               <div className="flex justify-between gap-2">
@@ -93,7 +93,7 @@ export default function PeriodsPage() {
                 >
                   Xem hồ sơ
                 </Link>
-                {allowed && (
+                {allowed && (!isApiMode || p.status !== "LOCKED") && (
                   <Button
                     variant={p.status === "LOCKED" ? "secondary" : "primary"}
                     onClick={() => {

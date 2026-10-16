@@ -1,6 +1,6 @@
 import { appendAudit, getState, pushToast, setState } from "@/lib/store";
 import { canLock, canManage } from "@/lib/policy";
-import { taskInPeriod } from "@/lib/evaluation-engine";
+import { taskInPeriod } from "@/lib/domain/periods";
 import { uid, now } from "@/lib/shared/ids";
 import { deny } from "@/lib/shared/feedback";
 import type { EvaluationPeriod } from "@/lib/types";

@@ -9,7 +9,7 @@ export type ActorResolver = {
   resolve(userId: string): Promise<Actor | null>;
 };
 
-export class MockActorResolver implements ActorResolver {
+export class DirectoryActorResolver implements ActorResolver {
   constructor(private readonly people: DirectoryPerson[]) {}
 
   async resolve(userId: string): Promise<Actor | null> {

@@ -6,6 +6,7 @@ import { Plus } from "@phosphor-icons/react";
 import { useApp } from "@/lib/store";
 import { scopedData } from "@/lib/access";
 import { evaluationLabel } from "@/lib/api";
+import { isApiMode } from "@/lib/runtime-config";
 import { EVAL_STATUS_LABELS } from "@/lib/types";
 import {
   Badge,
@@ -44,13 +45,15 @@ export default function EvaluationPage() {
         title="Hồ sơ đánh giá"
         hint="Điểm tính là đầu vào; xếp loại còn phụ thuộc điều kiện và quyết định có thẩm quyền."
         actions={
-          <Button
-            variant="primary"
-            icon={<Plus size={16} />}
-            onClick={() => setOpen(true)}
-          >
-            Tạo hồ sơ
-          </Button>
+          !isApiMode && (
+            <Button
+              variant="primary"
+              icon={<Plus size={16} />}
+              onClick={() => setOpen(true)}
+            >
+              Tạo hồ sơ
+            </Button>
+          )
         }
       />
       <Card className="flex flex-wrap items-center gap-2 p-3">
@@ -97,15 +100,17 @@ export default function EvaluationPage() {
         <Badge>{rows.length} hồ sơ</Badge>
       </Card>
       <EvaluationTable rows={rows} state={state} />
-      <CreateEvaluationModal
-        open={open}
-        onClose={() => setOpen(false)}
-        onCreated={(id) => router.push(`/evaluation/${id}`)}
-        periods={state.periods}
-        people={scoped.people}
-        departments={scoped.departments}
-        userRole={state.user?.role}
-      />
+      {!isApiMode && (
+        <CreateEvaluationModal
+          open={open}
+          onClose={() => setOpen(false)}
+          onCreated={(id) => router.push(`/evaluation/${id}`)}
+          periods={state.periods}
+          people={scoped.people}
+          departments={scoped.departments}
+          userRole={state.user?.role}
+        />
+      )}
     </div>
   );
 }

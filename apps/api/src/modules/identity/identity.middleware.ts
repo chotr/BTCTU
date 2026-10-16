@@ -2,26 +2,25 @@ import type { NextFunction, Request, RequestHandler, Response } from "express";
 import type { Env } from "@/env";
 import { accessTokenFromRequest } from "@/middleware/authentication";
 import type { AuthPort } from "@/modules/auth/auth.types";
-import { createMockState } from "@/mock-state";
 import { ACCESS_COOKIE_NAME } from "@/security/cookie";
 import { problem } from "@/shared/problem";
+import type { WorkspaceState } from "@/types";
 import type { ActorResolver } from "./actor-resolver";
 
 export type ActorMiddlewareOptions = {
   env: Env;
   auth: AuthPort;
   actorResolver: ActorResolver;
+  state: WorkspaceState;
 };
 
-// Dựng kho dữ liệu của request rồi giải danh tính thành actor. Production lấy
-// danh tính từ access token, môi trường khác lấy từ header phát triển.
 export function createActorMiddleware(
   options: ActorMiddlewareOptions,
 ): RequestHandler {
-  const { env, auth, actorResolver } = options;
+  const { env, auth, actorResolver, state } = options;
 
   return async (req: Request, res: Response, next: NextFunction) => {
-    req.state = createMockState();
+    req.state = state;
 
     let userId: string;
 

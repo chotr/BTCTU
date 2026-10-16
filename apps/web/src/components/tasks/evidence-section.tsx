@@ -17,7 +17,7 @@ export function EvidenceSection({
   owner: boolean;
   editable: boolean;
 }) {
-  const [synthetic, setSynthetic] = useState(false);
+  const [scopeConfirmed, setScopeConfirmed] = useState(false);
   return (
     <Card className="p-5">
       <h2 className="mb-2 text-sm font-semibold">Minh chứng</h2>
@@ -59,16 +59,16 @@ export function EvidenceSection({
           <label className="flex items-start gap-2 text-xs">
             <input
               type="checkbox"
-              checked={synthetic}
-              onChange={(e) => setSynthetic(e.target.checked)}
+              checked={scopeConfirmed}
+              onChange={(e) => setScopeConfirmed(e.target.checked)}
             />
             Tôi xác nhận tệp được chọn phù hợp phạm vi xử lý, không chứa thông
             tin Hạn chế hoặc bí mật nhà nước.
           </label>
-          <Field label="Chọn tệp mẫu (tối đa 20 MB)">
+          <Field label="Chọn tệp (tối đa 20 MB)">
             <input
               type="file"
-              disabled={!synthetic}
+              disabled={!scopeConfirmed}
               className="w-full text-xs file:mr-3 file:rounded-ctl file:bg-fill-2 file:px-3 file:py-2"
               onChange={async (e) => {
                 const file = e.target.files?.[0];
@@ -78,7 +78,7 @@ export function EvidenceSection({
                     sizeBytes: file.size,
                     kind: file.type || "FILE",
                     classification: "Nội bộ",
-                    synthetic,
+                    scopeConfirmed,
                   });
                 e.target.value = "";
               }}

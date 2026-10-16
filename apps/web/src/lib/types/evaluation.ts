@@ -33,7 +33,7 @@ export interface CalcSnapshot {
   textTotal: number;
   arithmeticTotal: number | null;
   note: string | null;
-  status?: "CANDIDATE";
+  status?: "CALCULATED";
 }
 
 export interface CalculationRun {

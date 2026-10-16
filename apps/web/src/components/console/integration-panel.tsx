@@ -12,7 +12,7 @@ import {
   SyncRunsTable,
 } from "@/components/integration";
 
-/** Tab bảng điều khiển: sandbox tích hợp mock (hồ sơ, ánh xạ, kiểm tra đồng bộ). */
+/** Cấu hình hồ sơ tích hợp, ánh xạ và kiểm tra đồng bộ. */
 export function IntegrationPanel() {
   const state = useApp();
   const [profile, setProfile] = useState<ProfileKey>("personnel");

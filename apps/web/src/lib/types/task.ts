@@ -25,7 +25,7 @@ export interface EvidenceRef {
   uploadedAt: string;
   sizeBytes?: number;
   uploadedBy?: string;
-  synthetic?: boolean;
+  scopeConfirmed?: boolean;
   storageMode?: "METADATA_ONLY";
 }
 

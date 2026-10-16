@@ -35,10 +35,7 @@ export function createReportingRouter(): Router {
         ),
         averageScore,
       },
-      meta: {
-        sourceClass: "INFERENCE",
-        note: "Aggregation rules require approval before official reporting.",
-      },
+      meta: { sourceRef: "Dữ liệu đánh giá trong kỳ" },
     });
   });
 

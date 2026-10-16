@@ -1,6 +1,7 @@
 import { getState, pushToast, upsertEvaluation } from "@/lib/store";
 import { canDecide, canReviewEvaluation } from "@/lib/policy";
-import { calculateCandidate, evaluationTasks } from "@/lib/evaluation-engine";
+import { calculateScore } from "@/lib/domain/scoring";
+import { evaluationTasks } from "@/lib/domain/periods";
 import { uid, now } from "@/lib/shared/ids";
 import { deny } from "@/lib/shared/feedback";
 import { EVAL_EDITABLE } from "@/lib/domain/workflow";
@@ -57,9 +58,9 @@ export const calculationActions = {
         "Điều chỉnh điểm yêu cầu lãnh đạo, lý do và giá trị từ 0 đến 100.",
       );
     const period = state.periods.find((row) => row.id === ev.periodId)!;
-    let calculated: ReturnType<typeof calculateCandidate>;
+    let calculated: ReturnType<typeof calculateScore>;
     try {
-      calculated = calculateCandidate(
+      calculated = calculateScore(
         evaluationTasks(state.tasks, ev, period),
         input.generalScore,
         ev.isLeader ? (input.leadershipScore ?? 0) : undefined,
@@ -106,7 +107,7 @@ export const calculationActions = {
             averageAxes: average,
             textTotal: run.finalTotal,
             arithmeticTotal: run.finalTotal,
-            status: "CANDIDATE",
+            status: "CALCULATED",
             note: ev.isLeader
               ? "Điểm tổng hợp theo khung 30/70 cán bộ lãnh đạo, quản lý."
               : "Điểm tổng hợp theo tiêu chí công chức, người lao động.",

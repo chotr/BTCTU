@@ -66,7 +66,6 @@ type ApiCatalogItem = {
   coefficient: number;
   durationDays: number;
   sourceRef: string;
-  sourceClass: "FACT" | "INFERENCE" | "TBD";
 };
 
 type ApiTaskResult = {
@@ -202,10 +201,7 @@ function isApiCatalogItem(value: unknown): value is ApiCatalogItem {
     typeof value.standardScore === "number" &&
     typeof value.coefficient === "number" &&
     typeof value.durationDays === "number" &&
-    isString(value.sourceRef) &&
-    (value.sourceClass === "FACT" ||
-      value.sourceClass === "INFERENCE" ||
-      value.sourceClass === "TBD")
+    isString(value.sourceRef)
   );
 }
 

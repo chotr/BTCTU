@@ -42,7 +42,6 @@ export type CatalogItem = {
   coefficient: number;
   durationDays: number;
   sourceRef: string;
-  sourceClass: "FACT" | "INFERENCE" | "TBD";
 };
 
 export type TaskResult = {
@@ -96,7 +95,7 @@ export type AuditEvent = {
 
 export type Period = { id: string; label: string; lockedAt: string | null };
 
-export type MockState = {
+export type WorkspaceState = {
   departments: Department[];
   people: Person[];
   catalog: CatalogItem[];

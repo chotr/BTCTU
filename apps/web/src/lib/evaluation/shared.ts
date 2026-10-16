@@ -1,6 +1,7 @@
 import { appendAudit, getState } from "@/lib/store";
 import { canReviewEvaluation, canViewEvaluation } from "@/lib/policy";
-import { calculateCandidate, evaluationTasks } from "@/lib/evaluation-engine";
+import { calculateScore } from "@/lib/domain/scoring";
+import { evaluationTasks } from "@/lib/domain/periods";
 import { uid, now } from "@/lib/shared/ids";
 import { deny } from "@/lib/shared/feedback";
 import { personName, departmentName } from "@/lib/shared/names";
@@ -101,7 +102,7 @@ export function calculationProblem(ev: Evaluation): string | null {
   const period = s.periods.find((p) => p.id === ev.periodId);
   if (!run || !period || run.missingInputs.length)
     return "Cần một lần tính KPI đủ dữ liệu trước khi chuyển bước.";
-  const current = calculateCandidate(
+  const current = calculateScore(
     evaluationTasks(s.tasks, ev, period),
     run.generalScore,
     ev.isLeader ? run.axes.find((a) => a.code === "D")?.value : undefined,
