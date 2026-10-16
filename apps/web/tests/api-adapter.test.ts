@@ -134,8 +134,13 @@ describe("API adapter", () => {
         classification: "TOT",
         blockerCount: 0,
         selfComment: "Đã hoàn thành nhiệm vụ.",
+        selfEvaluatedAt: "2026-10-14T08:00:00.000Z",
         reviewComment: "Đủ căn cứ đề xuất.",
+        reviewerId: "u-head",
+        reviewedAt: "2026-10-15T08:00:00.000Z",
         decisionNote: null,
+        decidedById: null,
+        decidedAt: null,
       },
       {
         people: [
@@ -143,19 +148,21 @@ describe("API adapter", () => {
             id: "u-staff",
             name: "Lê Quốc Bảo",
             title: "Chuyên viên",
+            role: "cong_chuc",
             departmentId: "d2",
             positionRefId: "pos-staff",
           },
         ],
       },
-      "2026-10-16T00:00:00.000Z",
     );
 
     expect(evaluation.generalScore).toBe(86.75);
     expect(evaluation.calc.arithmeticTotal).toBe(86.75);
     expect(evaluation.self?.comment).toBe("Đã hoàn thành nhiệm vụ.");
     expect(evaluation.review?.comment).toBe("Đủ căn cứ đề xuất.");
-    expect(evaluation.review?.reviewerId).toBe("");
+    expect(evaluation.self?.at).toBe("2026-10-14T08:00:00.000Z");
+    expect(evaluation.review?.reviewerId).toBe("u-head");
+    expect(evaluation.review?.at).toBe("2026-10-15T08:00:00.000Z");
     expect(evaluation.conditions[0].passed).toBe(true);
   });
   it("serializes full CreateTaskInput payload including periodId and plannedQuantity", async () => {

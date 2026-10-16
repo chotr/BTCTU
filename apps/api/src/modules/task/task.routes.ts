@@ -3,6 +3,7 @@ import { z } from "zod";
 import { can, canReadTask } from "@/middleware/authorization";
 import { validate } from "@/middleware/validation";
 import { denyWithAudit, recordAudit } from "@/modules/audit/audit.recorder";
+import { PUBLISHED_CATALOG_VERSION } from "@/modules/catalog/catalog.routes";
 import { query } from "@/shared/request";
 import { problem } from "@/shared/problem";
 import type { Task } from "@/types";
@@ -21,12 +22,11 @@ function taskNotFound(req: Request, res: Response): void {
   problem(req, res, 404, "Not found", "Task does not exist.", "task_not_found");
 }
 
-function findPeriod(req: Request, periodId?: string) {
-  if (!periodId) return undefined;
+function findPeriod(req: Request, periodId: string) {
   return req.state!.periods.find((p) => p.id === periodId);
 }
 
-function isPeriodLocked(req: Request, periodId?: string): boolean {
+function isPeriodLocked(req: Request, periodId: string): boolean {
   const period = findPeriod(req, periodId);
   return Boolean(period?.lockedAt);
 }
@@ -86,30 +86,40 @@ export function createTaskRouter(): Router {
       return;
     }
 
-    if (input.periodId) {
-      const period = findPeriod(req, input.periodId);
-      if (!period) {
-        problem(
-          req,
-          res,
-          422,
-          "Validation failed",
-          "periodId does not exist.",
-          "invalid_reference",
-        );
-        return;
-      }
-      if (period.lockedAt) {
-        problem(
-          req,
-          res,
-          409,
-          "Conflict",
-          "Cannot create task in a locked period.",
-          "period_locked",
-        );
-        return;
-      }
+    if (catalog.version !== PUBLISHED_CATALOG_VERSION) {
+      problem(
+        req,
+        res,
+        409,
+        "Conflict",
+        "Cannot create task from an unpublished catalog version.",
+        "catalog_not_published",
+      );
+      return;
+    }
+
+    const period = findPeriod(req, input.periodId);
+    if (!period) {
+      problem(
+        req,
+        res,
+        422,
+        "Validation failed",
+        "periodId does not exist.",
+        "invalid_reference",
+      );
+      return;
+    }
+    if (period.lockedAt) {
+      problem(
+        req,
+        res,
+        409,
+        "Conflict",
+        "Cannot create task in a locked period.",
+        "period_locked",
+      );
+      return;
     }
 
     const task: Task = {
@@ -121,7 +131,7 @@ export function createTaskRouter(): Router {
       assigneeId: assignee.id,
       assignerId: actor.id,
       periodId: input.periodId,
-      plannedQuantity: input.plannedQuantity ?? 1,
+      plannedQuantity: input.plannedQuantity,
       dueAt: input.dueAt,
       status: "ASSIGNED",
       progress: 0,

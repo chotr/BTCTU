@@ -63,7 +63,7 @@ Mô tả chi tiết về cookie, mã lỗi và luồng đổi token:
 | Method   | Path                               | Mục đích                        |
 | -------- | ---------------------------------- | ------------------------------- |
 | GET      | `/health`                          | liveness/readiness cơ bản       |
-| GET      | `/openapi.json`                    | REST contract                   |
+| GET      | `/openapi.json`                    | danh mục endpoint phát triển    |
 | GET      | `/api/v1/me`                       | actor hiện tại                  |
 | GET      | `/api/v1/organizations`            | đơn vị và nhân sự               |
 | GET      | `/api/v1/catalog`                  | danh mục công việc có phiên bản |
@@ -87,9 +87,9 @@ Mô tả chi tiết về cookie, mã lỗi và luồng đổi token:
 - `src/env.ts` — đọc cấu hình từ biến môi trường (`PORT`, `ENVIRONMENT`, `CORS_ORIGINS`, `PROBLEM_TYPE_BASE`).
 - `src/modules/*` — một thư mục cho mỗi module nghiệp vụ (organization, catalog, task, evaluation, audit, reporting, auth, identity); mỗi module tự khai báo router và schema của mình.
 - `src/middleware/*` — request id và CORS, kiểm Origin, kiểm body, xử lý lỗi, xác thực và uỷ quyền.
-- `src/contract/openapi.ts` — bản mô tả hợp đồng phục vụ ở `/openapi.json`.
+- `src/contract/openapi.ts` — danh mục endpoint phục vụ ở `/openapi.json`; schema thực thi nằm cạnh route Zod.
 - `src/shared/*` — khuôn lỗi problem+json và tiện ích dùng chung.
-- `src/mock-state.ts` — dữ liệu theo từng request để contract test độc lập trong lúc chờ kho dữ liệu thật; chưa có persistence.
+- `src/mock-state.ts` — trạng thái mẫu được khởi tạo khi ứng dụng khởi động; chưa có persistence.
 - `src/types.ts` — kiểu domain của API.
 
 Ánh xạ module sang mã nguồn: [docs/04-system-design/module-boundaries.md](../../docs/04-system-design/module-boundaries.md).

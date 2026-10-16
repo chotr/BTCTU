@@ -31,6 +31,7 @@ export interface Person {
   id: string;
   name: string;
   title: string;
+  role?: Role;
   departmentId: string;
   positionRefId: string;
 }

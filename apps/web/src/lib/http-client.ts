@@ -17,6 +17,15 @@ export class ApiError extends Error {
 /** Body lỗi có thể thiếu trường, nên chỉ đọc phần có mặt. */
 type ProblemBody = Partial<ProblemResponse>;
 
+function isApiEnvelope(value: unknown): value is ApiEnvelope<unknown> {
+  if (!value || typeof value !== "object" || !("data" in value)) {
+    return false;
+  }
+  return !("meta" in value) ||
+    value.meta === undefined ||
+    (typeof value.meta === "object" && value.meta !== null);
+}
+
 export function getDevelopmentIdentity(): string | null {
   if (typeof window === "undefined") return null;
   try {
@@ -75,7 +84,13 @@ export async function apiRequest<T>(
       return { data: undefined as T };
     }
 
-    return (await response.json()) as ApiEnvelope<T>;
+    const body: unknown = await response.json().catch(() => {
+      throw new ApiError("API trả về JSON không hợp lệ", response.status, requestId);
+    });
+    if (!isApiEnvelope(body)) {
+      throw new ApiError("API trả về envelope không hợp lệ", response.status, requestId);
+    }
+    return body as ApiEnvelope<T>;
   } catch (error) {
     if (error instanceof ApiError) throw error;
     if (error instanceof DOMException && error.name === "AbortError") {

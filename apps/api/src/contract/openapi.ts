@@ -1,11 +1,12 @@
-// Bản mô tả OpenAPI của contract /api/v1. Mục `servers` được thay theo cấu hình lúc chạy khi phục vụ /openapi.json.
+// Danh mục endpoint phát triển. Schema thực thi hiện nằm cạnh từng route Zod,
+// nên tài liệu này không phải nguồn hợp đồng sinh mã.
 export const openapi = {
   openapi: "3.1.0",
   info: {
-    title: "BTCTU Task and Evaluation API",
+    title: "BTCTU Development API",
     version: "0.1.0",
     description:
-      "REST contract for task, KPI, evaluation and classification workflows.",
+      "Development endpoint inventory. Request validation is implemented in route schemas.",
   },
   servers: [{ url: "http://localhost:8787", description: "Local server" }],
   security: [{ developmentIdentity: [] }],

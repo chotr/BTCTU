@@ -5,7 +5,7 @@ import type {
   Role,
   TaskStatus,
 } from "@btctu/shared";
-import type { AuditOutcome } from "@/modules/audit/audit.types";
+import type { AuditOutcome } from "@/db/schema/audit-events";
 
 export { ROLES };
 export type { Classification, EvaluationStatus, Role, TaskStatus };
@@ -60,8 +60,8 @@ export type Task = {
   departmentId: string;
   assigneeId: string;
   assignerId: string;
-  periodId?: string;
-  plannedQuantity?: number;
+  periodId: string;
+  plannedQuantity: number;
   dueAt: string;
   status: TaskStatus;
   progress: number;
@@ -78,8 +78,13 @@ export type Evaluation = {
   classification: Classification;
   blockerCount: number;
   selfComment: string | null;
+  selfEvaluatedAt: string | null;
   reviewComment: string | null;
+  reviewerId: string | null;
+  reviewedAt: string | null;
   decisionNote: string | null;
+  decidedById: string | null;
+  decidedAt: string | null;
 };
 
 export type AuditEvent = {

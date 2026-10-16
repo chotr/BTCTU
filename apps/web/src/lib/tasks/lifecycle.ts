@@ -1,3 +1,4 @@
+import type { CreateTaskInput } from "@btctu/shared";
 import type { Task, TaskResult } from "@/lib/types";
 import { addTask, appendAudit, getState, pushToast } from "@/lib/store";
 import { canAssign, canSubmitResult, canViewDepartment } from "@/lib/policy";
@@ -6,15 +7,7 @@ import { deny } from "@/lib/shared/feedback";
 import { RESULT_QUALITY, editable, findMutable, update } from "./shared";
 
 export const lifecycleActions = {
-  async createTask(input: {
-    catalogItemId: string;
-    assigneeId: string;
-    title: string;
-    description: string;
-    dueAt: string;
-    periodId?: string;
-    plannedQuantity?: number;
-  }): Promise<boolean> {
+  async createTask(input: CreateTaskInput): Promise<boolean> {
     const s = getState();
     const action = "Tạo nhiệm vụ";
     if (!s.user || !canAssign(s.user))
@@ -39,9 +32,7 @@ export const lifecycleActions = {
         "Nhiệm vụ mới",
         "Chỉ được phân công từ một phiên bản danh mục đã công bố.",
       );
-    const period = input.periodId
-      ? s.periods.find((p) => p.id === input.periodId)
-      : s.periods.find((p) => p.status === "ACTIVE");
+    const period = s.periods.find((p) => p.id === input.periodId);
     if (!period || period.status !== "ACTIVE")
       return deny(
         action,
@@ -59,8 +50,8 @@ export const lifecycleActions = {
         "Nhập tên nhiệm vụ (tối đa 250 ký tự) và hạn hoàn thành hợp lệ.",
       );
     if (
-      !Number.isFinite(input.plannedQuantity ?? 1) ||
-      (input.plannedQuantity ?? 1) <= 0
+      !Number.isFinite(input.plannedQuantity) ||
+      input.plannedQuantity <= 0
     )
       return deny(action, "Nhiệm vụ mới", "Số lượng kế hoạch phải lớn hơn 0.");
     const department = s.departments.find((d) => d.id === person.departmentId);
@@ -68,9 +59,9 @@ export const lifecycleActions = {
     const task: Task = {
       id: uid("NV"),
       title: input.title.trim(),
-      description: input.description.trim(),
+      description: (input.description ?? "").trim(),
       catalogItemId: cat.id,
-      plannedQuantity: input.plannedQuantity ?? 1,
+      plannedQuantity: input.plannedQuantity,
       catalogSnapshot: {
         id: cat.id,
         version: cat.version,

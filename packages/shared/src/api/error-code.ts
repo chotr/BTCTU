@@ -1,6 +1,7 @@
 export const API_ERROR_CODES = [
   "account_disabled",
   "actor_not_provisioned",
+  "catalog_not_published",
   "evaluation_not_found",
   "forbidden",
   "inactive_account",

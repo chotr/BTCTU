@@ -107,6 +107,42 @@ describe("Workflow Lifecycle & Period Locking", () => {
     expect(res.body.type).toContain("invalid_evaluation_status");
   });
 
+  it("returns the actors and timestamps recorded for an evaluation workflow", async () => {
+    const state = createWorkspaceState();
+    const evaluation = state.evaluations[0];
+    evaluation.status = "DRAFT";
+    evaluation.selfComment = null;
+    evaluation.selfEvaluatedAt = null;
+    const app = createApp(testEnv, { state });
+
+    const self = await request(app)
+      .post(`/api/v1/evaluations/${evaluation.id}/self`)
+      .set("x-dev-user-id", "u-staff")
+      .send({ comment: "Tự đánh giá", proposed: "TOT" });
+    expect(self.status).toBe(200);
+    expect(self.body.data.selfEvaluatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+
+    const review = await request(app)
+      .post(`/api/v1/evaluations/${evaluation.id}/review`)
+      .set("x-dev-user-id", "u-head")
+      .send({
+        comment: "Đề xuất công nhận",
+        proposed: "TOT",
+        action: "propose",
+      });
+    expect(review.status).toBe(200);
+    expect(review.body.data.reviewerId).toBe("u-head");
+    expect(review.body.data.reviewedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+
+    const decision = await request(app)
+      .post(`/api/v1/evaluations/${evaluation.id}/decision`)
+      .set("x-dev-user-id", "u-leader")
+      .send({ classification: "TOT", note: "Đồng ý" });
+    expect(decision.status).toBe(200);
+    expect(decision.body.data.decidedById).toBe("u-leader");
+    expect(decision.body.data.decidedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
+
   it("filters audit log by department for department head", async () => {
     const state = createWorkspaceState();
     state.audit = [
@@ -161,6 +197,48 @@ describe("Workflow Lifecycle & Period Locking", () => {
 
     expect(res.status).toBe(422);
     expect(res.body.type).toContain("invalid_reference");
+  });
+
+  it("requires periodId and plannedQuantity when creating task", async () => {
+    const state = createWorkspaceState();
+    const app = createApp(testEnv, { state });
+
+    const res = await request(app)
+      .post("/api/v1/tasks")
+      .set("x-dev-user-id", "u-leader")
+      .send({
+        catalogItemId: state.catalog[0].id,
+        assigneeId: "u-staff",
+        title: "Nhiệm vụ thiếu dữ liệu kỳ",
+        dueAt: "2026-12-31",
+      });
+
+    expect(res.status).toBe(422);
+    expect(res.body.type).toContain("validation_failed");
+    expect(res.body.detail).toContain("periodId");
+    expect(res.body.detail).toContain("plannedQuantity");
+  });
+
+  it("rejects creating task from an unpublished catalog version", async () => {
+    const state = createWorkspaceState();
+    const draftCatalog = state.catalog.find((item) => item.version === "v1.0");
+    expect(draftCatalog).toBeDefined();
+    const app = createApp(testEnv, { state });
+
+    const res = await request(app)
+      .post("/api/v1/tasks")
+      .set("x-dev-user-id", "u-leader")
+      .send({
+        catalogItemId: draftCatalog!.id,
+        assigneeId: "u-staff",
+        periodId: state.periods[0].id,
+        title: "Nhiệm vụ từ danh mục nháp",
+        dueAt: "2026-12-31",
+        plannedQuantity: 1,
+      });
+
+    expect(res.status).toBe(409);
+    expect(res.body.type).toContain("catalog_not_published");
   });
 
   it("successfully creates task with valid periodId and plannedQuantity", async () => {

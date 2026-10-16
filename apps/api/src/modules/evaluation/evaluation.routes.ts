@@ -107,6 +107,7 @@ export function createEvaluationRouter(): Router {
       const input = req.validated as z.infer<typeof selfEvaluationSchema>;
       evaluation.status = "SUBMITTED";
       evaluation.selfComment = input.comment;
+      evaluation.selfEvaluatedAt = new Date().toISOString();
       evaluation.classification = input.proposed;
       recordAudit(req, "self_evaluate", evaluation.id, "SUCCESS");
       res.json({ data: evaluation });
@@ -162,6 +163,8 @@ export function createEvaluationRouter(): Router {
     const input = req.validated as z.infer<typeof reviewSchema>;
     evaluation.status = input.action === "propose" ? "REVIEWED" : "DRAFT";
     evaluation.reviewComment = input.comment;
+    evaluation.reviewerId = actor.id;
+    evaluation.reviewedAt = new Date().toISOString();
     evaluation.classification = input.proposed;
     recordAudit(
       req,
@@ -221,6 +224,8 @@ export function createEvaluationRouter(): Router {
       evaluation.status = "APPROVED";
       evaluation.classification = input.classification;
       evaluation.decisionNote = input.note;
+      evaluation.decidedById = actor.id;
+      evaluation.decidedAt = new Date().toISOString();
       recordAudit(
         req,
         "decide_evaluation",

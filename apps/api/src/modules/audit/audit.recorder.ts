@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
+import type { AuditOutcome } from "@/db/schema/audit-events";
 import { problem } from "@/shared/problem";
-import type { AuditOutcome } from "./audit.types";
 
 export function recordAudit(
   req: Request,

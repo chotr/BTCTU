@@ -85,8 +85,8 @@ type ApiTask = {
   departmentId: string;
   assigneeId: string;
   assignerId: string;
-  periodId?: string;
-  plannedQuantity?: number;
+  periodId: string;
+  plannedQuantity: number;
   dueAt: string;
   status: (typeof TASK_STATUSES)[number];
   progress: number;
@@ -103,8 +103,13 @@ type ApiEvaluation = {
   classification: Classification;
   blockerCount: number;
   selfComment: string | null;
+  selfEvaluatedAt: string | null;
   reviewComment: string | null;
+  reviewerId: string | null;
+  reviewedAt: string | null;
   decisionNote: string | null;
+  decidedById: string | null;
+  decidedAt: string | null;
 };
 
 type ApiPeriod = {
@@ -194,6 +199,7 @@ function mapApiPerson(item: ApiPerson): Person {
     id: item.id,
     name: item.name,
     title: item.title,
+    role: item.role,
     departmentId: item.departmentId,
     positionRefId: item.positionRefId,
   };
@@ -293,14 +299,11 @@ export function mapApiTask(task: ApiTask, state: TaskContext): Task {
 export function mapApiEvaluation(
   evaluation: ApiEvaluation,
   state: Pick<AppState, "people">,
-  receivedAt = new Date().toISOString(),
   previous?: Evaluation,
 ): Evaluation {
   const person = state.people.find((item) => item.id === evaluation.subjectId);
-  const isLeader = person
-    ? person.positionRefId === "pos-tp" ||
-      person.positionRefId === "pos-lanh-dao"
-    : false;
+  const isLeader =
+    person?.role === ROLES.truongPhong || person?.role === ROLES.lanhDao;
   const base: Evaluation =
     previous ??
     ({
@@ -347,22 +350,22 @@ export function mapApiEvaluation(
       ? {
           comment: evaluation.selfComment,
           proposed: evaluation.classification,
-          at: base.self?.at ?? null,
+          at: evaluation.selfEvaluatedAt,
         }
       : null,
     review: evaluation.reviewComment
       ? {
           comment: evaluation.reviewComment,
           proposed: evaluation.classification,
-          reviewerId: base.review?.reviewerId ?? "",
-          at: base.review?.at ?? "",
+          reviewerId: evaluation.reviewerId ?? "",
+          at: evaluation.reviewedAt ?? "",
         }
       : null,
     decision: evaluation.decisionNote
       ? {
           classification: evaluation.classification,
-          decidedById: base.decision?.decidedById ?? "",
-          at: base.decision?.at ?? "",
+          decidedById: evaluation.decidedById ?? "",
+          at: evaluation.decidedAt ?? "",
           note: evaluation.decisionNote,
         }
       : null,
@@ -461,9 +464,8 @@ export async function loadApiWorkspace(): Promise<void> {
   const periods = [mapApiPeriod(summary.period)];
   const taskContext = { catalog, departments, people, periods };
   const tasks = taskData.map((task) => mapApiTask(task, taskContext));
-  const receivedAt = new Date().toISOString();
   const evaluations = evaluationData.map((evaluation) =>
-    mapApiEvaluation(evaluation, { people }, receivedAt),
+    mapApiEvaluation(evaluation, { people }),
   );
 
   setState((state) => ({
@@ -527,7 +529,6 @@ async function updateEvaluation(
       mapApiEvaluation(
         evaluation,
         getState(),
-        new Date().toISOString(),
         previous,
       ),
     );
