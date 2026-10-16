@@ -1,7 +1,7 @@
 import type { AxisSnapshot, CalculationRun, Task } from "@/lib/types";
 import { qualityScore } from "@/lib/domain/quality";
 
-export const SCORING_RULE_VERSION = "BTCTU-2026.1";
+export const SCORING_RULE_VERSION = "HD05";
 
 export const roundScore = (value: number) =>
   Math.round((value + Number.EPSILON) * 100) / 100;
@@ -104,8 +104,7 @@ export function calculateScore(
   const average = axes.reduce((sum, axis) => sum + axis.value, 0) / axes.length;
   const calculatedTotal = roundScore(generalScore + average * 0.7);
   return {
-    ruleVersion:
-      SCORING_RULE_VERSION + (leadershipScore === undefined ? "-ABC" : "-ABCD"),
+    ruleVersion: leadershipScore === undefined ? "HD05-ABC" : "HD05-ABCD",
     generalScore,
     axes,
     calculatedTotal,

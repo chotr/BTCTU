@@ -41,9 +41,7 @@ function extractOptions(children: ReactNode): ParsedOption[] {
     if (!React.isValidElement(child)) return;
     if (child.type === React.Fragment) {
       options.push(
-        ...extractOptions(
-          (child.props as { children?: ReactNode }).children,
-        ),
+        ...extractOptions((child.props as { children?: ReactNode }).children),
       );
     } else if (child.type === "option") {
       const props = child.props as {
@@ -79,8 +77,6 @@ export function Select({
   const listboxId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const listboxRef = useRef<HTMLDivElement>(null);
-  const nativeSelectRef = useRef<HTMLSelectElement>(null);
-  const isSelectingRef = useRef(false);
 
   const [isOpen, setIsOpen] = useState(false);
   const [internalValue, setInternalValue] = useState<string>(() => {
@@ -123,38 +119,16 @@ export function Select({
       setInternalValue(opt.value);
     }
 
-    if (nativeSelectRef.current) {
-      nativeSelectRef.current.value = opt.value;
-      nativeSelectRef.current.dispatchEvent(
-        new Event("input", { bubbles: true }),
-      );
-      nativeSelectRef.current.dispatchEvent(
-        new Event("change", { bubbles: true }),
-      );
-    }
-
     if (onChange) {
-      isSelectingRef.current = true;
-      const syntheticEvent = {
+      const event = {
         target: { value: opt.value, name: rest.name ?? "", id: id ?? "" },
         currentTarget: {
           value: opt.value,
           name: rest.name ?? "",
           id: id ?? "",
         },
-        persist: () => {},
-        bubbles: true,
-        cancelable: true,
-        defaultPrevented: false,
-        isDefaultPrevented: () => false,
-        isPropagationStopped: () => false,
-        stopPropagation: () => {},
-        preventDefault: () => {},
-      } as unknown as React.ChangeEvent<HTMLSelectElement>;
-      onChange(syntheticEvent);
-      setTimeout(() => {
-        isSelectingRef.current = false;
-      }, 0);
+      } as React.ChangeEvent<HTMLSelectElement>;
+      onChange(event);
     }
   };
 
@@ -293,7 +267,6 @@ export function Select({
 
       {/* Hidden native select for form accessibility, FormData, and tests */}
       <select
-        ref={nativeSelectRef}
         tabIndex={-1}
         aria-hidden="true"
         id={id}
@@ -301,13 +274,7 @@ export function Select({
         required={rest.required}
         disabled={disabled}
         value={currentValue}
-        onChange={(e) => {
-          if (isSelectingRef.current) return;
-          if (value === undefined) {
-            setInternalValue(e.target.value);
-          }
-          onChange?.(e);
-        }}
+        onChange={onChange}
         className="sr-only pointer-events-none absolute inset-0 -z-10 opacity-0"
         {...rest}
       >

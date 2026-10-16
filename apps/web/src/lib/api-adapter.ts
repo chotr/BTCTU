@@ -130,182 +130,6 @@ type ApiOrganization = {
   people: ApiPerson[];
 };
 
-const roleValues = new Set<string>(Object.values(ROLES));
-const taskStatuses = new Set<string>(TASK_STATUSES);
-const evaluationStatuses = new Set<string>(EVALUATION_STATUSES);
-const classifications = new Set<string>(CLASSIFICATIONS);
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function isString(value: unknown): value is string {
-  return typeof value === "string";
-}
-
-function isNullableString(value: unknown): value is string | null {
-  return value === null || isString(value);
-}
-
-function isApiActor(value: unknown): value is ApiActor {
-  return (
-    isRecord(value) &&
-    isString(value.id) &&
-    isString(value.name) &&
-    isString(value.role) &&
-    roleValues.has(value.role) &&
-    (value.departmentId === null || isString(value.departmentId))
-  );
-}
-
-function isApiDepartment(value: unknown): value is ApiDepartment {
-  return (
-    isRecord(value) &&
-    isString(value.id) &&
-    isString(value.code) &&
-    isString(value.name) &&
-    isString(value.shortName)
-  );
-}
-
-function isApiPerson(value: unknown): value is ApiPerson {
-  return (
-    isRecord(value) &&
-    isString(value.id) &&
-    isString(value.name) &&
-    isString(value.title) &&
-    isString(value.role) &&
-    roleValues.has(value.role) &&
-    isString(value.departmentId) &&
-    isString(value.positionRefId)
-  );
-}
-
-function isApiOrganization(value: unknown): value is ApiOrganization {
-  return (
-    isRecord(value) &&
-    Array.isArray(value.departments) &&
-    value.departments.every(isApiDepartment) &&
-    Array.isArray(value.people) &&
-    value.people.every(isApiPerson)
-  );
-}
-
-function isApiCatalogItem(value: unknown): value is ApiCatalogItem {
-  return (
-    isRecord(value) &&
-    isString(value.id) &&
-    isString(value.version) &&
-    isString(value.title) &&
-    isString(value.departmentId) &&
-    typeof value.standardScore === "number" &&
-    typeof value.coefficient === "number" &&
-    typeof value.durationDays === "number" &&
-    isString(value.sourceRef)
-  );
-}
-
-function isApiTaskResult(value: unknown): value is ApiTaskResult {
-  return (
-    isRecord(value) &&
-    typeof value.quantity === "number" &&
-    isString(value.product) &&
-    (value.qualityLevel === "A" ||
-      value.qualityLevel === "B" ||
-      value.qualityLevel === "C") &&
-    isString(value.note) &&
-    isNullableString(value.submittedAt)
-  );
-}
-
-function isApiTask(value: unknown): value is ApiTask {
-  return (
-    isRecord(value) &&
-    isString(value.id) &&
-    isString(value.title) &&
-    isString(value.description) &&
-    isString(value.catalogItemId) &&
-    isString(value.departmentId) &&
-    isString(value.assigneeId) &&
-    isString(value.assignerId) &&
-    isString(value.dueAt) &&
-    isString(value.status) &&
-    taskStatuses.has(value.status) &&
-    typeof value.progress === "number" &&
-    (value.result === null || isApiTaskResult(value.result))
-  );
-}
-
-function isApiEvaluation(value: unknown): value is ApiEvaluation {
-  return (
-    isRecord(value) &&
-    isString(value.id) &&
-    isString(value.periodId) &&
-    isString(value.subjectId) &&
-    isString(value.departmentId) &&
-    isString(value.status) &&
-    evaluationStatuses.has(value.status) &&
-    typeof value.score === "number" &&
-    isString(value.classification) &&
-    classifications.has(value.classification) &&
-    typeof value.blockerCount === "number" &&
-    isNullableString(value.selfComment) &&
-    isNullableString(value.reviewComment) &&
-    isNullableString(value.decisionNote)
-  );
-}
-
-function isApiPeriod(value: unknown): value is ApiPeriod {
-  return (
-    isRecord(value) &&
-    isString(value.id) &&
-    isString(value.label) &&
-    isNullableString(value.lockedAt)
-  );
-}
-
-function isApiReportSummary(value: unknown): value is ApiReportSummary {
-  return isRecord(value) && isApiPeriod(value.period);
-}
-
-function isApiAuditEvent(value: unknown): value is ApiAuditEvent {
-  return (
-    isRecord(value) &&
-    isString(value.id) &&
-    isString(value.requestId) &&
-    isString(value.actorId) &&
-    isString(value.action) &&
-    isString(value.resource) &&
-    (value.outcome === "SUCCESS" ||
-      value.outcome === "DENIED" ||
-      value.outcome === "FAILED") &&
-    isString(value.detail) &&
-    isString(value.at)
-  );
-}
-
-function checked<T>(
-  value: unknown,
-  predicate: (candidate: unknown) => candidate is T,
-  label: string,
-): T {
-  if (!predicate(value)) {
-    throw new Error(`Dữ liệu ${label} từ API không đúng định dạng.`);
-  }
-  return value;
-}
-
-function checkedList<T>(
-  value: unknown,
-  predicate: (candidate: unknown) => candidate is T,
-  label: string,
-): T[] {
-  if (!Array.isArray(value) || !value.every(predicate)) {
-    throw new Error(`Dữ liệu ${label} từ API không đúng định dạng.`);
-  }
-  return value;
-}
-
 function qualityFromApi(value: ApiTaskResult["qualityLevel"]): string {
   return {
     A: "Đáp ứng tốt",
@@ -570,9 +394,9 @@ function errorText(action: string, error: unknown): string {
   return `${action} không thành công.${requestId}`;
 }
 
-async function auditRequest(): Promise<unknown[]> {
+async function auditRequest(): Promise<ApiAuditEvent[]> {
   try {
-    return (await apiRequest<unknown[]>("/api/v1/audit")).data;
+    return (await apiRequest<ApiAuditEvent[]>("/api/v1/audit")).data;
   } catch (error) {
     if (error instanceof ApiError && error.status === 403) return [];
     throw error;
@@ -599,38 +423,22 @@ export async function loadApiWorkspace(): Promise<void> {
     summaryResponse,
     auditData,
   ] = await Promise.all([
-    apiRequest<unknown>("/api/v1/me"),
-    apiRequest<unknown>("/api/v1/organizations"),
-    apiRequest<unknown[]>("/api/v1/catalog"),
-    apiRequest<unknown[]>("/api/v1/tasks"),
-    apiRequest<unknown[]>("/api/v1/evaluations"),
-    apiRequest<unknown>("/api/v1/reports/summary"),
+    apiRequest<ApiActor>("/api/v1/me"),
+    apiRequest<ApiOrganization>("/api/v1/organizations"),
+    apiRequest<ApiCatalogItem[]>("/api/v1/catalog"),
+    apiRequest<ApiTask[]>("/api/v1/tasks"),
+    apiRequest<ApiEvaluation[]>("/api/v1/evaluations"),
+    apiRequest<ApiReportSummary>("/api/v1/reports/summary"),
     auditRequest(),
   ]);
 
-  const actor = checked(actorResponse.data, isApiActor, "tài khoản");
-  const organization = checked(
-    organizationResponse.data,
-    isApiOrganization,
-    "tổ chức",
-  );
-  const catalogData = checkedList(
-    catalogResponse.data,
-    isApiCatalogItem,
-    "danh mục",
-  );
-  const taskData = checkedList(taskResponse.data, isApiTask, "nhiệm vụ");
-  const evaluationData = checkedList(
-    evaluationResponse.data,
-    isApiEvaluation,
-    "đánh giá",
-  );
-  const summary = checked(
-    summaryResponse.data,
-    isApiReportSummary,
-    "kỳ báo cáo",
-  );
-  const audit = checkedList(auditData, isApiAuditEvent, "nhật ký");
+  const actor = actorResponse.data;
+  const organization = organizationResponse.data;
+  const catalogData = catalogResponse.data ?? [];
+  const taskData = taskResponse.data ?? [];
+  const evaluationData = evaluationResponse.data ?? [];
+  const summary = summaryResponse.data;
+  const audit = auditData ?? [];
   const publishedVersion =
     typeof catalogResponse.meta?.publishedVersion === "string"
       ? catalogResponse.meta.publishedVersion
@@ -683,8 +491,8 @@ async function updateTask(
   successMessage: string,
 ): Promise<boolean> {
   try {
-    const response = await apiRequest<unknown>(path, init);
-    const task = checked(response.data, isApiTask, "nhiệm vụ");
+    const response = await apiRequest<ApiTask>(path, init);
+    const task = response.data;
     upsertTask(mapApiTask(task, getState()));
     pushToast("success", successMessage);
     return true;
@@ -703,11 +511,11 @@ async function updateEvaluation(
     const previous = getState().evaluations.find(
       (item) => item.id === path.split("/")[4],
     );
-    const response = await apiRequest<unknown>(path, {
+    const response = await apiRequest<ApiEvaluation>(path, {
       method: "POST",
       body: JSON.stringify(body),
     });
-    const evaluation = checked(response.data, isApiEvaluation, "đánh giá");
+    const evaluation = response.data;
     upsertEvaluation(
       mapApiEvaluation(
         evaluation,
@@ -843,11 +651,11 @@ export const apiModeActions = {
 
   async lockPeriod(id: string): Promise<boolean> {
     try {
-      const response = await apiRequest<unknown>(
+      const response = await apiRequest<ApiPeriod>(
         `/api/v1/periods/${encodeURIComponent(id)}/lock`,
         { method: "POST" },
       );
-      const period = checked(response.data, isApiPeriod, "kỳ đánh giá");
+      const period = response.data;
       const mapped = mapApiPeriod(period);
       setState((state) => ({
         ...state,
