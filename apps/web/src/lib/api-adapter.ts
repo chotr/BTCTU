@@ -84,6 +84,8 @@ type ApiTask = {
   departmentId: string;
   assigneeId: string;
   assignerId: string;
+  periodId?: string;
+  plannedQuantity?: number;
   dueAt: string;
   status: (typeof TASK_STATUSES)[number];
   progress: number;
@@ -232,6 +234,9 @@ export function mapApiTask(task: ApiTask, state: TaskContext): Task {
   const department = state.departments.find(
     (item) => item.id === task.departmentId,
   );
+  const period = task.periodId
+    ? state.periods.find((p) => p.id === task.periodId)
+    : undefined;
   const result: TaskResult | null = task.result
     ? {
         quantity: task.result.quantity,
@@ -252,9 +257,9 @@ export function mapApiTask(task: ApiTask, state: TaskContext): Task {
     assigneeId: task.assigneeId,
     assignerId: task.assignerId,
     positionRefId: person?.positionRefId ?? "",
-    period: "",
-    periodId: undefined,
-    plannedQuantity: undefined,
+    period: period?.name ?? "",
+    periodId: task.periodId,
+    plannedQuantity: task.plannedQuantity,
     catalogSnapshot: catalog
       ? {
           id: catalog.id,

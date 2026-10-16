@@ -22,6 +22,11 @@ function evaluationNotFound(req: Request, res: Response): void {
   );
 }
 
+function isPeriodLocked(req: Request, periodId: string): boolean {
+  const period = req.state!.periods.find((p) => p.id === periodId);
+  return Boolean(period?.lockedAt);
+}
+
 export function createEvaluationRouter(): Router {
   const router = Router();
 
@@ -62,6 +67,28 @@ export function createEvaluationRouter(): Router {
         evaluationNotFound(req, res);
         return;
       }
+      if (isPeriodLocked(req, evaluation.periodId)) {
+        problem(
+          req,
+          res,
+          409,
+          "Conflict",
+          "Cannot submit self-evaluation in a locked period.",
+          "period_locked",
+        );
+        return;
+      }
+      if (evaluation.status !== "DRAFT") {
+        problem(
+          req,
+          res,
+          409,
+          "Conflict",
+          `Cannot self-evaluate when status is ${evaluation.status}. Must be DRAFT.`,
+          "invalid_evaluation_status",
+        );
+        return;
+      }
       if (
         !can(actor, {
           action: "evaluation.self",
@@ -93,6 +120,28 @@ export function createEvaluationRouter(): Router {
     );
     if (!evaluation) {
       evaluationNotFound(req, res);
+      return;
+    }
+    if (isPeriodLocked(req, evaluation.periodId)) {
+      problem(
+        req,
+        res,
+        409,
+        "Conflict",
+        "Cannot review evaluation in a locked period.",
+        "period_locked",
+      );
+      return;
+    }
+    if (evaluation.status !== "SUBMITTED") {
+      problem(
+        req,
+        res,
+        409,
+        "Conflict",
+        `Cannot review evaluation when status is ${evaluation.status}. Must be SUBMITTED.`,
+        "invalid_evaluation_status",
+      );
       return;
     }
     if (
@@ -134,6 +183,28 @@ export function createEvaluationRouter(): Router {
       );
       if (!evaluation) {
         evaluationNotFound(req, res);
+        return;
+      }
+      if (isPeriodLocked(req, evaluation.periodId)) {
+        problem(
+          req,
+          res,
+          409,
+          "Conflict",
+          "Cannot decide evaluation in a locked period.",
+          "period_locked",
+        );
+        return;
+      }
+      if (evaluation.status !== "REVIEWED") {
+        problem(
+          req,
+          res,
+          409,
+          "Conflict",
+          `Cannot decide evaluation when status is ${evaluation.status}. Must be REVIEWED.`,
+          "invalid_evaluation_status",
+        );
         return;
       }
       if (!can(actor, { action: "evaluation.decide" })) {

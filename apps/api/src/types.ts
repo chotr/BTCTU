@@ -60,6 +60,8 @@ export type Task = {
   departmentId: string;
   assigneeId: string;
   assignerId: string;
+  periodId?: string;
+  plannedQuantity?: number;
   dueAt: string;
   status: TaskStatus;
   progress: number;

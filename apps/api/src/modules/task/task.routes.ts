@@ -21,6 +21,12 @@ function taskNotFound(req: Request, res: Response): void {
   problem(req, res, 404, "Not found", "Task does not exist.", "task_not_found");
 }
 
+function isPeriodLocked(req: Request, periodId?: string): boolean {
+  if (!periodId) return false;
+  const period = req.state!.periods.find((p) => p.id === periodId);
+  return Boolean(period?.lockedAt);
+}
+
 export function createTaskRouter(): Router {
   const router = Router();
 
@@ -76,6 +82,18 @@ export function createTaskRouter(): Router {
       return;
     }
 
+    if (input.periodId && isPeriodLocked(req, input.periodId)) {
+      problem(
+        req,
+        res,
+        409,
+        "Conflict",
+        "Cannot create task in a locked period.",
+        "period_locked",
+      );
+      return;
+    }
+
     const task: Task = {
       id: nextTaskId(),
       title: input.title,
@@ -84,6 +102,8 @@ export function createTaskRouter(): Router {
       departmentId: assignee.departmentId,
       assigneeId: assignee.id,
       assignerId: actor.id,
+      periodId: input.periodId,
+      plannedQuantity: input.plannedQuantity ?? 1,
       dueAt: input.dueAt,
       status: "ASSIGNED",
       progress: 0,
@@ -119,6 +139,28 @@ export function createTaskRouter(): Router {
     );
     if (!task) {
       taskNotFound(req, res);
+      return;
+    }
+    if (isPeriodLocked(req, task.periodId)) {
+      problem(
+        req,
+        res,
+        409,
+        "Conflict",
+        "Cannot modify task in a locked period.",
+        "period_locked",
+      );
+      return;
+    }
+    if (task.status === "SUBMITTED" || task.status === "ACCEPTED") {
+      problem(
+        req,
+        res,
+        409,
+        "Conflict",
+        `Cannot update result when task is already ${task.status}.`,
+        "invalid_task_status",
+      );
       return;
     }
     if (actor.id !== task.assigneeId) {
@@ -159,6 +201,28 @@ export function createTaskRouter(): Router {
       taskNotFound(req, res);
       return;
     }
+    if (isPeriodLocked(req, task.periodId)) {
+      problem(
+        req,
+        res,
+        409,
+        "Conflict",
+        "Cannot accept task in a locked period.",
+        "period_locked",
+      );
+      return;
+    }
+    if (task.status !== "SUBMITTED") {
+      problem(
+        req,
+        res,
+        409,
+        "Conflict",
+        `Cannot accept task with status ${task.status}. Task must be SUBMITTED.`,
+        "invalid_task_status",
+      );
+      return;
+    }
     if (
       !can(actor, {
         action: "task.accept",
@@ -186,6 +250,28 @@ export function createTaskRouter(): Router {
     );
     if (!task) {
       taskNotFound(req, res);
+      return;
+    }
+    if (isPeriodLocked(req, task.periodId)) {
+      problem(
+        req,
+        res,
+        409,
+        "Conflict",
+        "Cannot return task in a locked period.",
+        "period_locked",
+      );
+      return;
+    }
+    if (task.status !== "SUBMITTED") {
+      problem(
+        req,
+        res,
+        409,
+        "Conflict",
+        `Cannot return task with status ${task.status}. Task must be SUBMITTED.`,
+        "invalid_task_status",
+      );
       return;
     }
     if (

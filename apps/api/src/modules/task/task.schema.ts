@@ -3,6 +3,8 @@ import { z } from "zod";
 export const createTaskSchema = z.object({
   catalogItemId: z.string().min(1),
   assigneeId: z.string().min(1),
+  periodId: z.string().min(1).optional(),
+  plannedQuantity: z.number().positive().optional(),
   title: z.string().trim().min(3).max(160),
   description: z.string().trim().max(2000).default(""),
   dueAt: z.string().trim().min(8).max(32),

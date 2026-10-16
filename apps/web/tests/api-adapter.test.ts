@@ -67,6 +67,8 @@ describe("API adapter", () => {
         departmentId: "d2",
         assigneeId: "u-staff",
         assignerId: "u-head",
+        periodId: "p-q3-2026",
+        plannedQuantity: 2,
         dueAt: "2026-10-31",
         status: "SUBMITTED",
         progress: 100,
@@ -112,8 +114,8 @@ describe("API adapter", () => {
       },
     );
 
-    expect(task.periodId).toBeUndefined();
-    expect(task.plannedQuantity).toBeUndefined();
+    expect(task.periodId).toBe("p-q3-2026");
+    expect(task.plannedQuantity).toBe(2);
     expect(task.positionRefId).toBe("pos-staff");
     expect(task.result?.qualityLevel).toBe("Đáp ứng tốt");
     expect(task.evidence).toEqual([]);
