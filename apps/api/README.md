@@ -38,7 +38,7 @@ API xác thực bằng email/mật khẩu, cấp access token (JWT) và refresh 
 ```bash
 curl -i -c cookies.txt -X POST http://localhost:8787/api/v1/auth/login \
   -H "content-type: application/json" \
-  -d '{"email":"staff@btctu.local","password":"dev-only-changeme"}'
+  -d '{"email":"nguoi-dung@don-vi.local","password":"mat-khau-da-cap"}'
 
 curl -b cookies.txt http://localhost:8787/api/v1/auth/session
 ```
@@ -53,12 +53,9 @@ curl -b cookies.txt http://localhost:8787/api/v1/auth/session
 - cờ `Secure`/`SameSite` của cookie suy ra từ `ENVIRONMENT`, ghi đè bằng `AUTH_COOKIE_SECURE` và `AUTH_COOKIE_SAME_SITE`; `SameSite=None` đòi `Secure`;
 - lỗi trả về theo problem+json (`type`, `title`, `status`, `detail`, `instance`, `requestId`) như các route khác; phần đầu của `type` theo `PROBLEM_TYPE_BASE`, mặc định là `${PUBLIC_BASE_URL}/problems`.
 
-`db:seed` tạo 19 tài khoản mẫu cho danh bạ quản lý cùng `root@example.test`
-và `iam-admin@example.test`, dùng mật khẩu chung `dev-only-changeme`. Đặt
-`DEV_SEED_PASSWORD` để đổi mật khẩu trước khi chạy. Seed chỉ chạy ngoài
-production và thay thế ba tài khoản mẫu cũ (`leader`, `head`, `staff`) nếu
-chúng còn tồn tại. Khi đưa vào vận hành, `db:bootstrap-root` thay root mẫu bằng
-root thật; seed từ chối chạy nếu root thật đã tồn tại.
+Hệ thống không tạo sẵn tài khoản mẫu. Tạo root duy nhất bằng
+`db:bootstrap-root`, sau đó Root cấp tài khoản quản trị và tài khoản nhân sự
+qua màn quản lý tài khoản.
 
 Danh tính cho các route nghiệp vụ đi qua cổng `ActorResolver`. Tài khoản có
 `directory_actor_id` được nối với actor trong danh mục nghiệp vụ; access cookie

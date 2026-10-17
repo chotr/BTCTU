@@ -5,6 +5,8 @@ import type { Database } from "@/db/client";
 import type { User } from "@/db/schema";
 import { normalizeEmail } from "@/shared/string";
 
+type AccountAdminDatabase = Pick<Database, "select" | "insert" | "update">;
+
 export type AccountRecordUpdate = {
   email?: string;
   directoryActorId?: string;
@@ -24,6 +26,7 @@ export type AccountAuditRecord = {
 };
 
 export interface AccountAdminStore {
+  transaction<T>(work: (store: AccountAdminStore) => Promise<T>): Promise<T>;
   list(): Promise<User[]>;
   findById(id: string): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
@@ -39,7 +42,16 @@ export interface AccountAdminStore {
 }
 
 export class DatabaseAccountAdminStore implements AccountAdminStore {
-  constructor(private readonly db: Database) {}
+  constructor(
+    private readonly db: AccountAdminDatabase,
+    private readonly transactionRunner: Database = db as Database,
+  ) {}
+
+  transaction<T>(work: (store: AccountAdminStore) => Promise<T>): Promise<T> {
+    return this.transactionRunner.transaction((tx) =>
+      work(new DatabaseAccountAdminStore(tx, this.transactionRunner)),
+    );
+  }
 
   async list(): Promise<User[]> {
     return this.db.select().from(users).orderBy(asc(users.email));

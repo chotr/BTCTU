@@ -1,8 +1,6 @@
 import { ROLES, type Person } from "./types";
 
-type ManagerSeed = Person & { email: string };
-
-const MANAGER_SEEDS = [
+export const MANAGER_DIRECTORY = [
   {
     id: "p-nguyen-thuong-hai",
     name: "Nguyễn Thượng Hải",
@@ -10,7 +8,6 @@ const MANAGER_SEEDS = [
     role: ROLES.lanhDao,
     departmentId: "d0",
     positionRefId: "truong-ban",
-    email: "nguyen-thuong-hai@example.test",
   },
   {
     id: "p-luu-vinh-hung",
@@ -19,7 +16,6 @@ const MANAGER_SEEDS = [
     role: ROLES.lanhDao,
     departmentId: "d0",
     positionRefId: "pho-truong-ban-thuong-truc",
-    email: "luu-vinh-hung@example.test",
   },
   {
     id: "p-nguyen-huu-toan",
@@ -28,7 +24,6 @@ const MANAGER_SEEDS = [
     role: ROLES.lanhDao,
     departmentId: "d0",
     positionRefId: "pho-truong-ban-tccb",
-    email: "nguyen-huu-toan@example.test",
   },
   {
     id: "p-nguyen-van-ha",
@@ -37,7 +32,6 @@ const MANAGER_SEEDS = [
     role: ROLES.lanhDao,
     departmentId: "d0",
     positionRefId: "pho-truong-ban-van-phong",
-    email: "nguyen-van-ha@example.test",
   },
   {
     id: "p-nguyen-ba-kim",
@@ -46,7 +40,6 @@ const MANAGER_SEEDS = [
     role: ROLES.lanhDao,
     departmentId: "d0",
     positionRefId: "pho-truong-ban-tcddv",
-    email: "nguyen-ba-kim@example.test",
   },
   {
     id: "p-pham-thi-xuyen",
@@ -55,7 +48,6 @@ const MANAGER_SEEDS = [
     role: ROLES.lanhDao,
     departmentId: "d0",
     positionRefId: "pho-truong-ban-bvctnb",
-    email: "pham-thi-xuyen@example.test",
   },
   {
     id: "p-tran-hai-trieu",
@@ -64,7 +56,6 @@ const MANAGER_SEEDS = [
     role: ROLES.truongPhong,
     departmentId: "d2",
     positionRefId: "truong-phong-tccb",
-    email: "tran-hai-trieu@example.test",
   },
   {
     id: "p-nguyen-thi-hong-thuy",
@@ -73,7 +64,6 @@ const MANAGER_SEEDS = [
     role: ROLES.truongPhong,
     departmentId: "d4",
     positionRefId: "chanh-van-phong",
-    email: "nguyen-thi-hong-thuy@example.test",
   },
   {
     id: "p-hoang-xuan-viet",
@@ -82,7 +72,6 @@ const MANAGER_SEEDS = [
     role: ROLES.truongPhong,
     departmentId: "d1",
     positionRefId: "truong-phong-tcddv",
-    email: "hoang-xuan-viet@example.test",
   },
   {
     id: "p-nguyen-thanh-thuy",
@@ -91,7 +80,6 @@ const MANAGER_SEEDS = [
     role: ROLES.truongPhong,
     departmentId: "d3",
     positionRefId: "truong-phong-bvctnb",
-    email: "nguyen-thanh-thuy@example.test",
   },
   {
     id: "p-nguyen-tran-thi",
@@ -100,7 +88,6 @@ const MANAGER_SEEDS = [
     role: ROLES.truongPhong,
     departmentId: "d2",
     positionRefId: "pho-truong-phong-tccb-1",
-    email: "nguyen-tran-thi@example.test",
   },
   {
     id: "p-nguyen-van-toan",
@@ -109,7 +96,6 @@ const MANAGER_SEEDS = [
     role: ROLES.truongPhong,
     departmentId: "d2",
     positionRefId: "pho-truong-phong-tccb-2",
-    email: "nguyen-van-toan@example.test",
   },
   {
     id: "p-pham-phong-thu",
@@ -118,7 +104,6 @@ const MANAGER_SEEDS = [
     role: ROLES.truongPhong,
     departmentId: "d2",
     positionRefId: "pho-truong-phong-tccb-3",
-    email: "pham-phong-thu@example.test",
   },
   {
     id: "p-mai-chi-tung",
@@ -127,7 +112,6 @@ const MANAGER_SEEDS = [
     role: ROLES.truongPhong,
     departmentId: "d4",
     positionRefId: "pho-chanh-van-phong-1",
-    email: "mai-chi-tung@example.test",
   },
   {
     id: "p-doan-duc-dung",
@@ -136,7 +120,6 @@ const MANAGER_SEEDS = [
     role: ROLES.truongPhong,
     departmentId: "d4",
     positionRefId: "pho-chanh-van-phong-2",
-    email: "doan-duc-dung@example.test",
   },
   {
     id: "p-dang-duc-trieu",
@@ -145,7 +128,6 @@ const MANAGER_SEEDS = [
     role: ROLES.truongPhong,
     departmentId: "d4",
     positionRefId: "pho-chanh-van-phong-3",
-    email: "dang-duc-trieu@example.test",
   },
   {
     id: "p-hoang-viet-viet",
@@ -154,7 +136,6 @@ const MANAGER_SEEDS = [
     role: ROLES.truongPhong,
     departmentId: "d1",
     positionRefId: "pho-truong-phong-tcddv-1",
-    email: "hoang-viet-viet@example.test",
   },
   {
     id: "p-nguyen-ngoc-san",
@@ -163,7 +144,6 @@ const MANAGER_SEEDS = [
     role: ROLES.truongPhong,
     departmentId: "d1",
     positionRefId: "pho-truong-phong-tcddv-2",
-    email: "nguyen-ngoc-san@example.test",
   },
   {
     id: "p-truong-thi-dong",
@@ -172,15 +152,5 @@ const MANAGER_SEEDS = [
     role: ROLES.truongPhong,
     departmentId: "d1",
     positionRefId: "pho-truong-phong-tcddv-3",
-    email: "truong-thi-dong@example.test",
   },
-] satisfies readonly ManagerSeed[];
-
-export const MANAGER_DIRECTORY = MANAGER_SEEDS.map(({ email: _, ...person }) =>
-  person,
-);
-
-export const MANAGER_SEED_ACCOUNTS = MANAGER_SEEDS.map(({ id, email }) => ({
-  directoryActorId: id,
-  email,
-}));
+] satisfies readonly Person[];

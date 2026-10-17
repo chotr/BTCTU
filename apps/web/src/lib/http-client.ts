@@ -6,6 +6,7 @@ export class ApiError extends Error {
     message: string,
     readonly status: number,
     readonly requestId: string | null,
+    readonly code: string | null = null,
   ) {
     super(message);
     this.name = "ApiError";
@@ -14,6 +15,14 @@ export class ApiError extends Error {
 
 /** Body lỗi có thể thiếu trường, nên chỉ đọc phần có mặt. */
 type ProblemBody = Partial<ProblemResponse>;
+let refreshInFlight: Promise<boolean> | null = null;
+
+function problemCode(problem: ProblemBody): string | null {
+  if (typeof problem.type !== "string") return null;
+  const marker = "/problems/";
+  const index = problem.type.lastIndexOf(marker);
+  return index < 0 ? null : problem.type.slice(index + marker.length);
+}
 
 function isApiEnvelope(value: unknown): value is ApiEnvelope<unknown> {
   if (!value || typeof value !== "object" || !("data" in value)) {
@@ -22,6 +31,33 @@ function isApiEnvelope(value: unknown): value is ApiEnvelope<unknown> {
   return !("meta" in value) ||
     value.meta === undefined ||
     (typeof value.meta === "object" && value.meta !== null);
+}
+
+function refreshAccessToken(): Promise<boolean> {
+  if (refreshInFlight) return refreshInFlight;
+  refreshInFlight = (async () => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
+    try {
+      const response = await fetch(
+        `${runtimeConfig.apiBaseUrl}/api/v1/auth/refresh`,
+        {
+          method: "POST",
+          headers: { accept: "application/json" },
+          credentials: "include",
+          signal: controller.signal,
+        },
+      );
+      return response.ok;
+    } catch {
+      return false;
+    } finally {
+      clearTimeout(timeout);
+    }
+  })();
+  return refreshInFlight.finally(() => {
+    refreshInFlight = null;
+  });
 }
 
 export async function apiRequest<T>(
@@ -57,15 +93,7 @@ async function executeRequest<T>(
       path !== "/api/v1/auth/refresh"
     ) {
       try {
-        const refreshResponse = await fetch(
-          `${runtimeConfig.apiBaseUrl}/api/v1/auth/refresh`,
-          {
-            method: "POST",
-            headers: { accept: "application/json" },
-            credentials: "include",
-          },
-        );
-        if (refreshResponse.ok) {
+        if (await refreshAccessToken()) {
           return executeRequest<T>(path, init, false);
         }
       } catch {
@@ -79,6 +107,7 @@ async function executeRequest<T>(
         problem.detail ?? problem.title ?? "Yêu cầu không thành công",
         response.status,
         problem.requestId ?? requestId,
+        problemCode(problem),
       );
     }
 

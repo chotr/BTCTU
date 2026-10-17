@@ -73,7 +73,7 @@ export function CreateTask({
           <Input
             className="w-full"
             required
-            maxLength={250}
+            maxLength={160}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />

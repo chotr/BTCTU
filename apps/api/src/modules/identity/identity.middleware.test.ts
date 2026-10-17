@@ -79,7 +79,7 @@ describe("production actor identity", () => {
     expect(response.body.type).toContain("missing_access_token");
   });
 
-  it("resolves an administrative root account without a directory actor id", async () => {
+  it("does not grant a root account business access without a directory actor", async () => {
     const rootAuth: AuthPort = {
       ...authWithDirectoryActor("unused"),
       currentUser: async () => ({
@@ -97,12 +97,7 @@ describe("production actor identity", () => {
       .get("/api/v1/me")
       .set("Cookie", `${ACCESS_COOKIE_NAME}=valid-access-token`);
 
-    expect(response.status).toBe(200);
-    expect(response.body.data).toMatchObject({
-      id: "root-uuid",
-      name: "Quản trị viên Root",
-      role: "lanh_dao",
-      departmentId: null,
-    });
+    expect(response.status).toBe(403);
+    expect(response.body.type).toContain("actor_not_provisioned");
   });
 });

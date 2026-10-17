@@ -32,6 +32,10 @@ export default function LoginPage() {
         router.replace("/dashboard");
         return;
       }
+      if (result.passwordChangeRequired) {
+        router.replace("/change-password");
+        return;
+      }
       setError(result.message ?? "Không thể đăng nhập. Vui lòng thử lại.");
     } catch {
       setError("Không thể kết nối. Vui lòng thử lại sau.");

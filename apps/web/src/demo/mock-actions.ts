@@ -55,12 +55,22 @@ export const mockActions = {
   async loginWithCredentials(
     _email: string,
     _password: string,
-  ): Promise<{ ok: boolean; message?: string }> {
+  ): Promise<{
+    ok: boolean;
+    message?: string;
+    passwordChangeRequired?: boolean;
+  }> {
     return {
       ok: false,
       message:
         "Không gian mô phỏng dùng màn đăng nhập nhanh, không nhận mật khẩu.",
     };
+  },
+  async changePassword(
+    _currentPassword: string,
+    _newPassword: string,
+  ): Promise<{ ok: boolean; message?: string }> {
+    return { ok: false, message: "Màn đổi mật khẩu không dùng trong không gian mô phỏng." };
   },
   async logout(): Promise<void> {
     const user = getState().user;

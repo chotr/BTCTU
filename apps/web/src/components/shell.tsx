@@ -11,6 +11,7 @@ import {
   List,
   ListMagnifyingGlass,
   SignOut,
+  UsersThree,
   X,
 } from "@phosphor-icons/react";
 import Link from "next/link";
@@ -50,13 +51,16 @@ const groups = [
     items: [
       { href: "/reports", label: "Báo cáo", icon: FileText },
       { href: "/audit", label: "Nhật ký hoạt động", icon: ListMagnifyingGlass },
+      { href: "/accounts", label: "Quản lý tài khoản", icon: UsersThree },
     ],
   },
 ];
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const state = useApp();
-  const { user } = state;
+  const { user, account } = state;
+  const canManageAccounts =
+    account?.accountRole === "ROOT" || account?.accountRole === "ACCOUNT_ADMIN";
   const pending = scopedData(state).evaluations.filter((e) =>
     user?.role === ROLES.lanhDao
       ? e.status === "REVIEWED"
@@ -67,21 +71,25 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
       aria-label="Điều hướng chính"
       className="flex-1 overflow-y-auto pt-2 lg:px-4 lg:pt-4"
     >
-      {groups.map((group, i) => (
+      {groups
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) => {
+            if (item.href === "/accounts") return canManageAccounts;
+            if (!user) return false;
+            if (item.href === "/audit") return canViewAudit(user);
+            if (item.href === "/approvals") return user.role !== ROLES.congChuc;
+            return true;
+          }),
+        }))
+        .filter((group) => group.items.length > 0)
+        .map((group, i) => (
         <div className={`${i < groups.length - 1 ? "mb-5" : ""}`} key={group.label}>
           <p className="mb-1.5 px-2.5 text-[11px] font-semibold text-ink-3">
             {group.label}
           </p>
           <div className="space-y-0.5">
-            {group.items
-              .filter((item) =>
-                item.href === "/audit"
-                  ? canViewAudit(user)
-                  : item.href === "/approvals"
-                    ? user?.role !== ROLES.congChuc
-                    : true,
-              )
-              .map((item) => {
+            {group.items.map((item) => {
                 const href = appPath(item.href);
                 const active =
                   pathname === href || pathname.startsWith(href + "/");
@@ -129,7 +137,7 @@ function Brand() {
 }
 export default function Shell({ children }: { children: ReactNode }) {
   const state = useApp();
-  const { user, toasts, storageError } = state;
+  const { user, account, toasts, storageError } = state;
   const pathname = usePathname();
   const router = useRouter();
   const [menu, setMenu] = useState(false);
@@ -180,16 +188,16 @@ export default function Shell({ children }: { children: ReactNode }) {
           </div>
           <details className="relative">
             <summary className="flex cursor-pointer list-none items-center gap-2 rounded-ctl p-1.5 hover:bg-fill">
-              <Avatar name={user?.name ?? ""} />
+              <Avatar name={user?.name ?? account?.email ?? ""} />
               <span className="hidden text-[13px] font-medium sm:inline">
-                {user?.name}
+                {user?.name ?? account?.email}
               </span>
               <span className="text-xs text-ink-3">▾</span>
             </summary>
             <div className="absolute right-0 top-full mt-2 w-64 rounded-card bg-surface p-3 shadow-pop">
-              <p className="text-[13px] font-semibold">{user?.name}</p>
+              <p className="text-[13px] font-semibold">{user?.name ?? account?.email}</p>
               <p className="mb-3 mt-1 text-xs text-ink-3">
-                {user?.title} · {user?.departmentName ?? "Toàn Ban"}
+                {user ? `${user.title} · ${user.departmentName ?? "Toàn Ban"}` : "Quản trị tài khoản"}
               </p>
               <Button
                 onClick={logout}

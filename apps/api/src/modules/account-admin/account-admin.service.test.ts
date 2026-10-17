@@ -34,6 +34,10 @@ class MemoryStore implements AccountAdminStore {
     for (const item of accounts) this.accounts.set(item.id, item);
   }
 
+  transaction<T>(work: (store: AccountAdminStore) => Promise<T>): Promise<T> {
+    return work(this);
+  }
+
   async list(): Promise<User[]> {
     return [...this.accounts.values()];
   }

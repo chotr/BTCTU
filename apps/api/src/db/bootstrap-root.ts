@@ -13,8 +13,6 @@ import { normalizeEmail } from "@/shared/string";
 import { createDatabase } from "./client";
 import { users } from "./schema";
 
-const SAMPLE_ROOT_EMAIL = "root@example.test";
-
 function required(
   name: "ROOT_BOOTSTRAP_EMAIL" | "ROOT_BOOTSTRAP_PASSWORD",
 ): string {
@@ -44,10 +42,7 @@ async function bootstrapRoot(): Promise<void> {
       .select({ id: users.id, email: users.email })
       .from(users)
       .where(eq(users.accountRole, "ROOT"));
-    if (
-      existingRoot[0] &&
-      existingRoot[0].email !== SAMPLE_ROOT_EMAIL
-    ) {
+    if (existingRoot[0]) {
       throw new Error("A root account already exists");
     }
 
@@ -55,28 +50,11 @@ async function bootstrapRoot(): Promise<void> {
       .select({ id: users.id })
       .from(users)
       .where(eq(users.email, email));
-    if (
-      existingEmail[0] &&
-      existingEmail[0].id !== existingRoot[0]?.id
-    ) {
+    if (existingEmail[0]) {
       throw new Error("ROOT_BOOTSTRAP_EMAIL is already in use");
     }
 
     const passwordHash = await new PasswordService().hash(password);
-    if (existingRoot[0]) {
-      await db
-        .update(users)
-        .set({
-          email,
-          passwordHash,
-          status: "ACTIVE",
-          mustChangePassword: false,
-          updatedAt: new Date(),
-        })
-        .where(eq(users.id, existingRoot[0].id));
-      return;
-    }
-
     await db.insert(users).values({
       email,
       passwordHash,

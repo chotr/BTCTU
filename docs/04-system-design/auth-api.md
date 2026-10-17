@@ -124,8 +124,8 @@ Request:
 
 ```json
 {
-  "email": "staff@btctu.local",
-  "password": "dev-only-changeme"
+  "email": "nguoi-dung@don-vi.local",
+  "password": "mat-khau-da-cap"
 }
 ```
 
@@ -342,22 +342,17 @@ Không ghi mật khẩu, access token hoặc refresh token vào log.
 
 ```bash
 pnpm --filter @btctu/api db:migrate
-pnpm --filter @btctu/api db:seed
 pnpm --filter @btctu/api dev
 ```
 
 `db:migrate` cần chạy migration `0002` để có cột `previous_token_hash`.
-`db:seed` tạo 19 tài khoản mẫu cho danh bạ quản lý, một root
-`root@example.test` và một admin `iam-admin@example.test`. Email dùng miền
-`@example.test`, mật khẩu chung mặc định là `dev-only-changeme`, đổi bằng biến
-`DEV_SEED_PASSWORD`. Lệnh bị chặn ở production và xóa ba tài khoản mẫu cũ nếu
-chúng còn tồn tại. `db:bootstrap-root` thay root mẫu bằng root thật; seed từ
-chối chạy nếu root thật đã tồn tại.
+Không có tài khoản mẫu. Root duy nhất được tạo bằng `db:bootstrap-root`; sau đó
+Root cấp quyền `ACCOUNT_ADMIN` và tài khoản nhân sự qua API quản trị.
 
 ```bash
 curl -i -c cookies.txt -X POST http://localhost:8787/api/v1/auth/login \
   -H "content-type: application/json" \
-  -d '{"email":"staff@btctu.local","password":"dev-only-changeme"}'
+  -d '{"email":"nguoi-dung@don-vi.local","password":"mat-khau-da-cap"}'
 
 curl -b cookies.txt http://localhost:8787/api/v1/auth/session
 ```
@@ -396,5 +391,5 @@ với kho in-memory nên không cần PostgreSQL.
 - `instance` trong phản hồi lỗi đang là path tương đối so với router được mount,
   ví dụ `/login`; riêng lỗi 500 của handler toàn cục dùng path đầy đủ. Cần thống
   nhất trước khi chốt contract. [TBD]
-- Chưa chạy `db:migrate` và `db:seed` trên PostgreSQL thật trong môi trường phát
+- Chưa chạy `db:migrate` trên PostgreSQL thật trong môi trường phát
   triển hiện tại, nên phần truy vấn chỉ được kiểm chứng ở mức sinh đúng câu SQL.

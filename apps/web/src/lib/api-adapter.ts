@@ -40,6 +40,13 @@ type ApiActor = {
   departmentId: string | null;
 };
 
+type ApiSessionUser = {
+  id: string;
+  email: string;
+  accountRole: "USER" | "ACCOUNT_ADMIN" | "ROOT";
+  mustChangePassword: boolean;
+};
+
 type ApiDepartment = {
   id: string;
   code: string;
@@ -420,6 +427,34 @@ export async function loadApiWorkspace(): Promise<void> {
       setState((state) => ({
         ...state,
         user: null,
+        account: null,
+        passwordChangeRequired: false,
+        departments: [],
+        people: [],
+        catalog: [],
+        tasks: [],
+        evaluations: [],
+        periods: [],
+        audit: [],
+        hydrated: true,
+        storageError: null,
+      }));
+      return;
+    }
+    if (
+      error instanceof ApiError &&
+      error.status === 403 &&
+      (error.code === "password_change_required" ||
+        error.code === "actor_not_provisioned")
+    ) {
+      const session = await apiRequest<{ user: ApiSessionUser }>(
+        "/api/v1/auth/session",
+      );
+      setState((state) => ({
+        ...state,
+        user: null,
+        account: session.data.user,
+        passwordChangeRequired: error.code === "password_change_required",
         departments: [],
         people: [],
         catalog: [],
@@ -442,6 +477,7 @@ export async function loadApiWorkspace(): Promise<void> {
     evaluationResponse,
     summaryResponse,
     auditData,
+    sessionResponse,
   ] = await Promise.all([
     apiRequest<ApiOrganization>("/api/v1/organizations"),
     apiRequest<ApiCatalogItem[]>("/api/v1/catalog"),
@@ -449,6 +485,7 @@ export async function loadApiWorkspace(): Promise<void> {
     apiRequest<ApiEvaluation[]>("/api/v1/evaluations"),
     apiRequest<ApiReportSummary>("/api/v1/reports/summary"),
     auditRequest(),
+    apiRequest<{ user: ApiSessionUser }>("/api/v1/auth/session"),
   ]);
 
   const actor = actorResponse.data;
@@ -488,6 +525,8 @@ export async function loadApiWorkspace(): Promise<void> {
         departments.find((department) => department.id === actor.departmentId)
           ?.name ?? null,
     },
+    account: sessionResponse.data.user,
+    passwordChangeRequired: false,
     departments,
     people,
     positions: mapPositions(organization.people),
@@ -562,14 +601,39 @@ export const apiModeActions = {
   async loginWithCredentials(
     email: string,
     password: string,
-  ): Promise<{ ok: boolean; message?: string }> {
+  ): Promise<{
+    ok: boolean;
+    message?: string;
+    passwordChangeRequired?: boolean;
+  }> {
     try {
-      await apiRequest<{ user: { id: string }; expiresIn: number }>(
+      const login = await apiRequest<{
+        user: ApiSessionUser;
+        expiresIn: number;
+      }>(
         "/api/v1/auth/login",
         { method: "POST", body: JSON.stringify({ email, password }) },
       );
+      if (login.data.user.mustChangePassword) {
+        setState((state) => ({
+          ...state,
+          user: null,
+          account: login.data.user,
+          passwordChangeRequired: true,
+          hydrated: true,
+        }));
+        return { ok: false, passwordChangeRequired: true };
+      }
       await loadApiWorkspace();
       if (!getState().user) {
+        const account = getState().account;
+        if (
+          account?.accountRole === "ROOT" ||
+          account?.accountRole === "ACCOUNT_ADMIN"
+        ) {
+          pushToast("success", "Đã đăng nhập");
+          return { ok: true };
+        }
         return {
           ok: false,
           message:
@@ -579,7 +643,13 @@ export const apiModeActions = {
       pushToast("success", "Đã đăng nhập");
       return { ok: true };
     } catch (error) {
-      setState((state) => ({ ...state, user: null, hydrated: true }));
+      setState((state) => ({
+        ...state,
+        user: null,
+        account: null,
+        passwordChangeRequired: false,
+        hydrated: true,
+      }));
       if (error instanceof ApiError) {
         if (error.status === 401) {
           return { ok: false, message: "Email hoặc mật khẩu không đúng." };
@@ -609,6 +679,8 @@ export const apiModeActions = {
     setState((state) => ({
       ...state,
       user: null,
+      account: null,
+      passwordChangeRequired: false,
       departments: [],
       people: [],
       catalog: [],
@@ -618,6 +690,31 @@ export const apiModeActions = {
       audit: [],
       hydrated: true,
     }));
+  },
+
+  async changePassword(
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ ok: boolean; message?: string }> {
+    try {
+      await apiRequest("/api/v1/auth/change-password", {
+        method: "POST",
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      setState((state) => ({
+        ...state,
+        user: null,
+        account: null,
+        passwordChangeRequired: false,
+        hydrated: true,
+      }));
+      return { ok: true };
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        return { ok: false, message: "Mật khẩu hiện tại không đúng." };
+      }
+      return { ok: false, message: errorText("Đổi mật khẩu", error) };
+    }
   },
 
   async createTask(input: CreateTaskInput): Promise<boolean> {

@@ -26,6 +26,13 @@ import {
 } from "@/demo/data";
 import { resolveAppUser } from "./identity";
 
+export type AccountSession = {
+  id: string;
+  email: string;
+  accountRole: "USER" | "ACCOUNT_ADMIN" | "ROOT";
+  mustChangePassword: boolean;
+};
+
 export interface SyncRun {
   id: string;
   at: string;
@@ -45,6 +52,8 @@ export interface IntegrationState {
 }
 export interface AppState {
   user: AppUser | null;
+  account: AccountSession | null;
+  passwordChangeRequired: boolean;
   departments: Department[];
   people: Person[];
   positions: PositionRef[];
@@ -65,6 +74,8 @@ const LEGACY_STORAGE_KEYS = ["btctu:workspace:v3", "btctu:mock:v2"] as const;
 export function initialDemoState(): AppState {
   return structuredClone({
     user: null,
+    account: null,
+    passwordChangeRequired: false,
     departments: DEPARTMENTS,
     people: PEOPLE,
     positions: POSITIONS,
@@ -108,6 +119,8 @@ function initialState(): AppState {
   }
   return {
     user: null,
+    account: null,
+    passwordChangeRequired: false,
     departments: [],
     people: [],
     positions: [],

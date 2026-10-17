@@ -94,18 +94,10 @@ export function createActorMiddleware(
       userId = header;
     }
 
-    let actor = await actorResolver(userId);
-    if (!actor && user && (user.accountRole === "ROOT" || user.accountRole === "ACCOUNT_ADMIN")) {
-      actor = {
-        id: user.id,
-        name: user.accountRole === "ROOT" ? "Quản trị viên Root" : "Quản trị viên IAM",
-        role: "lanh_dao",
-        departmentId: null,
-      };
-    }
+    const actor = await actorResolver(userId);
 
     if (!actor) {
-      if (env.environment === "production") {
+      if (user) {
         problem(
           req,
           res,

@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { MANAGER_DIRECTORY, MANAGER_SEED_ACCOUNTS } from "./manager-directory";
+import { MANAGER_DIRECTORY } from "./manager-directory";
 
-describe("manager directory seed", () => {
-  it("keeps one sample account for each manager without exposing email in the directory", () => {
+describe("manager directory", () => {
+  it("has unique directory actors", () => {
     expect(MANAGER_DIRECTORY).toHaveLength(19);
-    expect(MANAGER_SEED_ACCOUNTS).toHaveLength(19);
-    expect(new Set(MANAGER_DIRECTORY.map((person) => person.id))).toEqual(
-      new Set(MANAGER_SEED_ACCOUNTS.map((account) => account.directoryActorId)),
+    expect(new Set(MANAGER_DIRECTORY.map((person) => person.id)).size).toBe(
+      MANAGER_DIRECTORY.length,
     );
-    expect(MANAGER_DIRECTORY.every((person) => !("email" in person))).toBe(true);
   });
 });
