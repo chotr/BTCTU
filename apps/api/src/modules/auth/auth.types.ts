@@ -25,6 +25,11 @@ export type RefreshResult = SessionTokens & { user: AuthenticatedUser };
 export type UserStore = {
   findByEmail(email: string): Promise<User | null>;
   findById(id: string): Promise<User | null>;
+  updatePassword(
+    id: string,
+    passwordHash: string,
+    mustChangePassword: boolean,
+  ): Promise<User | null>;
 };
 
 export type SessionStore = {
@@ -54,6 +59,11 @@ export type AuthPort = {
   logout(refreshToken: string): Promise<void>;
   authenticate(accessToken: string): Promise<AuthPrincipal>;
   currentUser(principal: AuthPrincipal): Promise<AuthenticatedUser | null>;
+  changePassword(
+    principal: AuthPrincipal,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void>;
 };
 
 export class InvalidCredentialsError extends Error {
@@ -98,5 +108,12 @@ export class InvalidAccessTokenError extends Error {
   constructor() {
     super("Access token is invalid");
     this.name = "InvalidAccessTokenError";
+  }
+}
+
+export class InvalidCurrentPasswordError extends Error {
+  constructor() {
+    super("Current password is incorrect");
+    this.name = "InvalidCurrentPasswordError";
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { appPath } from "@/lib/workspace-runtime";
 import {
   Card,
   EmptyState,
@@ -30,7 +31,9 @@ export function TodoList({
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-sm font-semibold">Việc cần xử lý</h2>
         <Link
-          href={role === ROLES.congChuc ? "/tasks" : "/approvals"}
+          href={appPath(
+            role === ROLES.congChuc ? "/tasks" : "/approvals",
+          )}
           className="text-xs font-medium text-accent-700"
         >
           Xem tất cả
@@ -46,7 +49,7 @@ export function TodoList({
           {todoTasks.slice(0, 6).map((t) => (
             <Link
               key={t.id}
-              href={`/tasks/${t.id}`}
+              href={appPath(`/tasks/${t.id}`)}
               className="flex flex-wrap items-center justify-between gap-3 rounded-ctl bg-fill p-3 hover:bg-accent-50"
             >
               <div className="min-w-0 flex-1">
@@ -61,7 +64,7 @@ export function TodoList({
           {todoEvals.slice(0, 4).map((e) => (
             <Link
               key={e.id}
-              href={`/evaluation/${e.id}`}
+              href={appPath(`/evaluation/${e.id}`)}
               className="flex flex-wrap items-center justify-between gap-3 rounded-ctl bg-fill p-3 hover:bg-accent-50"
             >
               <div>

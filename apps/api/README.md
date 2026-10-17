@@ -18,7 +18,8 @@ pnpm --filter @btctu/api dev
 - OpenAPI: `http://localhost:8787/openapi.json`
 - Health: `http://localhost:8787/health`
 
-Môi trường cục bộ dùng header `x-dev-user-id` (`u-leader`, `u-head`, `u-staff`)
+Môi trường cục bộ dùng header `x-dev-user-id` (ví dụ: `p-nguyen-thuong-hai`,
+`p-tran-hai-trieu`, `p-nguyen-tran-thi`)
 để chọn người dùng thử nghiệm. Header này không phải cơ chế xác thực cho môi
 trường vận hành.
 
@@ -26,12 +27,13 @@ trường vận hành.
 
 API xác thực bằng email/mật khẩu, cấp access token (JWT) và refresh token lưu trong cookie `HttpOnly`:
 
-| Method | Path                   | Mục đích                                            |
-| ------ | ---------------------- | --------------------------------------------------- |
-| POST   | `/api/v1/auth/login`   | đổi email/mật khẩu lấy token, đặt cả hai vào cookie |
-| POST   | `/api/v1/auth/refresh` | xoay refresh token, cấp access token mới            |
-| POST   | `/api/v1/auth/logout`  | thu hồi phiên và xoá cả hai cookie                  |
-| GET    | `/api/v1/auth/session` | tài khoản và phiên của phiên hiện tại               |
+| Method | Path                           | Mục đích                                               |
+| ------ | ------------------------------ | ------------------------------------------------------ |
+| POST   | `/api/v1/auth/login`           | đổi email/mật khẩu lấy token, đặt cả hai vào cookie    |
+| POST   | `/api/v1/auth/refresh`         | xoay refresh token, cấp access token mới               |
+| POST   | `/api/v1/auth/logout`          | thu hồi phiên và xoá cả hai cookie                     |
+| GET    | `/api/v1/auth/session`         | tài khoản và phiên của phiên hiện tại                  |
+| POST   | `/api/v1/auth/change-password` | đổi mật khẩu của chính tài khoản, sau đó đăng nhập lại |
 
 ```bash
 curl -i -c cookies.txt -X POST http://localhost:8787/api/v1/auth/login \
@@ -51,34 +53,61 @@ curl -b cookies.txt http://localhost:8787/api/v1/auth/session
 - cờ `Secure`/`SameSite` của cookie suy ra từ `ENVIRONMENT`, ghi đè bằng `AUTH_COOKIE_SECURE` và `AUTH_COOKIE_SAME_SITE`; `SameSite=None` đòi `Secure`;
 - lỗi trả về theo problem+json (`type`, `title`, `status`, `detail`, `instance`, `requestId`) như các route khác; phần đầu của `type` theo `PROBLEM_TYPE_BASE`, mặc định là `${PUBLIC_BASE_URL}/problems`.
 
-Tài khoản phát triển (chạy `pnpm --filter @btctu/api db:migrate` trước, rồi `pnpm --filter @btctu/api db:seed`) dùng email `leader@btctu.local`, `head@btctu.local`, `staff@btctu.local`. Mật khẩu mặc định là `dev-only-changeme`; đặt `DEV_SEED_PASSWORD` để đổi.
+`db:seed` tạo 19 tài khoản mẫu cho danh bạ quản lý cùng `root@example.test`
+và `iam-admin@example.test`, dùng mật khẩu chung `dev-only-changeme`. Đặt
+`DEV_SEED_PASSWORD` để đổi mật khẩu trước khi chạy. Seed chỉ chạy ngoài
+production và thay thế ba tài khoản mẫu cũ (`leader`, `head`, `staff`) nếu
+chúng còn tồn tại. Khi đưa vào vận hành, `db:bootstrap-root` thay root mẫu bằng
+root thật; seed từ chối chạy nếu root thật đã tồn tại.
 
-Danh tính cho các route nghiệp vụ đi qua cổng `ActorResolver`. Ở môi trường khác `production`, resolver đọc danh mục trong bộ nhớ và request **bắt buộc** gửi `x-dev-user-id`; thiếu header trả 401 `unknown_actor`. Ở production, danh tính chỉ đến từ access token, và vì bảng `users` chưa gắn với danh mục nhân sự (mốc P2) nên những route đó trả 403 `actor_not_provisioned`.
+Danh tính cho các route nghiệp vụ đi qua cổng `ActorResolver`. Tài khoản có
+`directory_actor_id` được nối với actor trong danh mục nghiệp vụ; access cookie
+được dùng ở mọi môi trường. Ngoài production, request không có cookie vẫn có thể
+dùng `x-dev-user-id` để kiểm thử nhanh. Production không chấp nhận header này và
+trả 403 `actor_not_provisioned` nếu tài khoản chưa được gán actor.
 
 Mô tả chi tiết về cookie, mã lỗi và luồng đổi token:
 [docs/04-system-design/auth-api.md](../../docs/04-system-design/auth-api.md).
 
 ## Endpoint chính
 
-| Method   | Path                               | Mục đích                        |
-| -------- | ---------------------------------- | ------------------------------- |
-| GET      | `/health`                          | liveness/readiness cơ bản       |
-| GET      | `/openapi.json`                    | danh mục endpoint phát triển    |
-| GET      | `/api/v1/me`                       | actor hiện tại                  |
-| GET      | `/api/v1/organizations`            | đơn vị và nhân sự               |
-| GET      | `/api/v1/catalog`                  | danh mục công việc có phiên bản |
-| GET/POST | `/api/v1/tasks`                    | danh sách/tạo nhiệm vụ          |
-| GET      | `/api/v1/tasks/:id`                | chi tiết nhiệm vụ               |
-| POST     | `/api/v1/tasks/:id/result`         | lưu hoặc nộp kết quả            |
-| POST     | `/api/v1/tasks/:id/accept`         | nghiệm thu                      |
-| POST     | `/api/v1/tasks/:id/return`         | trả lại chỉnh sửa               |
-| GET      | `/api/v1/evaluations`              | danh sách hồ sơ đánh giá        |
-| POST     | `/api/v1/evaluations/:id/self`     | tự đánh giá                     |
-| POST     | `/api/v1/evaluations/:id/review`   | thẩm định                       |
-| POST     | `/api/v1/evaluations/:id/decision` | quyết định                      |
-| POST     | `/api/v1/periods/:id/lock`         | khóa kỳ                         |
-| GET      | `/api/v1/audit`                    | nhật ký audit                   |
-| GET      | `/api/v1/reports/summary`          | số liệu tổng hợp                |
+| Method   | Path                                     | Mục đích                        |
+| -------- | ---------------------------------------- | ------------------------------- |
+| GET      | `/health`                                | liveness/readiness cơ bản       |
+| GET      | `/openapi.json`                          | danh mục endpoint phát triển    |
+| GET      | `/api/v1/me`                             | actor hiện tại                  |
+| GET      | `/api/v1/organizations`                  | đơn vị và nhân sự               |
+| GET      | `/api/v1/catalog`                        | danh mục công việc có phiên bản |
+| GET/POST | `/api/v1/tasks`                          | danh sách/tạo nhiệm vụ          |
+| GET      | `/api/v1/tasks/:id`                      | chi tiết nhiệm vụ               |
+| POST     | `/api/v1/tasks/:id/result`               | lưu hoặc nộp kết quả            |
+| POST     | `/api/v1/tasks/:id/accept`               | nghiệm thu                      |
+| POST     | `/api/v1/tasks/:id/return`               | trả lại chỉnh sửa               |
+| GET      | `/api/v1/evaluations`                    | danh sách hồ sơ đánh giá        |
+| POST     | `/api/v1/evaluations/:id/self`           | tự đánh giá                     |
+| POST     | `/api/v1/evaluations/:id/review`         | thẩm định                       |
+| POST     | `/api/v1/evaluations/:id/decision`       | quyết định                      |
+| POST     | `/api/v1/periods/:id/lock`               | khóa kỳ                         |
+| GET      | `/api/v1/audit`                          | nhật ký audit                   |
+| GET      | `/api/v1/reports/summary`                | số liệu tổng hợp                |
+| GET      | `/api/v1/admin/users`                    | tài khoản được phép quản trị    |
+| GET      | `/api/v1/admin/user-candidates`          | nhân sự chưa có tài khoản       |
+| POST     | `/api/v1/admin/users`                    | tạo tài khoản từ nhân sự        |
+| PATCH    | `/api/v1/admin/users/:id`                | sửa hoặc khóa tài khoản         |
+| POST     | `/api/v1/admin/users/:id/reset-password` | đặt mật khẩu tạm thời           |
+| PUT      | `/api/v1/admin/users/:id/account-role`   | cấp/thu hồi admin, chỉ root     |
+
+Không có đăng ký công khai hoặc xóa cứng tài khoản. Tài khoản mới phải được gắn
+với nhân sự sẵn có và đổi mật khẩu ở lần sử dụng đầu tiên. Xem
+[API quản trị tài khoản](../../docs/04-system-design/account-admin-api.md).
+
+Tạo root một lần khi triển khai:
+
+```bash
+ROOT_BOOTSTRAP_EMAIL=root@btctu.local \
+ROOT_BOOTSTRAP_PASSWORD='mật-khẩu-đủ-mạnh' \
+pnpm --filter @btctu/api db:bootstrap-root
+```
 
 ## Cấu trúc
 

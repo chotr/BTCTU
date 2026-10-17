@@ -1,5 +1,7 @@
 export {
+  ACCOUNT_ROLES,
   ACCOUNT_STATUSES,
+  type AccountRole,
   type AccountStatus,
   type AuthenticatedUser,
   type LoginRequest,

@@ -2,6 +2,7 @@ import type { User } from "@/db/schema";
 import type { AccessTokenService } from "./access-token.service";
 import {
   AccountDisabledError,
+  InvalidCurrentPasswordError,
   InvalidAccessTokenError,
   InvalidCredentialsError,
   InvalidSessionError,
@@ -161,6 +162,25 @@ export class AuthService implements AuthPort {
     return toAuthenticatedUser(user);
   }
 
+  async changePassword(
+    principal: AuthPrincipal,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const user = await this.options.users.findById(principal.userId);
+    if (!user || user.status !== "ACTIVE") throw new AccountDisabledError();
+
+    const matches = await this.options.passwords.verify(
+      user.passwordHash,
+      currentPassword,
+    );
+    if (!matches) throw new InvalidCurrentPasswordError();
+
+    const passwordHash = await this.options.passwords.hash(newPassword);
+    await this.options.users.updatePassword(user.id, passwordHash, false);
+    await this.sessions.revokeAllForUser(user.id);
+  }
+
   private async rotateOrReportReuse(
     refreshToken: string,
   ): Promise<StartedSession> {
@@ -184,5 +204,12 @@ export class AuthService implements AuthPort {
 }
 
 function toAuthenticatedUser(user: User): AuthenticatedUser {
-  return { id: user.id, email: user.email, status: user.status };
+  return {
+    id: user.id,
+    email: user.email,
+    status: user.status,
+    accountRole: user.accountRole,
+    mustChangePassword: user.mustChangePassword,
+    directoryActorId: user.directoryActorId,
+  };
 }

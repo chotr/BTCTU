@@ -21,6 +21,7 @@ import {
   TaskStatusBadge,
 } from "@/components/ui";
 import { CreateTask } from "@/components/tasks";
+import { appPath } from "@/lib/workspace-runtime";
 
 export default function TasksPage() {
   const state = useApp();
@@ -150,7 +151,7 @@ export default function TasksPage() {
                 >
                   <td className="max-w-96 p-3">
                     <Link
-                      href={`/tasks/${t.id}`}
+                      href={appPath(`/tasks/${t.id}`)}
                       className="font-semibold text-accent-700 hover:underline"
                     >
                       {t.title}

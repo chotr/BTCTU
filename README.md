@@ -17,9 +17,8 @@ thức.
 | Kiểm thử      | Kiểm thử đơn vị, kiểm thử API và một số kịch bản trình duyệt        | Chưa có kiểm thử xuyên suốt với web, API và PostgreSQL thật                        |
 | Vận hành      | Có mẫu cấu hình cho môi trường phát triển                           | Chưa hoàn tất tích hợp định danh, sao lưu, giám sát và thẩm định an toàn thông tin |
 
-Giao diện mặc định dùng dữ liệu mẫu trong `apps/web/src/lib/mock/`. Đặt
-`NEXT_PUBLIC_DATA_SOURCE=api` để đọc dữ liệu từ API và dùng các endpoint nhiệm
-vụ, đánh giá, khóa kỳ hiện có.
+Giao diện chính luôn đọc dữ liệu từ API. Không gian mô phỏng dành cho phát triển
+nằm tại `/demo/login` và không dùng chung phiên hoặc dữ liệu lưu với route chính.
 
 ## Chạy trên máy phát triển
 
@@ -56,7 +55,7 @@ Kiểm thử trình duyệt được chạy riêng vì cần Playwright và môi
 
 ## Cấu trúc repo
 
-- `apps/web` — giao diện Next.js và dữ liệu mẫu dùng khi phát triển;
+- `apps/web` — giao diện Next.js; dữ liệu mô phỏng phát triển nằm trong `src/demo`;
 - `apps/api` — API Express, xác thực, phân quyền và các lược đồ PostgreSQL;
 - `packages/shared` — kiểu dữ liệu và hằng số dùng chung;
 - `docs` — ghi chép yêu cầu, căn cứ nghiệp vụ, quyết định kỹ thuật và việc còn mở.

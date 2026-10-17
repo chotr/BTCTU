@@ -1,5 +1,6 @@
 import express from "express";
 import { openapi } from "@/contract/openapi";
+import { createDatabase } from "@/db/client";
 import type { Env } from "@/env";
 import { errorHandler, notFoundHandler } from "@/middleware/error-handling";
 import { createRequestContext } from "@/middleware/request-context";
@@ -9,6 +10,13 @@ import {
   type AuthModuleOverrides,
 } from "@/modules/auth/auth.module";
 import { createAuthRouter } from "@/modules/auth/auth.routes";
+import { DatabaseAccountAdminStore } from "@/modules/account-admin/account-admin.repository";
+import { createAccountAdminRouter } from "@/modules/account-admin/account-admin.routes";
+import {
+  AccountAdminService,
+  type AccountAdminPort,
+} from "@/modules/account-admin/account-admin.service";
+import { PasswordService } from "@/modules/auth/password.service";
 import { createAuditRouter } from "@/modules/audit/audit.routes";
 import { createCatalogRouter } from "@/modules/catalog/catalog.routes";
 import { createEvaluationRouter } from "@/modules/evaluation/evaluation.routes";
@@ -27,6 +35,7 @@ import type { WorkspaceState } from "@/types";
 
 export type AppDependencies = AuthModuleOverrides & {
   actorResolver?: ActorResolver;
+  accountAdmin?: AccountAdminPort;
   state?: WorkspaceState;
 };
 
@@ -34,10 +43,13 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
   const { auth, throttle } = createAuthModule(env, dependencies);
   const state = dependencies.state ?? createWorkspaceState();
   const actorResolver =
-    dependencies.actorResolver ??
-    (env.environment === "production"
-      ? () => null
-      : createDirectoryActorResolver(state.people));
+    dependencies.actorResolver ?? createDirectoryActorResolver(state.people);
+  const accountAdmin =
+    dependencies.accountAdmin ??
+    new AccountAdminService(
+      new DatabaseAccountAdminStore(createDatabase(env.databaseUrl)),
+      new PasswordService(),
+    );
 
   const app = express();
   app.disable("x-powered-by");
@@ -74,6 +86,11 @@ export function createApp(env: Env, dependencies: AppDependencies = {}) {
       cookiePolicy: env.cookiePolicy,
       refreshTtlSeconds: env.refreshTokenTtlSeconds,
     }),
+  );
+
+  api.use(
+    "/admin",
+    createAccountAdminRouter({ auth, accounts: accountAdmin, state }),
   );
 
   api.use(createActorMiddleware({ env, auth, actorResolver, state }));

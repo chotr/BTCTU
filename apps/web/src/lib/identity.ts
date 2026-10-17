@@ -1,4 +1,5 @@
-import { USERS } from "./mock";
+import { USERS } from "@/demo/data";
+import { getWorkspaceMode } from "./workspace-runtime";
 import { ROLES, type AppUser, type Department, type Person } from "./types";
 
 type IdentityState = {
@@ -12,7 +13,10 @@ export function resolveAppUser(
 ): AppUser | null {
   if (!userId) return null;
   const person = state.people.find((row) => row.id === userId);
-  const preset = USERS.find((row) => row.id === userId);
+  const preset =
+    getWorkspaceMode() === "mock"
+      ? USERS.find((row) => row.id === userId)
+      : undefined;
   if (!person && !preset) return null;
   const departmentId = person?.departmentId ?? preset?.departmentId ?? null;
   const department = departmentId

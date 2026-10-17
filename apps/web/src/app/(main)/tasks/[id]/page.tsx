@@ -8,9 +8,10 @@ import { useApp } from "@/lib/store";
 import { canReviewTask, canViewDepartment, canViewTask } from "@/lib/policy";
 import { personName } from "@/lib/shared/names";
 import { api, taskPeriodLocked } from "@/lib/api";
-import { isApiMode } from "@/lib/runtime-config";
+import { isApiWorkspace } from "@/lib/workspace-runtime";
 import { useBusy } from "@/components/use-busy";
 import type { Task } from "@/lib/types";
+import { appPath } from "@/lib/workspace-runtime";
 import { TASK_EDITABLE, inGroup } from "@/lib/domain/workflow";
 import { fmtDate } from "@/lib/format";
 import {
@@ -43,7 +44,7 @@ export default function TaskDetail() {
         <EmptyState
           title="Không thể mở nhiệm vụ"
           hint="Nhiệm vụ không tồn tại hoặc ngoài phạm vi truy cập."
-          action={<Link href="/tasks">Về danh sách</Link>}
+          action={<Link href={appPath("/tasks")}>Về danh sách</Link>}
         />
       </Card>
     );
@@ -81,7 +82,7 @@ function TaskWorkspace({ task }: { task: Task }) {
   return (
     <div className="space-y-4">
       <Link
-        href="/tasks"
+        href={appPath("/tasks")}
         className="inline-flex items-center gap-1 text-xs text-accent-700"
       >
         <ArrowLeft size={14} />
@@ -139,7 +140,7 @@ function TaskWorkspace({ task }: { task: Task }) {
             <p className="mt-4 text-xs text-ink-3">
               Nguồn: {catalog?.sourceRef ?? "—"}
             </p>
-            {!isApiMode &&
+            {!isApiWorkspace() &&
               editable &&
               canReviewTask(user, task.departmentId) && (
                 <div className="mt-4 flex gap-2">
@@ -161,12 +162,12 @@ function TaskWorkspace({ task }: { task: Task }) {
             reviewer={reviewer}
             onAction={setAction}
           />
-          {!isApiMode && (
+          {!isApiWorkspace() && (
             <EvidenceSection task={task} owner={owner} editable={editable} />
           )}
         </div>
         <div className="space-y-4">
-          {!isApiMode && (
+          {!isApiWorkspace() && (
             <ProgressCard task={task} owner={owner} editable={editable} />
           )}
           <TaskHistory task={task} state={state} />

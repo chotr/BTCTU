@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { appPath } from "@/lib/workspace-runtime";
 import {
   Card,
   ClassificationBadge,
@@ -40,7 +41,7 @@ export function EvaluationTable({
                 <td className="p-3">
                   <Link
                     className="font-semibold text-accent-700 hover:underline"
-                    href={`/evaluation/${e.id}`}
+                    href={appPath(`/evaluation/${e.id}`)}
                   >
                     {evaluationLabel(e, state)}
                   </Link>

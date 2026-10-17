@@ -43,6 +43,41 @@ function isPostgresUrl(value: string): boolean {
   return value.startsWith("postgres://") || value.startsWith("postgresql://");
 }
 
+export function normalizePostgresUrl(raw: string): string {
+  const trimmed = raw.trim();
+  const separatorIndex = trimmed.indexOf("://");
+  if (separatorIndex === -1) return trimmed;
+
+  const scheme = trimmed.slice(0, separatorIndex);
+  const rest = trimmed.slice(separatorIndex + 3);
+
+  // The last '@' separates credentials from endpoint (host[:port]/database?...)
+  const lastAt = rest.lastIndexOf("@");
+  if (lastAt === -1) return trimmed;
+
+  const credentials = rest.slice(0, lastAt);
+  const endpoint = rest.slice(lastAt + 1);
+
+  const firstColon = credentials.indexOf(":");
+  if (firstColon === -1) return trimmed;
+
+  const username = credentials.slice(0, firstColon);
+  const password = credentials.slice(firstColon + 1);
+
+  const safeDecode = (val: string) => {
+    try {
+      return decodeURIComponent(val);
+    } catch {
+      return val;
+    }
+  };
+
+  const encodedUser = encodeURIComponent(safeDecode(username));
+  const encodedPass = encodeURIComponent(safeDecode(password));
+
+  return `${scheme}://${encodedUser}:${encodedPass}@${endpoint}`;
+}
+
 function isHttpUrl(value: string): boolean {
   try {
     const url = new URL(value);
@@ -150,12 +185,13 @@ function readSameSite(source: NodeJS.ProcessEnv): SameSitePolicy | undefined {
 
 export function readEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const environment = source.ENVIRONMENT?.trim() || "local";
-  const databaseUrl = requireString(source, "DATABASE_URL");
-  if (!isPostgresUrl(databaseUrl)) {
+  const rawDatabaseUrl = requireString(source, "DATABASE_URL");
+  if (!isPostgresUrl(rawDatabaseUrl)) {
     throw new Error(
       "DATABASE_URL must start with postgres:// or postgresql://",
     );
   }
+  const databaseUrl = normalizePostgresUrl(rawDatabaseUrl);
 
   const jwtAccessSecret = requireString(source, "JWT_ACCESS_SECRET");
   const minimumSecretLength =

@@ -5,9 +5,10 @@ import { useApp } from "@/lib/store";
 import { canManage } from "@/lib/policy";
 import { scopedData } from "@/lib/access";
 import { api } from "@/lib/api";
-import { isApiMode } from "@/lib/runtime-config";
+import { isApiWorkspace } from "@/lib/workspace-runtime";
 import { EVAL_FINAL, inGroup } from "@/lib/domain/workflow";
 import { useBusy } from "@/components/use-busy";
+import { appPath } from "@/lib/workspace-runtime";
 import {
   Badge,
   Button,
@@ -58,7 +59,7 @@ export default function PeriodsPage() {
         hint="Theo dõi tiến trình, khóa dữ liệu và mở lại có kiểm soát."
         actions={
           allowed &&
-          !isApiMode && (
+          !isApiWorkspace() && (
             <Button variant="primary" onClick={() => setMode("create")}>
               Tạo kỳ
             </Button>
@@ -88,12 +89,13 @@ export default function PeriodsPage() {
               )}
               <div className="flex flex-wrap gap-2">
                 <Link
-                  href="/evaluation"
+                  href={appPath("/evaluation")}
                   className="rounded-ctl bg-fill-2 px-3 py-2 text-xs font-medium"
                 >
                   Xem hồ sơ
                 </Link>
-                {allowed && (!isApiMode || p.status !== "LOCKED") && (
+                {allowed &&
+                  (!isApiWorkspace() || p.status !== "LOCKED") && (
                   <Button
                     variant={p.status === "LOCKED" ? "secondary" : "primary"}
                     onClick={() => {

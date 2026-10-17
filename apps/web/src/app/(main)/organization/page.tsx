@@ -5,7 +5,7 @@ import { Plus } from "@phosphor-icons/react";
 import { useApp } from "@/lib/store";
 import { canAssign, canManage, canViewDepartment } from "@/lib/policy";
 import { api } from "@/lib/api";
-import { isApiMode } from "@/lib/runtime-config";
+import { isApiWorkspace } from "@/lib/workspace-runtime";
 import {
   Badge,
   Button,
@@ -39,7 +39,8 @@ export default function OrganizationPage() {
     canViewDepartment(user, d.id),
   );
   const allowed =
-    !isApiMode && (tab === "people" ? canAssign(user) : canManage(user));
+    !isApiWorkspace() &&
+    (tab === "people" ? canAssign(user) : canManage(user));
   const items = state[tab].filter((item) => {
     const r = item as unknown as Record<string, string>;
     const id = tab === "departments" ? r.id : r.departmentId;

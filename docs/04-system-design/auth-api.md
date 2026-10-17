@@ -1,8 +1,8 @@
 # Contract API đăng nhập
 
-Trạng thái: đã hiện thực trong `apps/api`, kèm migration `0002`. Đây là thiết kế
-cục bộ; việc gắn tài khoản với danh mục nhân sự và vai trò còn để lại (xem mục
-Giới hạn).
+Trạng thái: đã hiện thực trong `apps/api`, kèm migration xác thực và account
+management. Tài khoản được nối với danh mục nhân sự qua `directory_actor_id`;
+xem [account-admin-api.md](account-admin-api.md) cho vòng đời quản trị tài khoản.
 
 ## Phạm vi
 
@@ -13,51 +13,52 @@ không có chỗ nào trong ứng dụng web phải giữ token.
 Từ bản này, danh tính khi chạy production lấy từ access token do chính API cấp.
 Header `x-dev-user-id` chỉ còn hiệu lực khi `ENVIRONMENT` khác `production`.
 
-Cả bốn endpoint nằm dưới `/api/v1/auth`:
+Cả năm endpoint nằm dưới `/api/v1/auth`:
 
-| Method | Path                   | Việc                                     | Cần access token             |
-| ------ | ---------------------- | ---------------------------------------- | ---------------------------- |
-| POST   | `/api/v1/auth/login`   | đổi email và mật khẩu lấy token          | không                        |
-| POST   | `/api/v1/auth/refresh` | xoay refresh token, cấp access token mới | không, dùng cookie hoặc body |
-| POST   | `/api/v1/auth/logout`  | thu hồi phiên hiện tại                   | không                        |
-| GET    | `/api/v1/auth/session` | trả tài khoản và phiên của access token  | có, cookie hoặc Bearer       |
+| Method | Path                           | Việc                                     | Cần access token             |
+| ------ | ------------------------------ | ---------------------------------------- | ---------------------------- |
+| POST   | `/api/v1/auth/login`           | đổi email và mật khẩu lấy token          | không                        |
+| POST   | `/api/v1/auth/refresh`         | xoay refresh token, cấp access token mới | không, dùng cookie hoặc body |
+| POST   | `/api/v1/auth/logout`          | thu hồi phiên hiện tại                   | không                        |
+| POST   | `/api/v1/auth/change-password` | đổi mật khẩu, thu hồi mọi phiên          | có                           |
+| GET    | `/api/v1/auth/session`         | trả tài khoản và phiên của access token  | có, cookie hoặc Bearer       |
 
 ## Thành phần
 
 Đường dẫn tính từ `apps/api/src`.
 
-| File                                              | Vai trò                                                       |
-| ------------------------------------------------- | ------------------------------------------------------------- |
-| `modules/auth/auth.routes.ts`                     | bốn route, ghi/xoá cookie, ánh xạ lỗi sang HTTP               |
-| `modules/auth/auth.service.ts`                    | xác minh mật khẩu, cấp phiên, xác minh access token           |
-| `modules/auth/session.service.ts`                 | cấp phiên, xoay token tại chỗ, phát hiện dùng lại             |
-| `modules/auth/access-token.service.ts`            | cổng `AccessTokenService` và bản HMAC-JWT                     |
-| `modules/auth/refresh-token.service.ts`           | sinh và băm refresh token                                     |
-| `modules/auth/password.service.ts`                | băm và kiểm mật khẩu bằng argon2id                            |
-| `modules/auth/auth.policy.ts`                     | hằng số chính sách mật khẩu và email                          |
-| `modules/auth/repositories/user.repository.ts`    | đọc và tạo bản ghi `users`                                    |
-| `modules/auth/repositories/session.repository.ts` | tạo, tra, xoay và thu hồi `sessions`                          |
-| `modules/auth/auth.module.ts`                     | ghép nối từ biến môi trường, mở pool ở request đầu tiên       |
-| `modules/auth/auth.types.ts`                      | cổng `AuthPort`, `SessionStore` và các lỗi miền               |
-| `modules/identity/actor-resolver.ts`              | cổng `ActorResolver` và hai adapter                           |
-| `middleware/authentication.ts`                    | guard Bearer/cookie cho route cần token                       |
-| `middleware/authorization.ts`                     | bảng quy tắc uỷ quyền theo hành động                          |
-| `middleware/csrf.ts`, `security/origin.ts`        | kiểm `Origin` cho request đổi trạng thái                      |
-| `security/cookie.ts`                              | tên cookie, ghi và đọc cookie, không phụ thuộc thư viện ngoài |
-| `security/login-throttle.ts`                      | cổng `LoginThrottle` và adapter trong bộ nhớ                  |
-| `shared/problem.ts`                               | khuôn lỗi problem+json dùng chung với các route khác          |
+| File                                              | Vai trò                                                         |
+| ------------------------------------------------- | --------------------------------------------------------------- |
+| `modules/auth/auth.routes.ts`                     | năm route, ghi/xoá cookie, đổi mật khẩu và ánh xạ lỗi sang HTTP |
+| `modules/auth/auth.service.ts`                    | xác minh mật khẩu, cấp phiên, xác minh access token             |
+| `modules/auth/session.service.ts`                 | cấp phiên, xoay token tại chỗ, phát hiện dùng lại               |
+| `modules/auth/access-token.service.ts`            | cổng `AccessTokenService` và bản HMAC-JWT                       |
+| `modules/auth/refresh-token.service.ts`           | sinh và băm refresh token                                       |
+| `modules/auth/password.service.ts`                | băm và kiểm mật khẩu bằng argon2id                              |
+| `modules/auth/auth.policy.ts`                     | hằng số chính sách mật khẩu và email                            |
+| `modules/auth/repositories/user.repository.ts`    | đọc và tạo bản ghi `users`                                      |
+| `modules/auth/repositories/session.repository.ts` | tạo, tra, xoay và thu hồi `sessions`                            |
+| `modules/auth/auth.module.ts`                     | ghép nối từ biến môi trường, mở pool ở request đầu tiên         |
+| `modules/auth/auth.types.ts`                      | cổng `AuthPort`, `SessionStore` và các lỗi miền                 |
+| `modules/identity/actor-resolver.ts`              | cổng `ActorResolver` và hai adapter                             |
+| `middleware/authentication.ts`                    | guard Bearer/cookie cho route cần token                         |
+| `middleware/authorization.ts`                     | bảng quy tắc uỷ quyền theo hành động                            |
+| `middleware/csrf.ts`, `security/origin.ts`        | kiểm `Origin` cho request đổi trạng thái                        |
+| `security/cookie.ts`                              | tên cookie, ghi và đọc cookie, không phụ thuộc thư viện ngoài   |
+| `security/login-throttle.ts`                      | cổng `LoginThrottle` và adapter trong bộ nhớ                    |
+| `shared/problem.ts`                               | khuôn lỗi problem+json dùng chung với các route khác            |
 
 ## Cổng và adapter
 
 Bốn chỗ thay đổi theo môi trường đều là cổng, không phải biến cấu hình cho thuật
 toán:
 
-| Cổng                 | Bản đang dùng                                | Thay thế dự kiến                        |
-| -------------------- | -------------------------------------------- | --------------------------------------- |
-| `AccessTokenService` | `HmacJwtTokenService` (HS256, khoá đối xứng) | verifier OIDC/JWKS khi dùng IdP ngoài   |
-| `ActorResolver`      | `MockActorResolver` (danh mục trong bộ nhớ)  | resolver truy vấn bảng nhân sự ở mốc P2 |
-| `LoginThrottle`      | `MemoryLoginThrottle` (một tiến trình)       | adapter dùng kho chia sẻ                |
-| `AuthPort`           | `AuthService`                                | hiện thực khác cho SSO nếu cần          |
+| Cổng                 | Bản đang dùng                                | Thay thế dự kiến                                      |
+| -------------------- | -------------------------------------------- | ----------------------------------------------------- |
+| `AccessTokenService` | `HmacJwtTokenService` (HS256, khoá đối xứng) | verifier OIDC/JWKS khi dùng IdP ngoài                 |
+| `ActorResolver`      | resolver danh mục qua `directory_actor_id`   | resolver truy vấn bảng nhân sự khi chuyển persistence |
+| `LoginThrottle`      | `MemoryLoginThrottle` (một tiến trình)       | adapter dùng kho chia sẻ                              |
+| `AuthPort`           | `AuthService`                                | hiện thực khác cho SSO nếu cần                        |
 
 Algorithm không đưa thành chuỗi cấu hình vì HS256 và RS256 không dùng chung mô
 hình khoá. Đổi nhà cung cấp định danh là thêm một hiện thực của
@@ -346,9 +347,12 @@ pnpm --filter @btctu/api dev
 ```
 
 `db:migrate` cần chạy migration `0002` để có cột `previous_token_hash`.
-`db:seed` tạo ba tài khoản `leader@btctu.local`, `head@btctu.local`,
-`staff@btctu.local` với mật khẩu `dev-only-changeme`, đổi bằng biến
-`DEV_SEED_PASSWORD`.
+`db:seed` tạo 19 tài khoản mẫu cho danh bạ quản lý, một root
+`root@example.test` và một admin `iam-admin@example.test`. Email dùng miền
+`@example.test`, mật khẩu chung mặc định là `dev-only-changeme`, đổi bằng biến
+`DEV_SEED_PASSWORD`. Lệnh bị chặn ở production và xóa ba tài khoản mẫu cũ nếu
+chúng còn tồn tại. `db:bootstrap-root` thay root mẫu bằng root thật; seed từ
+chối chạy nếu root thật đã tồn tại.
 
 ```bash
 curl -i -c cookies.txt -X POST http://localhost:8787/api/v1/auth/login \
@@ -368,11 +372,10 @@ với kho in-memory nên không cần PostgreSQL.
 
 ## Giới hạn còn lại
 
-- Bảng `users` chưa có vai trò và đơn vị, nên ở production tài khoản đăng nhập
-  được nhưng chưa thành actor của các route nhiệm vụ: `UnprovisionedActorResolver`
-  trả null và API trả 403 `actor_not_provisioned`. Việc dựng bảng nhân sự,
-  membership và vai trò rồi thay adapter là hạng mục lớn nhất còn lại, thuộc mốc
-  P2. [TBD]
+- Bảng `users` giữ `directory_actor_id` để nối tài khoản với actor nghiệp vụ.
+  Resolver hiện đọc danh mục trong bộ nhớ; khi chuyển tổ chức và nhân sự sang
+  PostgreSQL, khóa này cần được thay bằng quan hệ tới hồ sơ nhân sự chính thức.
+  Tài khoản chưa được gán vẫn nhận 403 `actor_not_provisioned`. [TBD]
 - Bảng quy tắc uỷ quyền hiện giữ nguyên hành vi cũ theo vai trò. QĐ39 không nói
   mọi `lanh_dao` đều là cấp có thẩm quyền, nên quy tắc thật cần nghiệp vụ xác
   nhận trước khi coi là chính thức. [TBD]
@@ -388,7 +391,8 @@ với kho in-memory nên không cần PostgreSQL.
 - Chưa có MFA cho tài khoản đặc quyền, trong khi QĐ342 yêu cầu khi lên production. [TBD]
 - Chưa có CSRF token riêng cho trường hợp `AUTH_COOKIE_SAME_SITE=None`; khi đó
   `Secure` là điều kiện bắt buộc và đã được kiểm lúc khởi động. [TBD]
-- Web app hiện dùng dữ liệu mock, chưa gọi các endpoint này.
+- Route web chính dùng cookie phiên và các endpoint này; `/demo/*` là namespace
+  mô phỏng tách riêng cho phát triển.
 - `instance` trong phản hồi lỗi đang là path tương đối so với router được mount,
   ví dụ `/login`; riêng lỗi 500 của handler toàn cục dùng path đầy đủ. Cần thống
   nhất trước khi chốt contract. [TBD]

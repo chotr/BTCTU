@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { useApp } from "@/lib/store";
 import { api } from "@/lib/api";
-import { runtimeConfig, runtimeLabel } from "@/lib/runtime-config";
+import { environmentLabel } from "@/lib/runtime-config";
+import { appPath, isApiWorkspace } from "@/lib/workspace-runtime";
 import { Badge, Button, Callout, Card, Modal } from "@/components/ui";
 
 const rows = [
@@ -37,6 +38,7 @@ const rows = [
 export function SettingsPanel() {
   const [open, setOpen] = useState(false);
   const state = useApp();
+  const apiMode = isApiWorkspace();
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -52,22 +54,22 @@ export function SettingsPanel() {
             <Badge tone={state.storageError ? "warn" : "ok"}>
               {state.storageError
                 ? "Lưu trữ cần kiểm tra"
-                : runtimeConfig.dataSource === "api"
+                : apiMode
                   ? "Dữ liệu từ API"
                   : "Lưu cục bộ · schema v3"}
             </Badge>
             <Badge>{state.tasks.length} nhiệm vụ</Badge>
-            <Badge tone={runtimeConfig.dataSource === "api" ? "ok" : "warn"}>
-              {runtimeLabel()}
+            <Badge tone={apiMode ? "ok" : "warn"}>
+              {environmentLabel()} · {apiMode ? "API dịch vụ" : "Dữ liệu mô phỏng"}
             </Badge>
           </div>
           <p className="my-4 text-xs leading-relaxed text-ink-3">
-            {runtimeConfig.dataSource === "api"
+            {apiMode
               ? "Tải lại để lấy bản dữ liệu mới nhất từ API."
               : "Đổi tài khoản vẫn giữ dữ liệu. Khôi phục sẽ thay dữ liệu cục bộ bằng bộ mẫu."}
           </p>
           <Button onClick={() => setOpen(true)}>
-            {runtimeConfig.dataSource === "api"
+            {apiMode
               ? "Tải lại từ API"
               : "Khôi phục không gian làm việc"}
           </Button>
@@ -79,7 +81,7 @@ export function SettingsPanel() {
           <ol className="space-y-3 text-[13px] text-ink-2">
             <li>
               1.{" "}
-              <Link className="text-accent-700" href="/periods">
+              <Link className="text-accent-700" href={appPath("/periods")}>
                 Tạo kỳ đánh giá
               </Link>
               , tạo nhân sự và công việc từ danh mục đã công bố.
@@ -132,14 +134,14 @@ export function SettingsPanel() {
       <Modal
         open={open}
         title={
-          runtimeConfig.dataSource === "api"
+          apiMode
             ? "Tải lại dữ liệu từ API?"
             : "Khôi phục không gian làm việc?"
         }
         onClose={() => setOpen(false)}
       >
         <p className="text-sm leading-relaxed">
-          {runtimeConfig.dataSource === "api"
+          {apiMode
             ? "Dữ liệu trên màn hình sẽ được thay bằng bản mới nhất từ API."
             : "Dữ liệu hiện tại sẽ được thay bằng bộ mẫu. Hãy xuất báo cáo cần giữ trước khi xác nhận."}
         </p>
@@ -152,7 +154,7 @@ export function SettingsPanel() {
               setOpen(false);
             }}
           >
-            {runtimeConfig.dataSource === "api"
+            {apiMode
               ? "Tải lại"
               : "Khôi phục bộ mẫu"}
           </Button>

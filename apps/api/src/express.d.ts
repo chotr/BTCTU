@@ -1,4 +1,7 @@
-import type { AuthPrincipal } from "./modules/auth/auth.types";
+import type {
+  AuthPrincipal,
+  AuthenticatedUser,
+} from "./modules/auth/auth.types";
 import type { Actor, WorkspaceState } from "./types";
 
 declare global {
@@ -10,6 +13,7 @@ declare global {
       actor?: Actor;
       validated?: unknown;
       principal?: AuthPrincipal;
+      account?: AuthenticatedUser;
     }
   }
 }

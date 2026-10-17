@@ -1,9 +1,9 @@
 export const ACCESS_COOKIE_NAME = "btctu_access";
 export const REFRESH_COOKIE_NAME = "btctu_refresh";
 
-export const ACCESS_COOKIE_PATH = "/api/v1";
+export const ACCESS_COOKIE_PATH = "/";
 
-export const REFRESH_COOKIE_PATH = "/api/v1/auth";
+export const REFRESH_COOKIE_PATH = "/";
 
 export type SameSitePolicy = "Strict" | "Lax" | "None";
 
@@ -18,7 +18,9 @@ export function cookiePolicyForProfile(
 ): CookiePolicy {
   return {
     secure: overrides.secure ?? environment === "production",
-    sameSite: overrides.sameSite ?? "Strict",
+    sameSite:
+      overrides.sameSite ??
+      (environment === "production" ? "Strict" : "Lax"),
   };
 }
 

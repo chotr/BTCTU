@@ -43,6 +43,27 @@
       "when": 1792057687820,
       "tag": "0005_org_core",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792213869694,
+      "tag": "0006_quiet_sway",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792235119802,
+      "tag": "0007_quiet_veda",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792235289367,
+      "tag": "0008_wandering_hellcat",
+      "breakpoints": true
     }
   ]
 }

@@ -17,8 +17,9 @@ import {
   evaluationLabel,
 } from "@/lib/api";
 import { evaluationTasks } from "@/lib/domain/periods";
-import { isApiMode } from "@/lib/runtime-config";
+import { isApiWorkspace } from "@/lib/workspace-runtime";
 import type { Evaluation } from "@/lib/types";
+import { appPath } from "@/lib/workspace-runtime";
 import {
   Callout,
   Card,
@@ -43,7 +44,7 @@ export default function EvaluationDetail() {
         <EmptyState
           title="Không thể mở hồ sơ"
           hint="Hồ sơ không tồn tại hoặc ngoài phạm vi của bạn."
-          action={<Link href="/evaluation">Về danh sách</Link>}
+          action={<Link href={appPath("/evaluation")}>Về danh sách</Link>}
         />
       </Card>
     );
@@ -63,7 +64,7 @@ function Workspace({ ev }: { ev: Evaluation }) {
   const locked = period?.status !== "ACTIVE" || inGroup(EVAL_FINAL, ev.status);
   const self = canSelfEvaluate(user, ev);
   const canCalc =
-    !isApiMode &&
+    !isApiWorkspace() &&
     !locked &&
     inGroup(EVAL_EDITABLE, ev.status) &&
     canCalculateEvaluation(user, ev) &&
@@ -76,7 +77,7 @@ function Workspace({ ev }: { ev: Evaluation }) {
   return (
     <div className="space-y-4">
       <Link
-        href="/evaluation"
+        href={appPath("/evaluation")}
         className="inline-flex items-center gap-1 text-xs text-accent-700"
       >
         <ArrowLeft size={14} />

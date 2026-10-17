@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import request from "supertest";
 import { createApp } from "@/app";
-import { createWorkspaceState } from "@/mock-state";
+import {
+  createWorkspaceState,
+  SAMPLE_TASKS,
+  SAMPLE_EVALUATIONS,
+} from "@/mock-state";
 import type { Env } from "@/env";
 
 const testEnv: Env = {
@@ -28,16 +32,17 @@ const testEnv: Env = {
 describe("Workflow Lifecycle & Period Locking", () => {
   it("prevents submitting result when task is already ACCEPTED", async () => {
     const state = createWorkspaceState();
+    state.tasks = structuredClone(SAMPLE_TASKS);
     state.tasks[0] = {
       ...state.tasks[0],
       status: "ACCEPTED",
-      assigneeId: "u-staff",
+      assigneeId: "p-nguyen-tran-thi",
     };
     const app = createApp(testEnv, { state });
 
     const res = await request(app)
       .post(`/api/v1/tasks/${state.tasks[0].id}/result`)
-      .set("x-dev-user-id", "u-staff")
+      .set("x-dev-user-id", "p-nguyen-tran-thi")
       .send({
         quantity: 2,
         product: "Updated product",
@@ -52,6 +57,7 @@ describe("Workflow Lifecycle & Period Locking", () => {
 
   it("prevents accepting task when it is not SUBMITTED", async () => {
     const state = createWorkspaceState();
+    state.tasks = structuredClone(SAMPLE_TASKS);
     state.tasks[0] = {
       ...state.tasks[0],
       status: "IN_PROGRESS",
@@ -61,7 +67,7 @@ describe("Workflow Lifecycle & Period Locking", () => {
 
     const res = await request(app)
       .post(`/api/v1/tasks/${state.tasks[0].id}/accept`)
-      .set("x-dev-user-id", "u-leader");
+      .set("x-dev-user-id", "p-nguyen-thuong-hai");
 
     expect(res.status).toBe(409);
     expect(res.body.type).toContain("invalid_task_status");
@@ -70,17 +76,18 @@ describe("Workflow Lifecycle & Period Locking", () => {
   it("prevents mutation on tasks in a locked period", async () => {
     const state = createWorkspaceState();
     state.periods[0].lockedAt = new Date().toISOString();
+    state.tasks = structuredClone(SAMPLE_TASKS);
     state.tasks[0] = {
       ...state.tasks[0],
       periodId: state.periods[0].id,
       status: "SUBMITTED",
-      assigneeId: "u-staff",
+      assigneeId: "p-nguyen-tran-thi",
     };
     const app = createApp(testEnv, { state });
 
     const res = await request(app)
       .post(`/api/v1/tasks/${state.tasks[0].id}/accept`)
-      .set("x-dev-user-id", "u-leader");
+      .set("x-dev-user-id", "p-nguyen-thuong-hai");
 
     expect(res.status).toBe(409);
     expect(res.body.type).toContain("period_locked");
@@ -88,16 +95,17 @@ describe("Workflow Lifecycle & Period Locking", () => {
 
   it("prevents self-evaluation when evaluation is not in DRAFT status", async () => {
     const state = createWorkspaceState();
+    state.evaluations = structuredClone(SAMPLE_EVALUATIONS);
     state.evaluations[0] = {
       ...state.evaluations[0],
       status: "SUBMITTED",
-      subjectId: "u-staff",
+      subjectId: "p-nguyen-tran-thi",
     };
     const app = createApp(testEnv, { state });
 
     const res = await request(app)
       .post(`/api/v1/evaluations/${state.evaluations[0].id}/self`)
-      .set("x-dev-user-id", "u-staff")
+      .set("x-dev-user-id", "p-nguyen-tran-thi")
       .send({
         comment: "Re-evaluating",
         proposed: "TOT",
@@ -109,6 +117,7 @@ describe("Workflow Lifecycle & Period Locking", () => {
 
   it("returns the actors and timestamps recorded for an evaluation workflow", async () => {
     const state = createWorkspaceState();
+    state.evaluations = structuredClone(SAMPLE_EVALUATIONS);
     const evaluation = state.evaluations[0];
     evaluation.status = "DRAFT";
     evaluation.selfComment = null;
@@ -117,39 +126,40 @@ describe("Workflow Lifecycle & Period Locking", () => {
 
     const self = await request(app)
       .post(`/api/v1/evaluations/${evaluation.id}/self`)
-      .set("x-dev-user-id", "u-staff")
+      .set("x-dev-user-id", "p-nguyen-tran-thi")
       .send({ comment: "Tự đánh giá", proposed: "TOT" });
     expect(self.status).toBe(200);
     expect(self.body.data.selfEvaluatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
 
     const review = await request(app)
       .post(`/api/v1/evaluations/${evaluation.id}/review`)
-      .set("x-dev-user-id", "u-head")
+      .set("x-dev-user-id", "p-tran-hai-trieu")
       .send({
         comment: "Đề xuất công nhận",
         proposed: "TOT",
         action: "propose",
       });
     expect(review.status).toBe(200);
-    expect(review.body.data.reviewerId).toBe("u-head");
+    expect(review.body.data.reviewerId).toBe("p-tran-hai-trieu");
     expect(review.body.data.reviewedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
 
     const decision = await request(app)
       .post(`/api/v1/evaluations/${evaluation.id}/decision`)
-      .set("x-dev-user-id", "u-leader")
+      .set("x-dev-user-id", "p-nguyen-thuong-hai")
       .send({ classification: "TOT", note: "Đồng ý" });
     expect(decision.status).toBe(200);
-    expect(decision.body.data.decidedById).toBe("u-leader");
+    expect(decision.body.data.decidedById).toBe("p-nguyen-thuong-hai");
     expect(decision.body.data.decidedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 
   it("filters audit log by department for department head", async () => {
     const state = createWorkspaceState();
+    state.tasks = structuredClone(SAMPLE_TASKS);
     state.audit = [
       {
         id: "a-1",
         requestId: "r-1",
-        actorId: "u-head",
+        actorId: "p-tran-hai-trieu",
         action: "accept_task",
         resource: state.tasks[0].id,
         outcome: "SUCCESS",
@@ -169,11 +179,10 @@ describe("Workflow Lifecycle & Period Locking", () => {
     ];
     const app = createApp(testEnv, { state });
 
-    // u-head is head of d4
-    state.tasks[0].departmentId = "d4";
+    state.tasks[0].departmentId = "d2";
     const res = await request(app)
       .get("/api/v1/audit")
-      .set("x-dev-user-id", "u-head");
+      .set("x-dev-user-id", "p-tran-hai-trieu");
 
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
@@ -185,10 +194,10 @@ describe("Workflow Lifecycle & Period Locking", () => {
 
     const res = await request(app)
       .post("/api/v1/tasks")
-      .set("x-dev-user-id", "u-leader")
+      .set("x-dev-user-id", "p-nguyen-thuong-hai")
       .send({
         catalogItemId: state.catalog[0].id,
-        assigneeId: "u-staff",
+        assigneeId: "p-nguyen-tran-thi",
         periodId: "p-non-existent",
         title: "Nhiệm vụ kiểm thử kỳ",
         dueAt: "2026-12-31",
@@ -205,10 +214,10 @@ describe("Workflow Lifecycle & Period Locking", () => {
 
     const res = await request(app)
       .post("/api/v1/tasks")
-      .set("x-dev-user-id", "u-leader")
+      .set("x-dev-user-id", "p-nguyen-thuong-hai")
       .send({
         catalogItemId: state.catalog[0].id,
-        assigneeId: "u-staff",
+        assigneeId: "p-nguyen-tran-thi",
         title: "Nhiệm vụ thiếu dữ liệu kỳ",
         dueAt: "2026-12-31",
       });
@@ -227,10 +236,10 @@ describe("Workflow Lifecycle & Period Locking", () => {
 
     const res = await request(app)
       .post("/api/v1/tasks")
-      .set("x-dev-user-id", "u-leader")
+      .set("x-dev-user-id", "p-nguyen-thuong-hai")
       .send({
         catalogItemId: draftCatalog!.id,
-        assigneeId: "u-staff",
+        assigneeId: "p-nguyen-tran-thi",
         periodId: state.periods[0].id,
         title: "Nhiệm vụ từ danh mục nháp",
         dueAt: "2026-12-31",
@@ -247,10 +256,10 @@ describe("Workflow Lifecycle & Period Locking", () => {
 
     const res = await request(app)
       .post("/api/v1/tasks")
-      .set("x-dev-user-id", "u-leader")
+      .set("x-dev-user-id", "p-nguyen-thuong-hai")
       .send({
         catalogItemId: state.catalog[0].id,
-        assigneeId: "u-staff",
+        assigneeId: "p-nguyen-tran-thi",
         periodId: state.periods[0].id,
         title: "Nhiệm vụ kiểm thử hợp lệ",
         dueAt: "2026-12-31",

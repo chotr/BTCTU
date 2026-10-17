@@ -1,30 +1,45 @@
 "use client";
 import { useEffect, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { initializeDataSource } from "@/lib/data-source";
 import { hydrateStore } from "@/lib/store";
 import { LoadingScreen } from "@/components/ui";
+import {
+  setWorkspaceMode,
+  type WorkspaceMode,
+} from "@/lib/workspace-runtime";
 
-let initialization: Promise<void> | null = null;
+let initialization: {
+  mode: WorkspaceMode;
+  promise: Promise<void>;
+} | null = null;
 
-function initializeOnce(): Promise<void> {
-  if (!initialization) {
-    initialization = initializeDataSource(hydrateStore).catch((error) => {
-      initialization = null;
-      throw error;
-    });
+function initializeOnce(mode: WorkspaceMode): Promise<void> {
+  if (!initialization || initialization.mode !== mode) {
+    const promise = initializeDataSource(mode, () => hydrateStore(true)).catch(
+      (error) => {
+        initialization = null;
+        throw error;
+      },
+    );
+    initialization = { mode, promise };
   }
-  return initialization;
+  return initialization.promise;
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const mode: WorkspaceMode = pathname.startsWith("/demo") ? "mock" : "api";
   const [error, setError] = useState<string | null>(null);
-  const [ready, setReady] = useState(false);
+  const [readyMode, setReadyMode] = useState<WorkspaceMode | null>(null);
 
   useEffect(() => {
     let active = true;
-    void initializeOnce()
+    setWorkspaceMode(mode);
+    setError(null);
+    void initializeOnce(mode)
       .then(() => {
-        if (active) setReady(true);
+        if (active) setReadyMode(mode);
       })
       .catch((reason: unknown) => {
         if (active) {
@@ -38,7 +53,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [mode]);
 
   if (error) {
     return (
@@ -57,7 +72,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!ready) {
+  if (readyMode !== mode) {
     return <LoadingScreen />;
   }
 

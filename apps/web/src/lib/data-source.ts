@@ -1,11 +1,12 @@
 import { loadApiWorkspace } from "./api-adapter";
 import { ApiError } from "./http-client";
-import { runtimeConfig } from "./runtime-config";
+import type { WorkspaceMode } from "./workspace-runtime";
 
 export async function initializeDataSource(
+  mode: WorkspaceMode,
   hydrateLocal: () => void,
 ): Promise<void> {
-  if (runtimeConfig.dataSource === "local") {
+  if (mode === "mock") {
     hydrateLocal();
     return;
   }

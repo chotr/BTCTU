@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import Shell from "@/components/shell";
 import { useApp } from "@/lib/store";
 import { LoadingScreen } from "@/components/ui";
+import { appPath } from "@/lib/workspace-runtime";
 
 export default function MainLayout({ children }: { children: ReactNode }) {
   const { user, hydrated } = useApp();
@@ -13,7 +14,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (hydrated && !user) {
-      router.replace("/login");
+      router.replace(appPath("/login"));
     }
   }, [user, hydrated, router]);
 

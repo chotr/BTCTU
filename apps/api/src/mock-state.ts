@@ -1,11 +1,18 @@
-import { ROLES, type WorkspaceState } from "./types";
+import { MANAGER_DIRECTORY } from "./manager-directory";
+import type { Evaluation, Task, WorkspaceState } from "./types";
 
 const baseState: WorkspaceState = {
   departments: [
     {
+      id: "d0",
+      code: "LĐB",
+      name: "Lãnh đạo Ban",
+      shortName: "Lãnh đạo Ban",
+    },
+    {
       id: "d1",
       code: "TCĐ-ĐV",
-      name: "Phòng Tổ chức Đảng - Đảng viên",
+      name: "Phòng Tổ chức đảng, đảng viên",
       shortName: "Tổ chức Đảng",
     },
     {
@@ -22,32 +29,7 @@ const baseState: WorkspaceState = {
     },
     { id: "d4", code: "VP", name: "Văn phòng", shortName: "Văn phòng" },
   ],
-  people: [
-    {
-      id: "u-leader",
-      name: "Nguyễn Minh Anh",
-      title: "Lãnh đạo Ban",
-      role: ROLES.lanhDao,
-      departmentId: "d4",
-      positionRefId: "pos-leader",
-    },
-    {
-      id: "u-head",
-      name: "Trần Thu Hà",
-      title: "Trưởng phòng TCCB",
-      role: ROLES.truongPhong,
-      departmentId: "d2",
-      positionRefId: "pos-head-tccb",
-    },
-    {
-      id: "u-staff",
-      name: "Lê Quốc Bảo",
-      title: "Chuyên viên",
-      role: ROLES.congChuc,
-      departmentId: "d2",
-      positionRefId: "pos-specialist",
-    },
-  ],
+  people: MANAGER_DIRECTORY,
   catalog: [
     {
       id: "cat-01",
@@ -80,15 +62,21 @@ const baseState: WorkspaceState = {
       sourceRef: "Excel operational draft",
     },
   ],
-  tasks: [
+  tasks: [],
+  evaluations: [],
+  audit: [],
+  periods: [{ id: "p-q3-2026", label: "Quý III/2026", lockedAt: null }],
+};
+
+export const SAMPLE_TASKS: Task[] = [
     {
       id: "NV-2401",
       title: "Hoàn thiện báo cáo nhân sự quý III",
       description: "Tổng hợp dữ liệu và lập báo cáo trình lãnh đạo.",
-      catalogItemId: "cat-02",
-      departmentId: "d4",
-      assigneeId: "u-staff",
-      assignerId: "u-head",
+      catalogItemId: "cat-01",
+      departmentId: "d2",
+      assigneeId: "p-nguyen-tran-thi",
+      assignerId: "p-tran-hai-trieu",
       periodId: "p-q3-2026",
       plannedQuantity: 1,
       dueAt: "2026-09-20",
@@ -108,8 +96,8 @@ const baseState: WorkspaceState = {
       description: "Đối chiếu danh mục draft với cấu trúc phòng.",
       catalogItemId: "cat-03",
       departmentId: "d2",
-      assigneeId: "u-staff",
-      assignerId: "u-head",
+      assigneeId: "p-nguyen-tran-thi",
+      assignerId: "p-tran-hai-trieu",
       periodId: "p-q3-2026",
       plannedQuantity: 1,
       dueAt: "2026-09-25",
@@ -117,12 +105,13 @@ const baseState: WorkspaceState = {
       progress: 60,
       result: null,
     },
-  ],
-  evaluations: [
+  ];
+
+export const SAMPLE_EVALUATIONS: Evaluation[] = [
     {
-      id: "ev-u-staff-q3",
+      id: "ev-p-nguyen-tran-thi-q3",
       periodId: "p-q3-2026",
-      subjectId: "u-staff",
+      subjectId: "p-nguyen-tran-thi",
       departmentId: "d2",
       status: "SUBMITTED",
       score: 82.3,
@@ -138,9 +127,9 @@ const baseState: WorkspaceState = {
       decidedAt: null,
     },
     {
-      id: "ev-u-head-q3",
+      id: "ev-p-tran-hai-trieu-q3",
       periodId: "p-q3-2026",
-      subjectId: "u-head",
+      subjectId: "p-tran-hai-trieu",
       departmentId: "d2",
       status: "REVIEWED",
       score: 91.2,
@@ -149,16 +138,13 @@ const baseState: WorkspaceState = {
       selfComment: "Kết quả theo dõi trong kỳ.",
       selfEvaluatedAt: "2026-09-19T09:00:00Z",
       reviewComment: "Đủ căn cứ để đề xuất.",
-      reviewerId: "u-leader",
+      reviewerId: "p-nguyen-thuong-hai",
       reviewedAt: "2026-09-21T09:00:00Z",
       decisionNote: null,
       decidedById: null,
       decidedAt: null,
     },
-  ],
-  audit: [],
-  periods: [{ id: "p-q3-2026", label: "Quý III/2026", lockedAt: null }],
-};
+  ];
 
 export function createWorkspaceState(): WorkspaceState {
   return structuredClone(baseState);

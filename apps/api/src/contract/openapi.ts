@@ -63,6 +63,15 @@ export const openapi = {
         },
       },
     },
+    "/api/v1/auth/change-password": {
+      post: {
+        security: [{ accessJwt: [] }],
+        responses: {
+          "204": { description: "Password changed and sessions revoked" },
+          "401": { description: "Current password is incorrect" },
+        },
+      },
+    },
     "/api/v1/auth/session": {
       get: {
         security: [{ accessJwt: [] }],
@@ -133,6 +142,29 @@ export const openapi = {
     },
     "/api/v1/reports/summary": {
       get: { responses: { "200": { description: "Dashboard summary" } } },
+    },
+    "/api/v1/admin/users": {
+      get: { responses: { "200": { description: "Managed accounts" } } },
+      post: { responses: { "201": { description: "Account created" } } },
+    },
+    "/api/v1/admin/users/{id}": {
+      get: { responses: { "200": { description: "Managed account detail" } } },
+      patch: {
+        responses: { "200": { description: "Managed account updated" } },
+      },
+    },
+    "/api/v1/admin/users/{id}/reset-password": {
+      post: { responses: { "200": { description: "Temporary password set" } } },
+    },
+    "/api/v1/admin/users/{id}/account-role": {
+      put: { responses: { "200": { description: "Account role changed" } } },
+    },
+    "/api/v1/admin/user-candidates": {
+      get: {
+        responses: {
+          "200": { description: "Directory people without accounts" },
+        },
+      },
     },
   },
 } as const;

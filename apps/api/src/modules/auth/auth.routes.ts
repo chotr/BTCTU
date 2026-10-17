@@ -15,9 +15,14 @@ import {
 import type { LoginThrottle } from "@/security/login-throttle";
 import { formatIssues, problem } from "@/shared/problem";
 import { normalizeEmail } from "@/shared/string";
-import { loginRequestSchema, refreshRequestSchema } from "./auth.schema";
+import {
+  changePasswordRequestSchema,
+  loginRequestSchema,
+  refreshRequestSchema,
+} from "./auth.schema";
 import {
   AccountDisabledError,
+  InvalidCurrentPasswordError,
   InvalidCredentialsError,
   InvalidSessionError,
   RotationInProgressError,
@@ -300,6 +305,60 @@ export function createAuthRouter(options: AuthRouterOptions): Router {
       meta: { identityMode: "access-token" },
     });
   });
+
+  router.post(
+    "/change-password",
+    originGuard,
+    requireAccessToken,
+    async (req, res) => {
+      const parsed = changePasswordRequestSchema.safeParse(req.body);
+      if (!parsed.success) {
+        problem(
+          req,
+          res,
+          422,
+          "Validation failed",
+          formatIssues(parsed.error),
+          "validation_failed",
+        );
+        return;
+      }
+
+      try {
+        await options.auth.changePassword(
+          req.principal!,
+          parsed.data.currentPassword,
+          parsed.data.newPassword,
+        );
+        clearSessionCookies(res);
+        res.status(204).end();
+      } catch (error) {
+        if (error instanceof InvalidCurrentPasswordError) {
+          problem(
+            req,
+            res,
+            401,
+            "Unauthorized",
+            "The current password is incorrect.",
+            "invalid_current_password",
+          );
+          return;
+        }
+        if (error instanceof AccountDisabledError) {
+          problem(
+            req,
+            res,
+            403,
+            "Forbidden",
+            "This account is disabled.",
+            "account_disabled",
+          );
+          return;
+        }
+        throw error;
+      }
+    },
+  );
 
   return router;
 }

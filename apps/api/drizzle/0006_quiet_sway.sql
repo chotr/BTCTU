@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "directory_actor_id" varchar(255);

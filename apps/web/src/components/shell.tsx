@@ -22,7 +22,8 @@ import { api } from "@/lib/api";
 import { dismissToast, useApp } from "@/lib/store";
 import { canViewAudit } from "@/lib/policy";
 import { scopedData } from "@/lib/access";
-import { runtimeLabel } from "@/lib/runtime-config";
+import { environmentLabel } from "@/lib/runtime-config";
+import { appPath, isApiWorkspace } from "@/lib/workspace-runtime";
 import { Avatar, Badge, Button, Callout, Modal } from "./ui";
 import { ROLES } from "@/lib/types";
 
@@ -81,13 +82,13 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
                     : true,
               )
               .map((item) => {
+                const href = appPath(item.href);
                 const active =
-                  pathname === item.href ||
-                  pathname.startsWith(item.href + "/");
+                  pathname === href || pathname.startsWith(href + "/");
                 return (
                   <Link
                     key={item.href}
-                    href={item.href}
+                    href={href}
                     onClick={onNavigate}
                     aria-current={active ? "page" : undefined}
                     className={`flex min-h-10 items-center gap-2.5 rounded-ctl px-2.5 text-[13px] ${active ? "bg-accent-50 font-semibold text-accent-700" : "text-ink-2 hover:bg-fill"}`}
@@ -139,7 +140,7 @@ export default function Shell({ children }: { children: ReactNode }) {
       ?.label ?? "BTCTU";
   async function logout() {
     await api.logout();
-    router.replace("/login");
+    router.replace(appPath("/login"));
   }
   return (
     <div className="min-h-dvh bg-canvas">
@@ -153,7 +154,8 @@ export default function Shell({ children }: { children: ReactNode }) {
         <Brand />
         <Navigation />
         <p className="px-5 pb-4 text-[11px] leading-relaxed text-ink-3">
-          {runtimeLabel()}
+          {environmentLabel()} ·{" "}
+          {isApiWorkspace() ? "API dịch vụ" : "Dữ liệu mô phỏng"}
           <br />
           Phiên bản 1.0
         </p>

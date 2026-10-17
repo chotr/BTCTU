@@ -5,7 +5,7 @@ import { Plus, UploadSimple, Copy, CheckCircle } from "@phosphor-icons/react";
 import { useApp } from "@/lib/store";
 import { canManage } from "@/lib/policy";
 import { api, previewCatalogCsv, type ImportRow } from "@/lib/api";
-import { isApiMode } from "@/lib/runtime-config";
+import { isApiWorkspace } from "@/lib/workspace-runtime";
 import type { CatalogItem } from "@/lib/types";
 import {
   Badge,
@@ -41,7 +41,7 @@ export default function CatalogPage() {
       .toLocaleLowerCase("vi")
       .includes(q.toLocaleLowerCase("vi")),
   );
-  const allowed = canManage(user) && !isApiMode;
+  const allowed = canManage(user) && !isApiWorkspace();
   function show(next: CatalogMode, c?: CatalogItem) {
     setMode(next);
     setError("");

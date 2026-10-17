@@ -18,5 +18,16 @@ export const refreshRequestSchema = z.object({
   refreshToken: z.string().min(1).max(512).optional(),
 });
 
+export const changePasswordRequestSchema = z.object({
+  currentPassword: z
+    .string()
+    .min(AUTH_POLICY.password.minLength)
+    .max(AUTH_POLICY.password.maxLength),
+  newPassword: z
+    .string()
+    .min(AUTH_POLICY.password.minLength)
+    .max(AUTH_POLICY.password.maxLength),
+});
+
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
 export type RefreshRequest = z.infer<typeof refreshRequestSchema>;

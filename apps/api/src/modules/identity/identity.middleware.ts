@@ -1,7 +1,7 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import type { Env } from "@/env";
 import { accessTokenFromRequest } from "@/middleware/authentication";
-import type { AuthPort } from "@/modules/auth/auth.types";
+import type { AuthenticatedUser, AuthPort } from "@/modules/auth/auth.types";
 import { ACCESS_COOKIE_NAME } from "@/security/cookie";
 import { problem } from "@/shared/problem";
 import type { WorkspaceState } from "@/types";
@@ -22,22 +22,11 @@ export function createActorMiddleware(
   return async (req: Request, res: Response, next: NextFunction) => {
     req.state = state;
 
+    let user: AuthenticatedUser | null = null;
     let userId: string;
+    const token = accessTokenFromRequest(req, ACCESS_COOKIE_NAME);
 
-    if (env.environment === "production") {
-      const token = accessTokenFromRequest(req, ACCESS_COOKIE_NAME);
-      if (!token) {
-        problem(
-          req,
-          res,
-          401,
-          "Unauthorized",
-          "An access token is required.",
-          "missing_access_token",
-        );
-        return;
-      }
-
+    if (token) {
       try {
         req.principal = await auth.authenticate(token);
       } catch {
@@ -52,7 +41,7 @@ export function createActorMiddleware(
         return;
       }
 
-      const user = await auth.currentUser(req.principal);
+      user = await auth.currentUser(req.principal);
       if (!user) {
         problem(
           req,
@@ -65,7 +54,29 @@ export function createActorMiddleware(
         return;
       }
 
-      userId = user.id;
+      if (user.mustChangePassword) {
+        problem(
+          req,
+          res,
+          403,
+          "Password change required",
+          "Change the temporary password before using the application.",
+          "password_change_required",
+        );
+        return;
+      }
+
+      userId = user.directoryActorId ?? user.id;
+    } else if (env.environment === "production") {
+      problem(
+        req,
+        res,
+        401,
+        "Unauthorized",
+        "An access token is required.",
+        "missing_access_token",
+      );
+      return;
     } else {
       const header = req.header("x-dev-user-id");
       if (!header) {
@@ -83,7 +94,16 @@ export function createActorMiddleware(
       userId = header;
     }
 
-    const actor = await actorResolver(userId);
+    let actor = await actorResolver(userId);
+    if (!actor && user && (user.accountRole === "ROOT" || user.accountRole === "ACCOUNT_ADMIN")) {
+      actor = {
+        id: user.id,
+        name: user.accountRole === "ROOT" ? "Quản trị viên Root" : "Quản trị viên IAM",
+        role: "lanh_dao",
+        departmentId: null,
+      };
+    }
+
     if (!actor) {
       if (env.environment === "production") {
         problem(

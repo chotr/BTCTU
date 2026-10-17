@@ -44,7 +44,7 @@ có trường nào của nhóm này là [FACT] từ QĐ01.
 | họ tên, chức danh hiển thị                    | tên và chức danh của cá nhân   | QĐ01 chỉ cho loại chức danh, không cho cá nhân          | [TBD]                                                                  |
 | nguồn nhân sự biệt phái                       | cán bộ công an biệt phái       | QĐ01 nêu trong cơ cấu của Phòng Bảo vệ chính trị nội bộ | [INFERENCE] nếu ghi thành thuộc tính của người; [TBD] cho hồ sơ thật   |
 | vai trò `lanh_dao`/`truong_phong`/`cong_chuc` | phân loại vai trò cho uỷ quyền | thiết kế phần mềm, chưa phải ma trận được phê duyệt     | [INFERENCE] — xem [permissions.md](../04-system-design/permissions.md) |
-| danh tính đăng nhập                           | gắn tài khoản với nhân sự      | QĐ01 không có                                           | [TBD] — bảng `users` hiện chưa gắn danh mục nhân sự                    |
+| danh tính đăng nhập                           | gắn tài khoản với nhân sự      | QĐ01 không có                                           | [TBD] — hiện dùng `directory_actor_id`, chờ khóa nhân sự chính thức     |
 
 ## Quan hệ người – đơn vị – vị trí
 
@@ -101,7 +101,7 @@ thẩm quyền.
 
 ## Đối chiếu với dữ liệu mẫu đang chạy
 
-Dữ liệu mẫu trong `apps/api/src/mock-state.ts` và `apps/web/src/lib/mock/` có một
+Dữ liệu mẫu trong `apps/api/src/mock-state.ts` và `apps/web/src/demo/data/` có một
 số trường chưa có căn cứ QĐ01. Giữ chúng cho bản phát triển là hợp lý, nhưng không
 nên chuyển thẳng thành schema chính thức khi chưa có nguồn:
 

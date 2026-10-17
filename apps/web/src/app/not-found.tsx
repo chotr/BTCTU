@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { Card } from "@/components/ui";
+import { appPath } from "@/lib/workspace-runtime";
 
 export default function NotFound() {
   return (
@@ -13,7 +16,7 @@ export default function NotFound() {
           Đường dẫn có thể đã thay đổi hoặc bạn không có quyền truy cập.
         </p>
         <Link
-          href="/dashboard"
+          href={appPath("/dashboard")}
           className="mt-5 inline-flex rounded-ctl bg-accent-600 px-4 py-2 text-sm font-semibold text-white"
         >
           Về trang tổng quan

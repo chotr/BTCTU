@@ -1,8 +1,6 @@
 import type { ApiEnvelope, ProblemResponse } from "@btctu/shared";
 import { runtimeConfig } from "./runtime-config";
 
-const DEVELOPMENT_IDENTITY_KEY = "btctu:api-user:v1";
-
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -26,42 +24,23 @@ function isApiEnvelope(value: unknown): value is ApiEnvelope<unknown> {
     (typeof value.meta === "object" && value.meta !== null);
 }
 
-export function getDevelopmentIdentity(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.sessionStorage.getItem(DEVELOPMENT_IDENTITY_KEY);
-  } catch {
-    return null;
-  }
-}
-
-export function setDevelopmentIdentity(userId: string | null): void {
-  if (typeof window === "undefined") return;
-  try {
-    if (userId) {
-      window.sessionStorage.setItem(DEVELOPMENT_IDENTITY_KEY, userId);
-    } else {
-      window.sessionStorage.removeItem(DEVELOPMENT_IDENTITY_KEY);
-    }
-  } catch {
-    // Phiên phát triển vẫn có thể tiếp tục cho đến khi tải lại trang.
-  }
-}
-
 export async function apiRequest<T>(
   path: string,
   init: RequestInit = {},
+): Promise<ApiEnvelope<T>> {
+  return executeRequest<T>(path, init, true);
+}
+
+async function executeRequest<T>(
+  path: string,
+  init: RequestInit = {},
+  allowRetry = true,
 ): Promise<ApiEnvelope<T>> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15_000);
   const headers = new Headers(init.headers);
   headers.set("accept", "application/json");
   if (init.body) headers.set("content-type", "application/json");
-  const developmentIdentity = getDevelopmentIdentity();
-  if (developmentIdentity && runtimeConfig.environment !== "production") {
-    headers.set("x-dev-user-id", developmentIdentity);
-  }
-
   try {
     const response = await fetch(`${runtimeConfig.apiBaseUrl}${path}`, {
       ...init,
@@ -70,6 +49,29 @@ export async function apiRequest<T>(
       signal: controller.signal,
     });
     const requestId = response.headers.get("x-request-id");
+
+    if (
+      response.status === 401 &&
+      allowRetry &&
+      path !== "/api/v1/auth/login" &&
+      path !== "/api/v1/auth/refresh"
+    ) {
+      try {
+        const refreshResponse = await fetch(
+          `${runtimeConfig.apiBaseUrl}/api/v1/auth/refresh`,
+          {
+            method: "POST",
+            headers: { accept: "application/json" },
+            credentials: "include",
+          },
+        );
+        if (refreshResponse.ok) {
+          return executeRequest<T>(path, init, false);
+        }
+      } catch {
+        // Thử refresh không thành công, tiếp tục xử lý lỗi 401 ban đầu
+      }
+    }
 
     if (!response.ok) {
       const problem = (await response.json().catch(() => ({}))) as ProblemBody;

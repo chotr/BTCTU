@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { appPath } from "@/lib/workspace-runtime";
 import { Badge, Card, ClassificationBadge, EmptyState } from "@/components/ui";
 import { evaluationLabel, evaluationTotal } from "@/lib/api";
 import type { AppState } from "@/lib/store";
@@ -38,7 +39,7 @@ export function EvaluationTraceTable({
               <tr key={e.id} className="shadow-[0_1px_0_#edf1f6]">
                 <td className="p-3">
                   <Link
-                    href={`/evaluation/${e.id}`}
+                    href={appPath(`/evaluation/${e.id}`)}
                     className="font-medium text-accent-700 hover:underline"
                   >
                     {evaluationLabel(e, state)}

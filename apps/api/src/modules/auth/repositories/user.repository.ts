@@ -41,4 +41,18 @@ export class UserRepository {
 
     return user;
   }
+
+  async updatePassword(
+    id: string,
+    passwordHash: string,
+    mustChangePassword: boolean,
+  ): Promise<User | null> {
+    const [user] = await this.db
+      .update(users)
+      .set({ passwordHash, mustChangePassword })
+      .where(eq(users.id, id))
+      .returning();
+
+    return user ?? null;
+  }
 }

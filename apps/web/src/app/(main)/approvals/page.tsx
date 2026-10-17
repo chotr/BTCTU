@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { appPath } from "@/lib/workspace-runtime";
 import { useState } from "react";
 import { useApp } from "@/lib/store";
 import { scopedData } from "@/lib/access";
@@ -77,7 +78,7 @@ export default function ApprovalsPage() {
             tasks.map((t) => (
               <Link
                 key={t.id}
-                href={`/tasks/${t.id}`}
+                href={appPath(`/tasks/${t.id}`)}
                 className="mb-2 block rounded-ctl bg-fill p-4 hover:bg-accent-50"
               >
                 <p className="text-[13px] font-semibold">{t.title}</p>
@@ -99,7 +100,7 @@ export default function ApprovalsPage() {
             evals.map((e) => (
               <Link
                 key={e.id}
-                href={`/evaluation/${e.id}`}
+                href={appPath(`/evaluation/${e.id}`)}
                 className="mb-2 block rounded-ctl bg-fill p-4 hover:bg-accent-50"
               >
                 <p className="text-[13px] font-semibold">

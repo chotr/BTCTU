@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { runtimeConfig } from "./runtime-config";
+import { getWorkspaceMode } from "./workspace-runtime";
 import type {
   AuditEvent,
   CatalogItem,
@@ -23,7 +23,7 @@ import {
   POSITIONS,
   RESPONSIBILITIES,
   TASKS,
-} from "./mock";
+} from "@/demo/data";
 import { resolveAppUser } from "./identity";
 
 export interface SyncRun {
@@ -60,10 +60,9 @@ export interface AppState {
   hydrated: boolean;
   storageError: string | null;
 }
-export const STORAGE_KEY = "btctu:workspace:v3";
-const LEGACY_STORAGE_KEY = "btctu:mock:v2";
-const SESSION_KEY = "btctu:session:v1";
-function initialState(): AppState {
+export const STORAGE_KEY = "btctu:demo-workspace:v1";
+const LEGACY_STORAGE_KEYS = ["btctu:workspace:v3", "btctu:mock:v2"] as const;
+export function initialDemoState(): AppState {
   return structuredClone({
     user: null,
     departments: DEPARTMENTS,
@@ -102,13 +101,40 @@ function initialState(): AppState {
     },
   });
 }
+
+function initialState(): AppState {
+  if (getWorkspaceMode() === "mock") {
+    return initialDemoState();
+  }
+  return {
+    user: null,
+    departments: [],
+    people: [],
+    positions: [],
+    responsibilities: [],
+    catalog: [],
+    activeCatalogVersion: "",
+    tasks: [],
+    periods: [],
+    evaluations: [],
+    audit: [],
+    toasts: [],
+    hydrated: false,
+    storageError: null,
+    integration: {
+      mappings: [],
+      runs: [],
+      checkpoint: "0",
+    },
+  };
+}
 const serverState = initialState();
 let state = initialState();
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((listener) => listener());
 function persist(): void {
   if (
-    runtimeConfig.dataSource !== "local" ||
+    getWorkspaceMode() !== "mock" ||
     typeof window === "undefined" ||
     !state.hydrated
   )
@@ -197,25 +223,25 @@ function restore(raw: string): AppState {
   };
 }
 let listening = false;
-export function hydrateStore(): void {
-  if (typeof window === "undefined" || state.hydrated) return;
+export function hydrateStore(force = false): void {
+  if (typeof window === "undefined" || (state.hydrated && !force)) return;
+  if (force) state = initialState();
   try {
+    const legacyKey = LEGACY_STORAGE_KEYS.find((key) =>
+      window.localStorage.getItem(key),
+    );
     const raw =
       window.localStorage.getItem(STORAGE_KEY) ??
-      window.localStorage.getItem(LEGACY_STORAGE_KEY);
+      (legacyKey ? window.localStorage.getItem(legacyKey) : null);
     state = raw ? restore(raw) : { ...state, hydrated: true };
     if (raw && !window.localStorage.getItem(STORAGE_KEY)) {
       window.localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({ version: 3, data: state }),
       );
-      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
-    }
-    if (!raw) {
-      const previous = JSON.parse(
-        window.localStorage.getItem(SESSION_KEY) ?? "null",
-      );
-      state.user = resolveAppUser(state, previous?.userId);
+      for (const key of LEGACY_STORAGE_KEYS) {
+        window.localStorage.removeItem(key);
+      }
     }
   } catch {
     state = {
@@ -228,7 +254,12 @@ export function hydrateStore(): void {
   if (!listening) {
     listening = true;
     window.addEventListener("storage", (event) => {
-      if (event.key !== STORAGE_KEY || !event.newValue) return;
+      if (
+        getWorkspaceMode() !== "mock" ||
+        event.key !== STORAGE_KEY ||
+        !event.newValue
+      )
+        return;
       try {
         state = restore(event.newValue);
         emit();
@@ -315,14 +346,16 @@ export function setPeriodLocked(periodId: string, lockedAt: string): void {
   }));
 }
 export function resetWorkspace(): void {
-  const user = state.user;
-  setState(() => ({ ...initialState(), user, hydrated: true }));
-  appendAudit({
-    actorId: user?.id ?? "system",
-    action: "Khôi phục không gian làm việc",
-    resource: "Không gian làm việc",
-    detail: "Khôi phục dữ liệu khởi tạo; chỉ ảnh hưởng trình duyệt này.",
-    outcome: "OK",
-  });
-  pushToast("success", "Đã khôi phục dữ liệu khởi tạo");
+  if (getWorkspaceMode() === "mock") {
+    const user = state.user;
+    setState(() => ({ ...initialDemoState(), user, hydrated: true }));
+    appendAudit({
+      actorId: user?.id ?? "system",
+      action: "Khôi phục không gian làm việc",
+      resource: "Không gian làm việc",
+      detail: "Khôi phục dữ liệu khởi tạo; chỉ ảnh hưởng trình duyệt này.",
+      outcome: "OK",
+    });
+    pushToast("success", "Đã khôi phục dữ liệu khởi tạo");
+  }
 }

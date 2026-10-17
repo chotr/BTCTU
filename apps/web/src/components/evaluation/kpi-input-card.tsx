@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { appPath } from "@/lib/workspace-runtime";
 import {
   Card,
   EmptyState,
@@ -26,7 +27,7 @@ export function KpiInputCard({ tasks }: { tasks: Task[] }) {
             >
               <div>
                 <Link
-                  href={`/tasks/${t.id}`}
+                  href={appPath(`/tasks/${t.id}`)}
                   className="font-medium text-accent-700 hover:underline"
                 >
                   {t.title}

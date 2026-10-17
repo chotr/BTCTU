@@ -4,7 +4,7 @@ import { useState } from "react";
 import { SectionHeader } from "@/components/ui";
 import { SettingsPanel } from "@/components/console/settings-panel";
 import { IntegrationPanel } from "@/components/console/integration-panel";
-import { isApiMode } from "@/lib/runtime-config";
+import { isApiWorkspace } from "@/lib/workspace-runtime";
 
 const TABS = [
   ["settings", "Thiết lập"],
@@ -13,7 +13,8 @@ const TABS = [
 
 export default function ConsolePage() {
   const [tab, setTab] = useState<(typeof TABS)[number][0]>("settings");
-  const tabs = isApiMode ? TABS.slice(0, 1) : TABS;
+  const apiMode = isApiWorkspace();
+  const tabs = apiMode ? TABS.slice(0, 1) : TABS;
   return (
     <div className="space-y-4">
       <SectionHeader
@@ -38,7 +39,7 @@ export default function ConsolePage() {
         ))}
       </div>
       {tab === "settings" && <SettingsPanel />}
-      {!isApiMode && tab === "integration" && <IntegrationPanel />}
+      {!apiMode && tab === "integration" && <IntegrationPanel />}
     </div>
   );
 }

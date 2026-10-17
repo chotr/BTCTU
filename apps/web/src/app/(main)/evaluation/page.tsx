@@ -6,7 +6,7 @@ import { Plus } from "@phosphor-icons/react";
 import { useApp } from "@/lib/store";
 import { scopedData } from "@/lib/access";
 import { evaluationLabel } from "@/lib/api";
-import { isApiMode } from "@/lib/runtime-config";
+import { isApiWorkspace } from "@/lib/workspace-runtime";
 import { EVAL_STATUS_LABELS } from "@/lib/types";
 import {
   Badge,
@@ -20,6 +20,7 @@ import {
   CreateEvaluationModal,
   EvaluationTable,
 } from "@/components/evaluation";
+import { appPath } from "@/lib/workspace-runtime";
 
 export default function EvaluationPage() {
   const state = useApp();
@@ -45,7 +46,7 @@ export default function EvaluationPage() {
         title="Hồ sơ đánh giá"
         hint="Điểm tính là đầu vào; xếp loại còn phụ thuộc điều kiện và quyết định có thẩm quyền."
         actions={
-          !isApiMode && (
+          !isApiWorkspace() && (
             <Button
               variant="primary"
               icon={<Plus size={16} />}
@@ -100,11 +101,11 @@ export default function EvaluationPage() {
         <Badge>{rows.length} hồ sơ</Badge>
       </Card>
       <EvaluationTable rows={rows} state={state} />
-      {!isApiMode && (
+      {!isApiWorkspace() && (
         <CreateEvaluationModal
           open={open}
           onClose={() => setOpen(false)}
-          onCreated={(id) => router.push(`/evaluation/${id}`)}
+          onCreated={(id) => router.push(appPath(`/evaluation/${id}`))}
           periods={state.periods}
           people={scoped.people}
           departments={scoped.departments}

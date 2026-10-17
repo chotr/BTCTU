@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "users_one_root_unique" ON "users" USING btree ("account_role") WHERE "users"."account_role" = 'ROOT';

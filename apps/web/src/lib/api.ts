@@ -1,106 +1,46 @@
-import {
-  appendAudit,
-  getState,
-  hydrateStore,
-  pushToast,
-  resetWorkspace,
-  setUser,
-} from "./store";
+import { getState } from "./store";
 import { policy } from "./policy";
 import { personName } from "./shared/names";
-import { demoAccounts, resolveAppUser } from "./identity";
-import { taskActions, taskPeriodLocked } from "./tasks";
+import { resolveAppUser } from "./identity";
+import { taskPeriodLocked } from "./tasks";
 import { RESULT_QUALITY } from "./domain/quality";
 import {
   canCalculateEvaluation,
   canSelfEvaluate,
-  evaluationActions,
   evaluationLabel,
   evaluationTotal,
 } from "./evaluation";
 import {
   catalogCsvTemplate,
-  masterActions,
   previewCatalogCsv,
   type ImportRow,
 } from "./master-data";
 import {
   PROFILES,
   previewPayload,
-  saveMappings,
-  simulateSync,
   type ProfileKey,
 } from "./integration";
-import { exportReport, type ReportKind } from "./exports";
+import type { ReportKind } from "./exports";
 import { apiModeActions } from "./api-adapter";
-import { runtimeConfig } from "./runtime-config";
+import { getWorkspaceMode } from "./workspace-runtime";
+import { mockActions } from "@/demo/mock-actions";
 
 /**
  * Điểm gọi thao tác duy nhất dành cho các màn hình.
  *
- * Phần triển khai hiện chạy cục bộ trên trình duyệt. Khi thay bằng lớp gọi API,
- * cần giữ tên hàm và kiểu trả về để màn hình không phụ thuộc trực tiếp vào dữ
- * liệu mẫu, bộ xử lý cục bộ hoặc hàm thay đổi kho trạng thái.
+ * Route chính dùng API; namespace `/demo` chọn implementation mô phỏng. Màn
+ * hình chỉ phụ thuộc contract này, không tự quyết định nguồn dữ liệu.
  */
 export const perm = policy;
-const localApi = {
-  ...taskActions,
-  ...evaluationActions,
-  ...masterActions,
-  saveMappings,
-  simulateSync,
-  previewPayload,
-  exportReport,
-  resetWorkspace,
-  accounts: demoAccounts,
-  profiles: PROFILES,
-  catalogTemplate: catalogCsvTemplate,
-  previewCatalogCsv,
-  async login(userId: string): Promise<boolean> {
-    hydrateStore();
-    const user = resolveAppUser(getState(), userId);
-    if (!user) {
-      pushToast("error", "Tài khoản không tồn tại");
-      return false;
-    }
-    setUser(user);
-    appendAudit({
-      actorId: user.id,
-      action: "Đăng nhập",
-      resource: "Phiên làm việc",
-      detail: `Vai trò: ${user.role}`,
-      outcome: "OK",
-    });
-    return true;
-  },
-  async logout(): Promise<void> {
-    const user = getState().user;
-    if (user)
-      appendAudit({
-        actorId: user.id,
-        action: "Đăng xuất",
-        resource: "Phiên làm việc",
-        detail: "",
-        outcome: "OK",
-      });
-    setUser(null);
-  },
-  async deniedAccess(resource: string): Promise<void> {
-    appendAudit({
-      actorId: getState().user?.id ?? "?",
-      action: "Truy cập bị từ chối",
-      resource,
-      detail: "Ngoài phạm vi được phân quyền",
-      outcome: "DENIED",
-    });
-    pushToast("error", "Không có quyền truy cập — đã ghi nhật ký");
-  },
-};
 
-export const api =
-  runtimeConfig.dataSource === "api"
-    ? { ...localApi, ...apiModeActions }
-    : localApi;
+type AppApi = typeof mockActions;
+
+export const api = new Proxy({} as AppApi, {
+  get(_target, property) {
+    const source = getWorkspaceMode() === "mock" ? mockActions : apiModeActions;
+    return Reflect.get(source, property);
+  },
+});
 
 export function personLabel(id: string): string {
   const state = getState();

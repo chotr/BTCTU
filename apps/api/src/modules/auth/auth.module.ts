@@ -55,6 +55,8 @@ export function createAuthModule(
     logout: (token) => resolve().logout(token),
     authenticate: (token) => resolve().authenticate(token),
     currentUser: (principal) => resolve().currentUser(principal),
+    changePassword: (principal, currentPassword, newPassword) =>
+      resolve().changePassword(principal, currentPassword, newPassword),
   };
 
   return {

@@ -22,7 +22,7 @@
 - component không gọi endpoint trực tiếp;
 - `src/lib/api.ts` là façade use case;
 - `src/lib/http-client.ts` xử lý HTTP, timeout và lỗi;
-- `src/lib/mock/` là adapter dữ liệu phát triển tạm thời;
+- `src/demo/` chứa route adapter và dữ liệu mô phỏng phát triển;
 - khi API hoàn chỉnh, thay adapter trong application layer và giữ component.
 
 ## Quy tắc backend

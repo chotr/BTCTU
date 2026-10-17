@@ -1,5 +1,7 @@
 export const API_ERROR_CODES = [
+  "account_conflict",
   "account_disabled",
+  "account_not_found",
   "actor_not_provisioned",
   "catalog_not_published",
   "evaluation_not_found",
@@ -8,6 +10,7 @@ export const API_ERROR_CODES = [
   "internal_error",
   "invalid_access_token",
   "invalid_credentials",
+  "invalid_current_password",
   "invalid_json",
   "invalid_reference",
   "invalid_refresh_token",
@@ -16,6 +19,7 @@ export const API_ERROR_CODES = [
   "origin_not_allowed",
   "period_not_found",
   "period_locked",
+  "password_change_required",
   "invalid_task_status",
   "invalid_evaluation_status",
   "refresh_in_progress",

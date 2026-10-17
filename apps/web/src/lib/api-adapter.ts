@@ -8,13 +8,7 @@ import {
   type EvaluationStatus,
   type Role,
 } from "@btctu/shared";
-import {
-  ApiError,
-  apiRequest,
-  getDevelopmentIdentity,
-  setDevelopmentIdentity,
-} from "./http-client";
-import { runtimeConfig } from "./runtime-config";
+import { ApiError, apiRequest } from "./http-client";
 import {
   getState,
   pushToast,
@@ -34,6 +28,10 @@ import type {
   Task,
   TaskResult,
 } from "./types";
+import { catalogCsvTemplate, previewCatalogCsv } from "./master-data";
+import { PROFILES, previewPayload } from "./integration";
+import { exportReport } from "./exports";
+import type { AppUser } from "./types";
 
 type ApiActor = {
   id: string;
@@ -414,18 +412,30 @@ async function auditRequest(): Promise<ApiAuditEvent[]> {
 }
 
 export async function loadApiWorkspace(): Promise<void> {
-  if (runtimeConfig.environment !== "production" && !getDevelopmentIdentity()) {
-    setState((state) => ({
-      ...state,
-      user: null,
-      hydrated: true,
-      storageError: null,
-    }));
-    return;
+  let actorResponse;
+  try {
+    actorResponse = await apiRequest<ApiActor>("/api/v1/me");
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      setState((state) => ({
+        ...state,
+        user: null,
+        departments: [],
+        people: [],
+        catalog: [],
+        tasks: [],
+        evaluations: [],
+        periods: [],
+        audit: [],
+        hydrated: true,
+        storageError: null,
+      }));
+      return;
+    }
+    throw error;
   }
 
   const [
-    actorResponse,
     organizationResponse,
     catalogResponse,
     taskResponse,
@@ -433,7 +443,6 @@ export async function loadApiWorkspace(): Promise<void> {
     summaryResponse,
     auditData,
   ] = await Promise.all([
-    apiRequest<ApiActor>("/api/v1/me"),
     apiRequest<ApiOrganization>("/api/v1/organizations"),
     apiRequest<ApiCatalogItem[]>("/api/v1/catalog"),
     apiRequest<ApiTask[]>("/api/v1/tasks"),
@@ -550,23 +559,65 @@ function unsupportedMasterData(): never {
 }
 
 export const apiModeActions = {
-  async login(userId: string): Promise<boolean> {
-    setDevelopmentIdentity(userId);
+  async loginWithCredentials(
+    email: string,
+    password: string,
+  ): Promise<{ ok: boolean; message?: string }> {
     try {
+      await apiRequest<{ user: { id: string }; expiresIn: number }>(
+        "/api/v1/auth/login",
+        { method: "POST", body: JSON.stringify({ email, password }) },
+      );
       await loadApiWorkspace();
-      pushToast("success", "Đã mở phiên làm việc");
-      return true;
+      if (!getState().user) {
+        return {
+          ok: false,
+          message:
+            "Tài khoản đã xác thực nhưng chưa được gán hồ sơ nhân sự để sử dụng hệ thống.",
+        };
+      }
+      pushToast("success", "Đã đăng nhập");
+      return { ok: true };
     } catch (error) {
-      setDevelopmentIdentity(null);
       setState((state) => ({ ...state, user: null, hydrated: true }));
+      if (error instanceof ApiError) {
+        if (error.status === 401) {
+          return { ok: false, message: "Email hoặc mật khẩu không đúng." };
+        }
+        if (error.status === 403) {
+          return {
+            ok: false,
+            message:
+              "Tài khoản chưa được cấp quyền sử dụng hoặc chưa gắn với hồ sơ nhân sự.",
+          };
+        }
+      }
       pushToast("error", errorText("Đăng nhập", error));
-      return false;
+      return {
+        ok: false,
+        message: "Không thể kết nối tới hệ thống. Vui lòng thử lại sau.",
+      };
     }
   },
 
   async logout(): Promise<void> {
-    setDevelopmentIdentity(null);
-    setState((state) => ({ ...state, user: null, hydrated: true }));
+    try {
+      await apiRequest("/api/v1/auth/logout", { method: "POST" });
+    } catch {
+      // Server có thể đã xóa phiên — tiếp tục xóa trạng thái cục bộ.
+    }
+    setState((state) => ({
+      ...state,
+      user: null,
+      departments: [],
+      people: [],
+      catalog: [],
+      tasks: [],
+      evaluations: [],
+      periods: [],
+      audit: [],
+      hydrated: true,
+    }));
   },
 
   async createTask(input: CreateTaskInput): Promise<boolean> {
@@ -715,4 +766,14 @@ export const apiModeActions = {
   duplicateVersion: unsupportedMasterData,
   publishVersion: unsupportedMasterData,
   importCatalog: unsupportedMasterData,
+  exportReport,
+  catalogTemplate: catalogCsvTemplate,
+  previewCatalogCsv,
+  profiles: PROFILES,
+  previewPayload,
+  accounts: (): AppUser[] => [],
+  login: async (): Promise<boolean> => unsupported(),
+  deniedAccess: async (resource: string): Promise<void> => {
+    pushToast("error", `Không có quyền truy cập: ${resource}`);
+  },
 };
